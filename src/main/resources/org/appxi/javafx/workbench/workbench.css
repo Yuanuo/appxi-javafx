@@ -1,0 +1,31 @@
+* {
+    -fx-background-radius: 0;
+}
+
+.workbench .worktools .tool-bar,
+.aligned-bar .context-menu,
+.aligned-bar .context-menu .custom-menu-item {
+    -fx-padding: 0;
+    -fx-spacing: 0;
+    -fx-background-insets: 0;
+}
+
+.workbench .worktools .toggle-button,
+.workbench .worktools .button {
+    -fx-background-insets: 0;
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+    -fx-pref-width: 44;
+    -fx-pref-height: 48;
+}
+
+.workbench .worktools .toggle-button {
+    -fx-border-width: 0 0 0 3;
+    -fx-border-color: transparent;
+}
+
+.workbench .infotools .h-box {
+    -fx-padding: 0 3;
+    -fx-spacing: 5;
+    -fx-alignment: center-left;
+}
