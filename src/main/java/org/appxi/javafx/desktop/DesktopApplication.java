@@ -16,6 +16,7 @@ import org.appxi.javafx.theme.ThemeProvider;
 import org.appxi.javafx.views.ViewController;
 import org.appxi.prefs.PreferencesInProperties;
 import org.appxi.prefs.UserPrefs;
+import org.appxi.util.DevtoolHelper;
 import org.appxi.util.StringHelper;
 
 import java.io.InputStream;
@@ -154,7 +155,7 @@ public abstract class DesktopApplication extends Application {
             started();
 
             // for debug only
-            System.out.println("App startup used steps/times: " + step + "/" + (System.currentTimeMillis() - startTime));
+            DevtoolHelper.LOG.info(StringHelper.msg("App startup used steps/times: ", step, "/", System.currentTimeMillis() - startTime));
         });
     }
 

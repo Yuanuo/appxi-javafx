@@ -7,6 +7,7 @@ import org.appxi.javafx.workbench.views.WorkbenchViewpartController;
 import org.appxi.javafx.workbench.views.WorkbenchWorkpartController;
 import org.appxi.javafx.workbench.views.WorkbenchWorktoolController;
 import org.appxi.prefs.UserPrefs;
+import org.appxi.util.DevtoolHelper;
 
 import java.util.List;
 
@@ -36,33 +37,25 @@ public abstract class WorkbenchController extends ViewController {
             UserPrefs.prefs.setProperty("workbench.views.divider", getViewport().getWorkviewsDividerPosition());
             UserPrefs.prefs.setProperty("workbench.workviews.visible", getViewport().isWorkviewsVisible());
         });
-//        long st = st0;
         final List<WorkbenchViewpartController> viewControllers = createViewpartControllers();
         viewControllers.forEach(viewController -> {
             getApplication().updateStartingProgress();
             viewController.setupApplication(getApplication(), this);
         });
-//        System.out.println("setup viewpart views used time: " + (System.currentTimeMillis() - st));
-//        st = System.currentTimeMillis();
         viewControllers.forEach(viewController -> {
             getApplication().updateStartingProgress();
             this.addWorkbenchViewpartController(viewController);
         });
-//        System.out.println("add viewpart views used time: " + (System.currentTimeMillis() - st));
-//        st = System.currentTimeMillis();
         viewControllers.forEach(controller -> {
-//            final long st1 = System.currentTimeMillis();
             getApplication().updateStartingProgress();
             controller.setupInitialize();
-//            System.out.println("init 1 viewpart view used time: " + (System.currentTimeMillis() - st1));
         });
-//        System.out.println("init all viewpart views used time: " + (System.currentTimeMillis() - st));
         getApplication().updateStartingProgress();
 
         getViewport().setWorkviewsDividerPosition(UserPrefs.prefs.getDouble("workbench.views.divider", 0.2));
         if (UserPrefs.prefs.getBoolean("workbench.workviews.visible", true))
             this.getViewport().selectWorktool(null);
-        System.out.println("load viewpart views used time: " + (System.currentTimeMillis() - st0));
+        DevtoolHelper.LOG.info("load viewpart views used time: " + (System.currentTimeMillis() - st0));
     }
 
     public void addWorkbenchViewpartController(WorkbenchViewpartController controller) {
