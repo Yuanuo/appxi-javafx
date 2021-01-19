@@ -28,14 +28,18 @@ public class WorkbenchPaneEx extends WorkbenchPane {
     }
 
     public void addOpenpart(WorkbenchOpenpartController controller) {
+        this.addOpenpart(controller, false);
+    }
+
+    public void addOpenpart(WorkbenchOpenpartController controller, boolean addToEnd) {
         final Label viewinfo = controller.getViewpartInfo();
         final Node viewport = controller.getViewport();
 
         viewinfo.setUserData(controller);
         if (controller.isWorktoolSupport()) {
-            this.addOpenviewWithWorktool(controller.viewId, viewinfo, viewport, controller);
+            this.addOpenviewWithWorktool(controller.viewId, viewinfo, viewport, controller, addToEnd);
         } else {
-            this.addOpenview(controller.viewId, viewinfo, viewport, controller);
+            this.addOpenview(controller.viewId, viewinfo, viewport, controller, addToEnd);
         }
     }
 

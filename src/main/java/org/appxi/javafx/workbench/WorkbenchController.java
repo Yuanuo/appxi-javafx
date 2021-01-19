@@ -65,10 +65,16 @@ public abstract class WorkbenchController extends ViewController {
         if (controller instanceof WorkbenchWorkpartController controller1) {
             this.getViewport().addWorkpart(controller1);
         } else if (controller instanceof WorkbenchOpenpartController controller1) {
-            this.getViewport().addOpenpart(controller1);
+            addWorkbenchOpenpartController(controller1, false);
         } else if (controller instanceof WorkbenchWorktoolController controller1) {
             this.getViewport().addWorktool(controller1);
         }
+    }
+
+    public void addWorkbenchOpenpartController(WorkbenchOpenpartController controller, boolean addToEnd) {
+        if (null == controller.getWorkbenchController())
+            controller.setupApplication(getApplication(), this);
+        this.getViewport().addOpenpart(controller, addToEnd);
     }
 
     protected abstract List<WorkbenchViewpartController> createViewpartControllers();

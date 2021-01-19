@@ -128,6 +128,10 @@ public class WorkbenchPane extends StackPaneEx {
     }
 
     public void addOpenview(String id, Label info, Node view, OpenpartListener listener) {
+        this.addOpenview(id, info, view, listener, false);
+    }
+
+    public void addOpenview(String id, Label info, Node view, OpenpartListener listener, boolean addToEnd) {
         final Tab tool = new Tab();
         tool.setId(id);
         tool.setContent(view);
@@ -144,8 +148,12 @@ public class WorkbenchPane extends StackPaneEx {
         if (null != info.getGraphic())
             tool.setGraphic(info.getGraphic());
 
-        final int refIdx = this.openviews.getSelectionModel().getSelectedIndex();
-        this.openviews.getTabs().add(refIdx + 1, tool);
+        if (addToEnd)
+            this.openviews.getTabs().add(tool);
+        else {
+            final int refIdx = this.openviews.getSelectionModel().getSelectedIndex();
+            this.openviews.getTabs().add(refIdx + 1, tool);
+        }
 
         if (null != listener) tool.setOnCloseRequest(listener::onViewportCloseRequest);
         if (null != listener) tool.setOnClosed(listener::onViewportClosed);
@@ -158,6 +166,10 @@ public class WorkbenchPane extends StackPaneEx {
     }
 
     public void addOpenviewWithWorktool(String id, Label info, Node view, OpenpartListener listener) {
+        this.addOpenviewWithWorktool(id, info, view, listener, false);
+    }
+
+    public void addOpenviewWithWorktool(String id, Label info, Node view, OpenpartListener listener, boolean addToEnd) {
         final Button tool = addWorktool(id, info, null);
         tool.setOnAction(event -> {
             final Tab tab = findOpentool(id);
@@ -166,7 +178,7 @@ public class WorkbenchPane extends StackPaneEx {
                 return;
             }
             info.setGraphic(null);
-            addOpenview(id, info, view, listener);
+            addOpenview(id, info, view, listener, addToEnd);
             selectOpenview(id);
         });
     }
