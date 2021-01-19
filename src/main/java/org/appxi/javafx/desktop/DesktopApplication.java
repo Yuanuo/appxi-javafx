@@ -53,6 +53,8 @@ public abstract class DesktopApplication extends Application {
     //            USER FOCUSED METHODS
     //
 
+    protected abstract String getApplicationId();
+
     protected abstract String getApplicationTitle();
 
     protected abstract List<URL> getApplicationIcons();
@@ -66,7 +68,7 @@ public abstract class DesktopApplication extends Application {
     @Override
     public void init() throws Exception {
         // 1, init user prefs
-        UserPrefs.setupWorkDirectory(null, null);
+        UserPrefs.setupDataDirectory(UserPrefs.dataDir().resolve("." + getApplicationId()), null);
         UserPrefs.prefs = new PreferencesInProperties(UserPrefs.confDir().resolve(".prefs"));
         UserPrefs.recents = new PreferencesInProperties(UserPrefs.confDir().resolve(".recents"));
         this.steps = UserPrefs.prefs.getDouble("ui.used", 20);
