@@ -73,8 +73,11 @@ public class ThemeProvider {
     }
 
     public ThemeProvider addScene(Scene scene) {
-        if (!this.scenes.contains(scene))
+        if (!this.scenes.contains(scene)) {
             this.scenes.add(scene);
+            if (null != this.currentTheme)
+                this.applyThemeFor(this.currentTheme, scene);
+        }
         return this;
     }
 
@@ -96,30 +99,34 @@ public class ThemeProvider {
 
         final Theme oldTheme = this.currentTheme;
         // remove old
-        uninstallTheme(oldTheme);
+        removeThemeFor(oldTheme, this.scenes.toArray(new Scene[0]));
 
         // apply new
         this.currentTheme = theme;
-        installTheme(theme);
+        applyThemeFor(theme, this.scenes.toArray(new Scene[0]));
 
         // fire events
         if (null != this.eventBus)
             this.eventBus.fireEvent(new ThemeEvent(oldTheme, theme));
     }
 
-    protected void installTheme(Theme theme) {
-        if (null == theme)
+    public void applyThemeFor(Theme theme, Scene... scenes) {
+        if (null == theme || null == scenes || scenes.length == 0)
             return;
         final List<String> styles = theme.stylesheets;
-        if (null != styles && !styles.isEmpty())
-            this.scenes.forEach(scene -> scene.getStylesheets().addAll(styles));
+        if (null != styles && !styles.isEmpty()) {
+            for (Scene scene : scenes)
+                scene.getStylesheets().addAll(styles);
+        }
     }
 
-    protected void uninstallTheme(Theme theme) {
-        if (null == theme)
+    public void removeThemeFor(Theme theme, Scene... scenes) {
+        if (null == theme || null == scenes || scenes.length == 0)
             return;
         final List<String> styles = theme.stylesheets;
-        if (null != styles && !styles.isEmpty())
-            this.scenes.forEach(scene -> scene.getStylesheets().removeAll(styles));
+        if (null != styles && !styles.isEmpty()) {
+            for (Scene scene : scenes)
+                scene.getStylesheets().removeAll(styles);
+        }
     }
 }
