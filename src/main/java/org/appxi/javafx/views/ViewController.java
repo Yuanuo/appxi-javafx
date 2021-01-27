@@ -5,6 +5,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.DialogPane;
 import javafx.stage.Stage;
+import org.appxi.javafx.control.StackPaneEx;
 import org.appxi.javafx.desktop.DesktopApplication;
 import org.appxi.javafx.event.EventBus;
 import org.appxi.javafx.theme.ThemeProvider;
@@ -14,14 +15,11 @@ import java.util.function.Consumer;
 
 public abstract class ViewController extends Attributes {
     public final String viewId, viewName;
-    private DesktopApplication application;
+    public final DesktopApplication application;
 
-    public ViewController(String viewId, String viewName) {
+    public ViewController(String viewId, String viewName, DesktopApplication application) {
         this.viewId = viewId;
         this.viewName = viewName;
-    }
-
-    public void setupApplication(DesktopApplication application) {
         this.application = application;
     }
 
@@ -33,7 +31,7 @@ public abstract class ViewController extends Attributes {
      * methods just for easy access
      */
 
-    public final DesktopApplication getApplication() {
+    public DesktopApplication getApplication() {
         return application;
     }
 
@@ -42,7 +40,11 @@ public abstract class ViewController extends Attributes {
     }
 
     public final Scene getPrimaryScene() {
-        return getPrimaryStage().getScene();
+        return this.application.getPrimaryScene();
+    }
+
+    public StackPaneEx getPrimaryViewport() {
+        return this.application.getPrimaryViewport();
     }
 
     public final EventBus getEventBus() {

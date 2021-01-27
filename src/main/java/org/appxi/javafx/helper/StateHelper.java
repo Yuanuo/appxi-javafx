@@ -5,7 +5,6 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import org.appxi.prefs.Preferences;
-import org.appxi.prefs.UserPrefs;
 
 public interface StateHelper {
     static void storeWindow(Preferences prefs, Window window) {
@@ -49,8 +48,8 @@ public interface StateHelper {
 
     static Scene restoreScene(Preferences prefs, Parent root) {
         return new Scene(root,
-                UserPrefs.prefs.getDouble("ui.scene.width", -1),
-                UserPrefs.prefs.getDouble("ui.scene.height", -1));
+                prefs.getDouble("ui.scene.width", -1),
+                prefs.getDouble("ui.scene.height", -1));
     }
 
 }

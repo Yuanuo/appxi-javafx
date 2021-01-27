@@ -3,10 +3,7 @@ package org.appxi.javafx.theme;
 import javafx.scene.Scene;
 import org.appxi.javafx.event.EventBus;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Predicate;
 
 public class ThemeProvider {
@@ -91,6 +88,8 @@ public class ThemeProvider {
     }
 
     public void applyTheme(Theme theme) {
+        if (null == theme && !this.themes.isEmpty())
+            theme = this.themes.get(0);
         if (null == theme)
             return;
 
@@ -113,8 +112,8 @@ public class ThemeProvider {
     public void applyThemeFor(Theme theme, Scene... scenes) {
         if (null == theme || null == scenes || scenes.length == 0)
             return;
-        final List<String> styles = theme.stylesheets;
-        if (null != styles && !styles.isEmpty()) {
+        final Collection<String> styles = theme.stylesheets;
+        if (!styles.isEmpty()) {
             for (Scene scene : scenes)
                 scene.getStylesheets().addAll(styles);
         }
@@ -123,8 +122,8 @@ public class ThemeProvider {
     public void removeThemeFor(Theme theme, Scene... scenes) {
         if (null == theme || null == scenes || scenes.length == 0)
             return;
-        final List<String> styles = theme.stylesheets;
-        if (null != styles && !styles.isEmpty()) {
+        final Collection<String> styles = theme.stylesheets;
+        if (!styles.isEmpty()) {
             for (Scene scene : scenes)
                 scene.getStylesheets().removeAll(styles);
         }

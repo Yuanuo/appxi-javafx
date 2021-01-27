@@ -1,7 +1,8 @@
 package org.appxi.javafx.theme;
 
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 public class Theme {
@@ -12,7 +13,7 @@ public class Theme {
     public final String name, title;
     public final String accentColor;
     public final ThemeStyle style;
-    public final List<String> stylesheets = new ArrayList<>();
+    public final Collection<String> stylesheets = new LinkedHashSet<>();
 
     public Theme(String name, String title, String accentColor, ThemeStyle style) {
         this.name = name;
@@ -22,15 +23,13 @@ public class Theme {
     }
 
     public Theme addStylesheet(String... stylesheets) {
-        for (String stylesheet : stylesheets)
-            if (!this.stylesheets.contains(stylesheet))
-                this.stylesheets.add(stylesheet);
+        this.stylesheets.addAll(List.of(stylesheets));
         return this;
     }
 
     public Theme addStylesheet(URL... stylesheets) {
         for (URL stylesheet : stylesheets)
-            this.addStylesheet(stylesheet.toExternalForm());
+            this.stylesheets.add(stylesheet.toExternalForm());
         return this;
     }
 

@@ -7,7 +7,7 @@ module appxi.javafx {
     requires javafx.web;
 
     requires transitive appxi.shared;
-    requires de.jensd.fx.fontawesomefx.fontawesome;
+    requires de.jensd.fx.fontawesomefx.materialicons;
 
     exports org.appxi.javafx.control;
     exports org.appxi.javafx.control.skin;

@@ -3,11 +3,9 @@ package org.appxi.javafx.desktop;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.application.Preloader;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import org.appxi.javafx.control.StackPaneEx;
 import org.appxi.javafx.event.EventBus;
@@ -32,6 +30,9 @@ public abstract class DesktopApplication extends Application {
     public final ThemeProvider themeProvider = new ThemeProvider(eventBus);
 
     private Stage primaryStage;
+    private Scene primaryScene;
+    private ViewController primaryController;
+    private StackPaneEx primaryViewport;
 
     //
     //            PUBLIC METHODS
@@ -39,6 +40,14 @@ public abstract class DesktopApplication extends Application {
 
     public final Stage getPrimaryStage() {
         return primaryStage;
+    }
+
+    public final Scene getPrimaryScene() {
+        return primaryScene;
+    }
+
+    public StackPaneEx getPrimaryViewport() {
+        return primaryViewport;
     }
 
     public final void setPrimaryTitle(String title) {
@@ -59,7 +68,7 @@ public abstract class DesktopApplication extends Application {
 
     protected abstract List<URL> getApplicationIcons();
 
-    protected abstract ViewController createPrimarySceneRootController();
+    protected abstract ViewController createPrimaryController();
 
     //
     //            BASIC INIT LOGICS
@@ -99,20 +108,19 @@ public abstract class DesktopApplication extends Application {
         updateStartingProgress();
 
         // 2, init main ui
-        final ViewController rootController = createPrimarySceneRootController();
-        final Node sceneRoot = null == rootController ? new StackPaneEx() : rootController.getViewport();
+        this.primaryController = createPrimaryController();
+        this.primaryViewport = null == primaryController ? new StackPaneEx() : primaryController.getViewport();
 
         updateStartingProgress();
 
         // 3, init title and size, icons, etc.
-        final StackPane rootPane = sceneRoot instanceof StackPane ? (StackPane) sceneRoot : new StackPaneEx(sceneRoot);
-        final Scene rootScene = StateHelper.restoreScene(UserPrefs.prefs, rootPane);
-        primaryStage.setScene(rootScene);
+        this.primaryScene = StateHelper.restoreScene(UserPrefs.prefs, this.primaryViewport);
+        primaryStage.setScene(primaryScene);
         StateHelper.restoreStage(UserPrefs.prefs, primaryStage);
         this.setPrimaryTitle(null);
 
         // 4, init the theme provider
-        themeProvider.addScene(rootScene);
+        themeProvider.addScene(primaryScene);
 
         // 9, init something in async mode, then show the main stage
         CompletableFuture.runAsync(() -> {
@@ -136,9 +144,8 @@ public abstract class DesktopApplication extends Application {
             updateStartingProgress();
 
             // 7, init the rootController
-            if (null != rootController) {
-                rootController.setupApplication(this);
-                rootController.setupInitialize();
+            if (null != primaryController) {
+                primaryController.setupInitialize();
             }
             // 8, fire starting event for more custom things
             eventBus.fireEvent(new ApplicationEvent(ApplicationEvent.STARTING));
@@ -169,7 +176,10 @@ public abstract class DesktopApplication extends Application {
 
     @Override
     public void stop() {
-        eventBus.fireEvent(new ApplicationEvent(ApplicationEvent.STOPPING));
+        try {
+            eventBus.fireEvent(new ApplicationEvent(ApplicationEvent.STOPPING));
+        } catch (Throwable ignored) {
+        }
         UserPrefs.prefs.setProperty("ui.used", this.step);
         StateHelper.storeScene(UserPrefs.prefs, primaryStage.getScene());
         StateHelper.storeStage(UserPrefs.prefs, primaryStage);

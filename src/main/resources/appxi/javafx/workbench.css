@@ -1,0 +1,32 @@
+.workbench .side-tools .tool-bar,
+.workbench .side-tools .context-menu,
+.workbench .side-tools .context-menu .custom-menu-item {
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 0;
+    -fx-spacing: 0;
+}
+
+.workbench .side-tools .tool-bar .toggle-button,
+.workbench .side-tools .tool-bar .button {
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 0 3;
+    -fx-cursor: hand;
+    -fx-padding: 0.25em 0.5em;
+}
+
+.workbench .side-tools .tool-bar .toggle-button:selected {
+    -fx-border-color: -fx-accent;
+}
+
+.workbench .side-tools .tool-bar .glyph-icon {
+    -fx-font-size: 2em !important;
+}
+
+.workbench .side-tools .tool-bar .toggle-button:hover .glyph-icon,
+.workbench .side-tools .tool-bar .toggle-button:selected .glyph-icon,
+.workbench .side-tools .tool-bar .button:hover .glyph-icon {
+    -fx-fill: -fx-accent;
+}
