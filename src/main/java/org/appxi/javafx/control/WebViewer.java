@@ -20,35 +20,35 @@ import org.appxi.util.StringHelper;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public class WebPane extends StackPaneEx {
-    private WebView webView;
-    private WebEngine webEngine;
+public class WebViewer extends StackPaneEx {
+    private WebView viewer;
+    private WebEngine engine;
 
     private Consumer<WebEngine> onLoadSucceedAction, onLoadFailedAction;
 
-    public WebPane() {
+    public WebViewer() {
         this.setAlignment(Pos.TOP_LEFT);
-        this.getStyleClass().add("web-pane");
+        this.getStyleClass().add("web-viewer");
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public final WebView getWebView() {
-        if (null == this.webView) {
-            this.webView = new WebView();
-            this.getChildren().add(0, this.webView);
-            FxHelper.setDisabledEffects(webView);
+    public final WebView getViewer() {
+        if (null == this.viewer) {
+            this.viewer = new WebView();
+            this.getChildren().add(0, this.viewer);
+            FxHelper.setDisabledEffects(viewer);
         }
-        return this.webView;
+        return this.viewer;
     }
 
-    public final WebEngine getWebEngine() {
-        if (null != webEngine)
-            return webEngine;
-        this.webEngine = this.getWebView().getEngine();
-        this.webEngine.getLoadWorker().stateProperty().addListener(this::handleWebEngineLoadStateChanged);
-        this.webEngine.setOnAlert(this::handleWebEngineOnAlertEvent);
-        return this.webEngine;
+    public final WebEngine getEngine() {
+        if (null != engine)
+            return engine;
+        this.engine = this.getViewer().getEngine();
+        this.engine.getLoadWorker().stateProperty().addListener(this::handleWebEngineLoadStateChanged);
+        this.engine.setOnAlert(this::handleWebEngineOnAlertEvent);
+        return this.engine;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -56,19 +56,19 @@ public class WebPane extends StackPaneEx {
     private void handleWebEngineLoadStateChanged(Observable observable, Worker.State old, Worker.State state) {
         if (state == Worker.State.SUCCEEDED) {
             if (null != this.onLoadSucceedAction)
-                this.onLoadSucceedAction.accept(this.webEngine);
+                this.onLoadSucceedAction.accept(this.engine);
         } else if (state == Worker.State.FAILED) {
             if (null != this.onLoadFailedAction)
-                this.onLoadFailedAction.accept(this.webEngine);
+                this.onLoadFailedAction.accept(this.engine);
         }
     }
 
-    public final WebPane setOnLoadSucceedAction(Consumer<WebEngine> onLoadSucceedAction) {
+    public final WebViewer setOnLoadSucceedAction(Consumer<WebEngine> onLoadSucceedAction) {
         this.onLoadSucceedAction = onLoadSucceedAction;
         return this;
     }
 
-    public final WebPane setOnLoadFailedAction(Consumer<WebEngine> onLoadFailedAction) {
+    public final WebViewer setOnLoadFailedAction(Consumer<WebEngine> onLoadFailedAction) {
         this.onLoadFailedAction = onLoadFailedAction;
         return this;
     }
@@ -84,10 +84,10 @@ public class WebPane extends StackPaneEx {
         dialogPane.setContentText(event.getData());
         dialogPane.getButtonTypes().add(ButtonType.CLOSE);
         ((Button) dialogPane.lookupButton(ButtonType.CLOSE)).setOnAction(event1 -> {
-            webView.setDisable(false);
+            viewer.setDisable(false);
             hide(dialogPane);
         });
-        webView.setDisable(true);
+        viewer.setDisable(true);
         show(dialogPane);
     }
 
@@ -102,7 +102,7 @@ public class WebPane extends StackPaneEx {
      * @return
      */
     public final <T> T executeScript(String script) {
-        return (T) this.getWebEngine().executeScript(script);
+        return (T) this.getEngine().executeScript(script);
     }
 
     /**
@@ -216,7 +216,7 @@ public class WebPane extends StackPaneEx {
      * scrollbar exists
      */
     public final ScrollBar getVScrollBar() {
-        final Set<Node> scrolls = getWebView().lookupAll(".scroll-bar");
+        final Set<Node> scrolls = getViewer().lookupAll(".scroll-bar");
         for (Node scrollNode : scrolls) {
             if (scrollNode instanceof ScrollBar scroll && scroll.getOrientation() == Orientation.VERTICAL)
                 return scroll;
@@ -231,7 +231,7 @@ public class WebPane extends StackPaneEx {
      * scrollbar exists
      */
     public final ScrollBar getHScrollBar() {
-        final Set<Node> scrolls = getWebView().lookupAll(".scroll-bar");
+        final Set<Node> scrolls = getViewer().lookupAll(".scroll-bar");
         for (Node scrollNode : scrolls) {
             if (scrollNode instanceof ScrollBar scroll && scroll.getOrientation() == Orientation.HORIZONTAL)
                 return scroll;

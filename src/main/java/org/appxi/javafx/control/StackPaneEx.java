@@ -8,17 +8,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * 此类扩展StackPane用于提供一个遮挡视图层并可在其上显示内容而不会直接操作到背景内容
+ */
 public class StackPaneEx extends StackPane {
     public final Pane masking = new Pane();
 
     public StackPaneEx() {
         super();
         this.masking.getStyleClass().add("masking");
-//        final ColorAdjust overlayEffects = new ColorAdjust();
-//        overlayEffects.setInput(new BoxBlur());
-//        overlayEffects.setBrightness(-0.5);
-//        masking.setEffect(overlayEffects);
-//        masking.setStyle("-fx-background-color: grey;-fx-opacity: 0.5;");
     }
 
     public StackPaneEx(Node... children) {
