@@ -125,8 +125,12 @@ public class WorkbenchPane extends StackPaneEx {
             final int addIdx = this.mainViews.getSelectionModel().getSelectedIndex() + 1;
             this.mainViews.getTabs().add(addIdx, tool);
         }
-        // bind event handles after first added to don't call showViewport at this time
-        tool.setOnClosed(event -> controller.hideViewport(false));
+        // 先添加到tabs后再绑定事件，避免添加时触发第一次加载事件
+        tool.setOnClosed(event -> {
+            // 只有已经触发过第一次加载事件的视图才处理此操作
+            if (controller.hasAttr(AK_FIRST_TIME))
+                controller.hideViewport(false);
+        });
         tool.selectedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
                 Platform.runLater(() -> {
@@ -141,7 +145,7 @@ public class WorkbenchPane extends StackPaneEx {
         });
     }
 
-    public void addWorkbenchViewAsMainViewAndSideTool(WorkbenchViewController controller) {
+    public void addWorkbenchViewAsMainViewWithSideTool(WorkbenchViewController controller) {
         final Button tool = new Button();
         addSideTool(tool, controller, Pos.CENTER_RIGHT);
         tool.setOnAction(event -> {
