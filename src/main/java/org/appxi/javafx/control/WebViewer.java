@@ -2,13 +2,14 @@ package org.appxi.javafx.control;
 
 import javafx.beans.Observable;
 import javafx.concurrent.Worker;
+import javafx.event.Event;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.DialogPane;
-import javafx.scene.control.ScrollBar;
+import javafx.scene.control.*;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.web.WebEngine;
@@ -24,6 +25,7 @@ public class WebViewer extends StackPaneEx {
     private WebView viewer;
     private WebEngine engine;
 
+    private ContextMenu contextMenu;
     private Consumer<WebEngine> onLoadSucceedAction, onLoadFailedAction;
 
     public WebViewer() {
@@ -49,6 +51,32 @@ public class WebViewer extends StackPaneEx {
         this.engine.getLoadWorker().stateProperty().addListener(this::handleWebEngineLoadStateChanged);
         this.engine.setOnAlert(this::handleWebEngineOnAlertEvent);
         return this.engine;
+    }
+
+    public void setContextMenu(ContextMenu contextMenu) {
+        this.contextMenu = contextMenu;
+        if (null == contextMenu) {
+            this.viewer.setContextMenuEnabled(true);
+            this.viewer.removeEventHandler(MouseEvent.MOUSE_PRESSED, this::handleContextMenuVisible);
+            this.viewer.removeEventHandler(ScrollEvent.SCROLL, this::handleContextMenuVisible);
+            return;
+        }
+        this.viewer.setContextMenuEnabled(false);
+        this.viewer.addEventHandler(MouseEvent.MOUSE_PRESSED, this::handleContextMenuVisible);
+        this.viewer.addEventHandler(ScrollEvent.SCROLL, this::handleContextMenuVisible);
+    }
+
+    private void handleContextMenuVisible(Event event) {
+        // only for right click
+        if (event instanceof MouseEvent mEvent && mEvent.getButton() == MouseButton.SECONDARY) {
+            if (this.contextMenu.getItems().isEmpty())
+                return;
+            this.contextMenu.show(this.viewer, mEvent.getScreenX(), mEvent.getScreenY());
+            event.consume();
+        } else if (this.contextMenu.isShowing()) {
+            this.contextMenu.hide();
+            event.consume();
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
