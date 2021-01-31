@@ -10,7 +10,7 @@ import javafx.scene.layout.VBox;
 import java.util.function.BiConsumer;
 
 public class TreeViewExt<T> extends TreeViewEx<T> {
-    private final BiConsumer<InputEvent, TreeItem<T>> enterOrDoubleClickAction;
+    private BiConsumer<InputEvent, TreeItem<T>> enterOrDoubleClickAction;
 
     public TreeViewExt() {
         this(null);
@@ -24,6 +24,11 @@ public class TreeViewExt<T> extends TreeViewEx<T> {
         this.setShowRoot(false);
         this.setOnKeyReleased(this::handleTreeViewOnKeyReleased);
         this.setOnMouseReleased(this::handleTreeViewOnMouseReleased);
+    }
+
+    public TreeViewExt<T> setEnterOrDoubleClickAction(BiConsumer<InputEvent, TreeItem<T>> enterOrDoubleClickAction) {
+        this.enterOrDoubleClickAction = enterOrDoubleClickAction;
+        return this;
     }
 
     private void handleTreeViewOnKeyReleased(KeyEvent event) {
