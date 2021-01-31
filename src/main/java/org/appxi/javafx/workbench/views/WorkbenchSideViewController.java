@@ -38,14 +38,14 @@ public abstract class WorkbenchSideViewController extends WorkbenchViewControlle
             this.titleBar.getStyleClass().add("headline");
             this.toolbar.addLeft(this.titleBar);
             //
-            initViewport();
+            onViewportInitOnce();
         }
         return viewport;
     }
 
-    protected abstract void initViewport();
+    protected abstract void onViewportInitOnce();
 
     @Override
-    public void hideViewport(boolean hideOrElseClose) {
+    public void onViewportHide(boolean hideOrElseClose) {
     }
 }

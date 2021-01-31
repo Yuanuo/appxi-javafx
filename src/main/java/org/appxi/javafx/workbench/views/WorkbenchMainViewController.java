@@ -25,14 +25,14 @@ public abstract class WorkbenchMainViewController extends WorkbenchViewControlle
             this.viewportVBox.getStyleClass().addAll("vbox", "main-vbox");
             this.viewport = new BorderPane(this.viewportVBox);
             //
-            initViewport();
+            onViewportInitOnce();
         }
         return viewport;
     }
 
-    protected abstract void initViewport();
+    protected abstract void onViewportInitOnce();
 
     @Override
-    public void hideViewport(boolean hideOrElseClose) {
+    public void onViewportHide(boolean hideOrElseClose) {
     }
 }

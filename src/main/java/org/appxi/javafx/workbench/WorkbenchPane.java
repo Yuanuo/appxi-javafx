@@ -70,7 +70,7 @@ public class WorkbenchPane extends StackPaneEx {
             // 正常切换sideViews显示时会触发的操作
             if (null != lastSideTool) {
                 final WorkbenchViewController lastController = (WorkbenchViewController) lastSideTool.getUserData();
-                lastController.hideViewport(true);
+                lastController.onViewportHide(true);
             }
             if (null != currSideTool) {
                 final WorkbenchViewController currController = (WorkbenchViewController) currSideTool.getUserData();
@@ -82,7 +82,7 @@ public class WorkbenchPane extends StackPaneEx {
                 // 显示已选中的视图
                 this.sideViews.getChildren().setAll(currController.<Node>getViewport());
                 // 并触发事件
-                currController.showViewport(ensureFirstTime(currController));
+                currController.onViewportShow(ensureFirstTime(currController));
             }
         });
     }
@@ -119,7 +119,7 @@ public class WorkbenchPane extends StackPaneEx {
     public void addWorkbenchViewAsSideTool(WorkbenchViewController controller) {
         final Button tool = new Button();
         addSideTool(tool, controller, Pos.CENTER_RIGHT);
-        tool.setOnAction(event -> Platform.runLater(() -> controller.showViewport(ensureFirstTime(controller))));
+        tool.setOnAction(event -> Platform.runLater(() -> controller.onViewportShow(ensureFirstTime(controller))));
     }
 
     public void addWorkbenchViewAsSideView(WorkbenchViewController controller) {
@@ -151,7 +151,7 @@ public class WorkbenchPane extends StackPaneEx {
         tool.setOnClosed(event -> {
             // 只有已经触发过第一次加载事件的视图才处理此操作
             if (controller.hasAttr(AK_FIRST_TIME))
-                controller.hideViewport(false);
+                controller.onViewportHide(false);
         });
         tool.selectedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
@@ -159,10 +159,10 @@ public class WorkbenchPane extends StackPaneEx {
                     final boolean firstTime = ensureFirstTime(controller);
                     if (firstTime) // always lazy init
                         tool.setContent(controller.getViewport());
-                    controller.showViewport(firstTime);
+                    controller.onViewportShow(firstTime);
                 });
             } else if (oldValue && controller.hasAttr(AK_FIRST_TIME)) {
-                controller.hideViewport(true);
+                controller.onViewportHide(true);
             }
         });
     }
@@ -277,7 +277,7 @@ public class WorkbenchPane extends StackPaneEx {
                     final boolean firstTime = ensureFirstTime(controller);
                     if (firstTime) // always lazy init
                         tab.setContent(controller.getViewport());
-                    controller.showViewport(firstTime);
+                    controller.onViewportShow(firstTime);
                 });
             }
             return;

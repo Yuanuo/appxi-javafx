@@ -25,7 +25,7 @@ public abstract class WorkbenchViewController extends ViewController {
 
     public abstract Node createToolIconGraphic(Boolean placeInSideViews);
 
-    public abstract void showViewport(boolean firstTime);
+    public abstract void onViewportShow(boolean firstTime);
 
-    public abstract void hideViewport(boolean hideOrElseClose);
+    public abstract void onViewportHide(boolean hideOrElseClose);
 }

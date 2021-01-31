@@ -23,7 +23,7 @@ public abstract class WorkbenchSideToolController extends WorkbenchViewControlle
     }
 
     @Override
-    public final void hideViewport(boolean hideOrElseClose) {
+    public final void onViewportHide(boolean hideOrElseClose) {
         // do nothing, should never called
     }
 }
