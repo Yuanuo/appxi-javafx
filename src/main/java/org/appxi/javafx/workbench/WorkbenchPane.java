@@ -3,7 +3,6 @@ package org.appxi.javafx.workbench;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
-import javafx.event.ActionEvent;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -26,11 +25,13 @@ import java.util.Objects;
 public class WorkbenchPane extends StackPaneEx {
     private static final Object AK_FIRST_TIME = new Object();
 
-    private final ToggleGroup controlsGroup = new ToggleGroup();
+    private final ToggleGroup sideToolsGroup = new ToggleGroup();
     protected final AlignedBar sideTools;
     protected final SplitPane rootViews;
     protected final StackPane sideViews;
     protected final TabPane mainViews;
+
+    private double lastRootViewsDividerPosition = 0.2;
 
     public WorkbenchPane() {
         super();
@@ -55,6 +56,35 @@ public class WorkbenchPane extends StackPaneEx {
         VBox.setVgrow(mainContainer, Priority.ALWAYS);
         //
         this.getChildren().add(mainContainer);
+
+        sideToolsGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
+            final ToggleButton lastSideTool = (ToggleButton) oldValue;
+            final ToggleButton currSideTool = (ToggleButton) newValue;
+
+            // 如果sideViews在显示时再次点击已选中的按钮则隐藏sideViews
+            if (null == currSideTool) {
+                // 由选中变成未选中时需要确保sideViews已隐藏
+                lastRootViewsDividerPosition = rootViews.getDividerPositions()[0];
+                this.rootViews.getItems().remove(this.sideViews);
+            }
+            // 正常切换sideViews显示时会触发的操作
+            if (null != lastSideTool) {
+                final WorkbenchViewController lastController = (WorkbenchViewController) lastSideTool.getUserData();
+                lastController.hideViewport(true);
+            }
+            if (null != currSideTool) {
+                final WorkbenchViewController currController = (WorkbenchViewController) currSideTool.getUserData();
+                // 由未选中变成选中时需要确保sideViews已显示
+                if (null == lastSideTool) {
+                    this.rootViews.getItems().add(0, this.sideViews);
+                    this.rootViews.setDividerPosition(0, lastRootViewsDividerPosition);
+                }
+                // 显示已选中的视图
+                this.sideViews.getChildren().setAll(currController.<Node>getViewport());
+                // 并触发事件
+                currController.showViewport(ensureFirstTime(currController));
+            }
+        });
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -64,13 +94,13 @@ public class WorkbenchPane extends StackPaneEx {
     }
 
     public final double getRootViewsDividerPosition() {
-        return this.isSideViewsVisible() ? rootViews.getDividerPositions()[0] : this.lastRootViewsDivider;
+        return this.isSideViewsVisible() ? rootViews.getDividerPositions()[0] : this.lastRootViewsDividerPosition;
     }
 
     public final void setRootViewsDividerPosition(double dividerPosition) {
         if (this.isSideViewsVisible())
             rootViews.setDividerPosition(0, dividerPosition);
-        else this.lastRootViewsDivider = dividerPosition;
+        else this.lastRootViewsDividerPosition = dividerPosition;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -95,15 +125,7 @@ public class WorkbenchPane extends StackPaneEx {
     public void addWorkbenchViewAsSideView(WorkbenchViewController controller) {
         final ToggleButton tool = new ToggleButton();
         addSideTool(tool, controller, Pos.CENTER_LEFT);
-        tool.setToggleGroup(controlsGroup);
-        tool.setOnAction(this::handleSideToolAction);
-        tool.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                Platform.runLater(() -> controller.showViewport(ensureFirstTime(controller)));
-            } else if (oldValue) {
-                controller.hideViewport(true);
-            }
-        });
+        tool.setToggleGroup(sideToolsGroup);
     }
 
     public void addWorkbenchViewAsMainView(WorkbenchViewController controller, boolean addToEnd) {
@@ -161,6 +183,8 @@ public class WorkbenchPane extends StackPaneEx {
 
     private void addSideTool(ButtonBase tool, WorkbenchViewController controller, Pos pos) {
         tool.setId(controller.viewId);
+        // FIXME 是否通过配置允许显示文字标签？
+//        tool.setText(controller.viewName);
         tool.setUserData(controller);
         tool.setContentDisplay(ContentDisplay.TOP);
 
@@ -182,48 +206,16 @@ public class WorkbenchPane extends StackPaneEx {
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    private ToggleButton lastSideTool;
-    private double lastRootViewsDivider = 0.2;
-
-    private void handleSideToolAction(ActionEvent event) {
-        final ToggleButton currSideTool = (ToggleButton) event.getSource();
-        final boolean sideViewsVisible = isSideViewsVisible();
-        if (sideViewsVisible && lastSideTool == currSideTool) {
-            currSideTool.setSelected(false);
-            lastRootViewsDivider = rootViews.getDividerPositions()[0];
-            this.rootViews.getItems().remove(this.sideViews);
-            return;
-        }
-
-        if (!sideViewsVisible) {
-            this.rootViews.getItems().add(0, this.sideViews);
-            this.rootViews.setDividerPosition(0, lastRootViewsDivider);
-        }
-        if (lastSideTool == currSideTool)
-            return;
-
-        WorkbenchViewController controller = (WorkbenchViewController) currSideTool.getUserData();
-        final Node view = controller.getViewport();
-        this.sideViews.getChildren().setAll(view);
-
-        // keep it for next action
-        lastSideTool = currSideTool;
-        lastSideTool.setSelected(true);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public ToggleButton getSelectedSideTool() {
-        return !isSideViewsVisible() ? null : lastSideTool;
+        return !isSideViewsVisible() ? null : (ToggleButton) sideToolsGroup.getSelectedToggle();
     }
 
     public Node getSelectedSideView() {
-        if (!isSideViewsVisible())
-            return null;
-        if (null == lastSideTool)
+        final ToggleButton sideTool = getSelectedSideTool();
+        if (null == sideTool)
             return null;
 
-        final WorkbenchViewController controller = (WorkbenchViewController) lastSideTool.getUserData();
+        final WorkbenchViewController controller = (WorkbenchViewController) sideTool.getUserData();
         final Object viewObj = controller.getViewport();
         return viewObj instanceof Node ? (Node) viewObj : null;
     }
@@ -268,13 +260,7 @@ public class WorkbenchPane extends StackPaneEx {
             tool = (ButtonBase) items.get(0);
         if (null == tool)
             return;
-        if (tool instanceof Button) {
-            tool.fire();
-        } else if (tool instanceof ToggleButton) {
-            final ToggleButton toggle = (ToggleButton) tool;
-            toggle.setSelected(true);
-            handleSideToolAction(new ActionEvent(toggle, null));
-        }
+        tool.fire();
     }
 
     public void selectMainView(String id) {

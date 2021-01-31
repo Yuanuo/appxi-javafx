@@ -14,7 +14,7 @@
     -fx-border-color: transparent;
     -fx-border-width: 0 0 0 3;
     -fx-cursor: hand;
-    -fx-padding: 0.25em 0.5em;
+    -fx-padding: 0.5em .85em;
 }
 
 .workbench .side-tools .tool-bar .toggle-button:selected {
@@ -25,8 +25,12 @@
     -fx-font-size: 2em !important;
 }
 
+.workbench .side-tools .tool-bar .toggle-button:hover,
+.workbench .side-tools .tool-bar .toggle-button:selected,
+.workbench .side-tools .tool-bar .button:hover,
 .workbench .side-tools .tool-bar .toggle-button:hover .glyph-icon,
 .workbench .side-tools .tool-bar .toggle-button:selected .glyph-icon,
 .workbench .side-tools .tool-bar .button:hover .glyph-icon {
     -fx-fill: -fx-accent;
+    -fx-text-fill: -fx-accent;
 }
