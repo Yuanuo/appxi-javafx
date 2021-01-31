@@ -260,6 +260,8 @@ public class WorkbenchPane extends StackPaneEx {
             tool = (ButtonBase) items.get(0);
         if (null == tool)
             return;
+        if (tool == sideToolsGroup.getSelectedToggle())
+            return;// already selected
         tool.fire();
     }
 
