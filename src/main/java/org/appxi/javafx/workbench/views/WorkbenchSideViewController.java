@@ -11,6 +11,7 @@ public abstract class WorkbenchSideViewController extends WorkbenchViewControlle
     protected BorderPane viewport;
     protected VBox viewportVBox;
     protected AlignedBar toolbar;
+    protected Label titleBar;
 
     public WorkbenchSideViewController(String viewId, String viewName, WorkbenchApplication application) {
         super(viewId, viewName, application);
@@ -33,9 +34,9 @@ public abstract class WorkbenchSideViewController extends WorkbenchViewControlle
             this.viewportVBox.getStyleClass().addAll("vbox", "side-vbox");
             this.viewport.setCenter(this.viewportVBox);
             //
-            final Label headline = new Label(this.viewName);
-            headline.getStyleClass().add("headline");
-            this.toolbar.addLeft(headline);
+            this.titleBar = new Label(this.viewName);
+            this.titleBar.getStyleClass().add("headline");
+            this.toolbar.addLeft(this.titleBar);
             //
             initViewport();
         }
