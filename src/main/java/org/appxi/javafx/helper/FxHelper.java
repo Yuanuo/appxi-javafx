@@ -7,6 +7,11 @@ import javafx.scene.effect.BoxBlur;
 import javafx.scene.effect.ColorAdjust;
 
 public interface FxHelper {
+    /**
+     * 用于标记当前App是否是用户安装后的运行状态
+     */
+    boolean productionMode = null != System.getProperty("jpackage.app-path");
+
     class DisabledEffectsListener implements ChangeListener<Boolean> {
         private final Node node;
         private final ColorAdjust effects = new ColorAdjust();
