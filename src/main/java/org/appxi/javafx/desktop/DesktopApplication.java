@@ -179,16 +179,19 @@ public abstract class DesktopApplication extends Application {
 
     protected String createPrimaryFontStyle() {
         /*-fx-font-family: "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", STXihei, Arial, "Helvetica Neue", Helvetica, sans-serif;*/
-        final String osName = System.getProperty("os.name").toLowerCase();
-        final String fontStyle;
-        if (osName.contains("windows")) {
-            fontStyle = "-fx-font: 16 \"Microsoft YaHei\"";
-        } else if (osName.contains("mac") || osName.contains("osx")) {
-            fontStyle = "-fx-font: 16 \"PingFang SC\"";
-        } else if (osName.contains("linux") || osName.contains("ubuntu")) {
-            fontStyle = "-fx-font: 16 \"WenQuanYi Micro Hei\"";
-        } else {
-            fontStyle = "-fx-font: 16 sans-serif";
+        String fontStyle = UserPrefs.prefs.getString("ui.font", null);
+        if (fontStyle == null || fontStyle.isBlank()) {
+            final String osName = System.getProperty("os.name").toLowerCase();
+            if (osName.contains("windows")) {
+                fontStyle = "-fx-font: 16 \"Microsoft YaHei\"";
+            } else if (osName.contains("mac") || osName.contains("osx")) {
+                fontStyle = "-fx-font: 16 \"PingFang SC\"";
+            } else if (osName.contains("linux") || osName.contains("ubuntu")) {
+                fontStyle = "-fx-font: 16 \"WenQuanYi Micro Hei\"";
+            } else {
+                fontStyle = "-fx-font: 16 sans-serif";
+            }
+            UserPrefs.prefs.setProperty("ui.font", fontStyle);
         }
         return fontStyle;
     }
