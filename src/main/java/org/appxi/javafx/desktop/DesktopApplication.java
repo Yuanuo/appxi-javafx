@@ -3,6 +3,7 @@ package org.appxi.javafx.desktop;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.application.Preloader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
@@ -33,6 +34,7 @@ public abstract class DesktopApplication extends Application {
     private Scene primaryScene;
     private ViewController primaryController;
     private StackPaneEx primaryViewport;
+    private String primaryFontStyle;
 
     //
     //            PUBLIC METHODS
@@ -56,6 +58,10 @@ public abstract class DesktopApplication extends Application {
         else
             title = StringHelper.concat(title, " - ", getApplicationTitle());
         this.primaryStage.setTitle(title);
+    }
+
+    public String getPrimaryFontStyle() {
+        return primaryFontStyle;
     }
 
     //
@@ -118,6 +124,9 @@ public abstract class DesktopApplication extends Application {
         primaryStage.setScene(primaryScene);
         StateHelper.restoreStage(UserPrefs.prefs, primaryStage);
         this.setPrimaryTitle(null);
+        this.primaryFontStyle = createPrimaryFontStyle();
+        final Parent root = primaryScene.getRoot();
+        root.setStyle(primaryFontStyle.concat(" ").concat(root.getStyle()));
 
         // 4, init the theme provider
         themeProvider.addScene(primaryScene);
@@ -166,6 +175,22 @@ public abstract class DesktopApplication extends Application {
             // for debug only
             DevtoolHelper.LOG.info(StringHelper.msg("App startup used steps/times: ", step, "/", System.currentTimeMillis() - startTime));
         });
+    }
+
+    protected String createPrimaryFontStyle() {
+        /*-fx-font-family: "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", STXihei, Arial, "Helvetica Neue", Helvetica, sans-serif;*/
+        final String osName = System.getProperty("os.name").toLowerCase();
+        final String fontStyle;
+        if (osName.contains("windows")) {
+            fontStyle = "-fx-font: 16 \"Microsoft YaHei\"";
+        } else if (osName.contains("mac") || osName.contains("osx")) {
+            fontStyle = "-fx-font: 16 \"PingFang SC\"";
+        } else if (osName.contains("linux") || osName.contains("ubuntu")) {
+            fontStyle = "-fx-font: 16 \"WenQuanYi Micro Hei\"";
+        } else {
+            fontStyle = "-fx-font: 16 sans-serif";
+        }
+        return fontStyle;
     }
 
     protected void starting() {
