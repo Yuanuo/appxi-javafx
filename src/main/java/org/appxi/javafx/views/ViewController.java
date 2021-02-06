@@ -66,6 +66,7 @@ public abstract class ViewController extends Attributes {
         if (alertPane.getButtonTypes().isEmpty())
             alertPane.getButtonTypes().add(ButtonType.OK);
         final Scene scene = alertPane.getScene();
+        scene.getRoot().setStyle(getPrimaryScene().getRoot().getStyle());
         final Stage stage = (Stage) scene.getWindow();
         stage.getIcons().addAll(getPrimaryStage().getIcons());
         getThemeProvider().addScene(scene);
