@@ -11,6 +11,7 @@
 .workbench .side-tools .tool-bar .button {
     -fx-background-insets: 0;
     -fx-background-radius: 0;
+    -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-border-width: 0 3 0 3;
     -fx-cursor: hand;
@@ -19,7 +20,7 @@
 
 .workbench .side-tools .tool-bar .toggle-button .text,
 .workbench .side-tools .tool-bar .button .text {
-    -fx-font-size: 90%;
+    -fx-font-size: 85%;
 }
 
 .workbench .side-tools .tool-bar .toggle-button:selected {
