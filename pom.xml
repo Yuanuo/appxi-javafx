@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.appxi</groupId>
     <artifactId>appxi-javafx</artifactId>
-    <version>21.02.00</version>
+    <version>21.02.08</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -27,7 +27,7 @@
         <dependency>
             <groupId>org.appxi</groupId>
             <artifactId>appxi-shared</artifactId>
-            <version>21.02.00</version>
+            <version>21.02.08</version>
         </dependency>
     </dependencies>
 
