@@ -1,17 +1,12 @@
 package org.appxi.javafx.views;
 
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.DialogPane;
 import javafx.stage.Stage;
 import org.appxi.javafx.control.StackPaneEx;
 import org.appxi.javafx.desktop.DesktopApplication;
 import org.appxi.javafx.event.EventBus;
 import org.appxi.javafx.theme.ThemeProvider;
 import org.appxi.util.ext.Attributes;
-
-import java.util.function.Consumer;
 
 public abstract class ViewController extends Attributes {
     public final String viewId, viewName;
@@ -58,19 +53,5 @@ public abstract class ViewController extends Attributes {
     public final ViewController setPrimaryTitle(String title) {
         this.application.setPrimaryTitle(title);
         return this;
-    }
-
-
-    public void showAlertWithThemeAndWaitForNothing(Alert alert) {
-        final DialogPane alertPane = alert.getDialogPane();
-        if (alertPane.getButtonTypes().isEmpty())
-            alertPane.getButtonTypes().add(ButtonType.OK);
-        final Scene scene = alertPane.getScene();
-        scene.getRoot().setStyle(getPrimaryScene().getRoot().getStyle());
-        final Stage stage = (Stage) scene.getWindow();
-        stage.getIcons().addAll(getPrimaryStage().getIcons());
-        getThemeProvider().addScene(scene);
-        final Consumer<ButtonType> action = v -> getThemeProvider().removeScene(scene);
-        alert.showAndWait().ifPresentOrElse(action, () -> action.accept(null));
     }
 }

@@ -3,8 +3,17 @@ package org.appxi.javafx.helper;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.DialogPane;
 import javafx.scene.effect.BoxBlur;
 import javafx.scene.effect.ColorAdjust;
+import javafx.stage.Stage;
+import org.appxi.javafx.desktop.DesktopApplication;
+import org.appxi.util.StringHelper;
+
+import java.util.List;
 
 public interface FxHelper {
     /**
@@ -35,5 +44,39 @@ public interface FxHelper {
         node.disabledProperty().removeListener(listener);
         node.disabledProperty().addListener(listener);
         return node;
+    }
+
+    static void alertError(DesktopApplication application, Throwable throwable) {
+        alertErrorEx(application, throwable).show();
+    }
+
+    static Alert alertErrorEx(DesktopApplication application, Throwable throwable) {
+        // for debug only
+        throwable.printStackTrace();
+
+        List<String> lines = StringHelper.getThrowableAsLines(throwable);
+        if (lines.size() > 5)
+            lines = lines.subList(0, 5);
+        lines.add("...");
+
+        final Alert alert = new Alert(Alert.AlertType.ERROR, StringHelper.joinLines(lines));
+        alert.setResizable(true);
+        alert.initOwner(application.getPrimaryStage());
+        alert.setWidth(800);
+        alert.setHeight(600);
+        return FxHelper.withTheme(application, alert);
+    }
+
+    static Alert withTheme(DesktopApplication application, Alert alert) {
+        final DialogPane pane = alert.getDialogPane();
+        // 必须要有至少一个按钮才能关闭此窗口
+        if (pane.getButtonTypes().isEmpty())
+            pane.getButtonTypes().add(ButtonType.OK);
+        final Scene scene = pane.getScene();
+        scene.getRoot().setStyle(application.getPrimaryScene().getRoot().getStyle());
+        final Stage stage = (Stage) scene.getWindow();
+        stage.getIcons().addAll(application.getPrimaryStage().getIcons());
+        application.themeProvider.applyThemeFor(application.themeProvider.getTheme(), scene);
+        return alert;
     }
 }

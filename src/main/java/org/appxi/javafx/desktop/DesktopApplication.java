@@ -5,11 +5,11 @@ import javafx.application.Platform;
 import javafx.application.Preloader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import org.appxi.javafx.control.StackPaneEx;
 import org.appxi.javafx.event.EventBus;
+import org.appxi.javafx.helper.FxHelper;
 import org.appxi.javafx.helper.StateHelper;
 import org.appxi.javafx.theme.ThemeProvider;
 import org.appxi.javafx.views.ViewController;
@@ -87,24 +87,7 @@ public abstract class DesktopApplication extends Application {
         UserPrefs.prefs = new PreferencesInProperties(UserPrefs.confDir().resolve(".prefs"));
         UserPrefs.recents = new PreferencesInProperties(UserPrefs.confDir().resolve(".recents"));
         this.steps = UserPrefs.prefs.getDouble("ui.used", 20);
-        Thread.setDefaultUncaughtExceptionHandler(this::handleDefaultUncaughtException);
-    }
-
-    protected void handleDefaultUncaughtException(Thread thread, Throwable throwable) {
-        // for debug only
-        throwable.printStackTrace();
-
-        List<String> lines = StringHelper.getThrowableAsLines(throwable);
-        if (lines.size() > 5)
-            lines = lines.subList(0, 5);
-        lines.add("...");
-
-        final Alert alert = new Alert(Alert.AlertType.ERROR, StringHelper.joinLines(lines));
-        alert.setResizable(true);
-        alert.initOwner(this.primaryStage);
-        alert.setWidth(800);
-        alert.setHeight(600);
-        alert.show();
+        Thread.setDefaultUncaughtExceptionHandler((t, throwable) -> FxHelper.alertError(this, throwable));
     }
 
     @Override
@@ -161,7 +144,7 @@ public abstract class DesktopApplication extends Application {
             starting();
         }).whenComplete((o, throwable) -> {
             if (null != throwable)
-                handleDefaultUncaughtException(null, throwable);
+                FxHelper.alertError(this, throwable);
             // for show main stage
             Platform.runLater(primaryStage::show);
 
