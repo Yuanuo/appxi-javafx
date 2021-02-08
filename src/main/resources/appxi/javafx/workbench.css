@@ -1,4 +1,4 @@
-.workbench .side-tools .tool-bar,
+.workbench .side-tools,
 .workbench .side-tools .context-menu,
 .workbench .side-tools .context-menu .custom-menu-item {
     -fx-background-insets: 0;
@@ -7,8 +7,8 @@
     -fx-spacing: 0;
 }
 
-.workbench .side-tools .tool-bar .toggle-button,
-.workbench .side-tools .tool-bar .button {
+.workbench .side-tools .toggle-button,
+.workbench .side-tools .button {
     -fx-background-insets: 0;
     -fx-background-radius: 0;
     -fx-background-color: transparent;
@@ -16,27 +16,28 @@
     -fx-border-width: 0 3 0 3;
     -fx-cursor: hand;
     -fx-padding: 0.45em .6em;
+    -fx-focus-traversable: false;
 }
 
-.workbench .side-tools .tool-bar .toggle-button .text,
-.workbench .side-tools .tool-bar .button .text {
+.workbench .side-tools .toggle-button .text,
+.workbench .side-tools .button .text {
     -fx-font-size: 85%;
 }
 
-.workbench .side-tools .tool-bar .toggle-button:selected {
+.workbench .side-tools .toggle-button:selected {
     -fx-border-color: transparent transparent transparent -fx-accent;
 }
 
-.workbench .side-tools .tool-bar .glyph-icon {
+.workbench .side-tools .glyph-icon {
     -fx-font-size: 2em !important;
 }
 
-.workbench .side-tools .tool-bar .toggle-button:hover,
-.workbench .side-tools .tool-bar .toggle-button:selected,
-.workbench .side-tools .tool-bar .button:hover,
-.workbench .side-tools .tool-bar .toggle-button:hover .glyph-icon,
-.workbench .side-tools .tool-bar .toggle-button:selected .glyph-icon,
-.workbench .side-tools .tool-bar .button:hover .glyph-icon {
+.workbench .side-tools .toggle-button:hover,
+.workbench .side-tools .toggle-button:selected,
+.workbench .side-tools .button:hover,
+.workbench .side-tools .toggle-button:hover .glyph-icon,
+.workbench .side-tools .toggle-button:selected .glyph-icon,
+.workbench .side-tools .button:hover .glyph-icon {
     -fx-fill: -fx-accent;
     -fx-text-fill: -fx-accent;
 }
