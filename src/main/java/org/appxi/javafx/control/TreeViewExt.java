@@ -22,8 +22,8 @@ public class TreeViewExt<T> extends TreeViewEx<T> {
 
         VBox.setVgrow(this, Priority.ALWAYS);
         this.setShowRoot(false);
-        this.setOnKeyReleased(this::handleTreeViewOnKeyReleased);
-        this.setOnMouseReleased(this::handleTreeViewOnMouseReleased);
+        this.setOnKeyReleased(this::handleOnKeyReleased);
+        this.setOnMouseReleased(this::handleOnMouseReleased);
     }
 
     public TreeViewExt<T> setEnterOrDoubleClickAction(BiConsumer<InputEvent, TreeItem<T>> enterOrDoubleClickAction) {
@@ -31,7 +31,7 @@ public class TreeViewExt<T> extends TreeViewEx<T> {
         return this;
     }
 
-    private void handleTreeViewOnKeyReleased(KeyEvent event) {
+    private void handleOnKeyReleased(KeyEvent event) {
         if (event.getCode() != KeyCode.ENTER)
             return;
         final TreeItem<T> treeItem = this.getSelectionModel().getSelectedItem();
@@ -42,10 +42,10 @@ public class TreeViewExt<T> extends TreeViewEx<T> {
             return;
         }
 
-        handleTreeViewOnKeyReleasedImpl(event, treeItem);
+        handleOnKeyReleasedImpl(event, treeItem);
     }
 
-    private void handleTreeViewOnMouseReleased(MouseEvent event) {
+    private void handleOnMouseReleased(MouseEvent event) {
         if (event.getButton() != MouseButton.PRIMARY)
             return;
 
@@ -70,24 +70,24 @@ public class TreeViewExt<T> extends TreeViewEx<T> {
             return;
         }
 
-        handleTreeViewOnMouseReleasedImpl(event, treeItem);
+        handleOnMouseReleasedImpl(event, treeItem);
     }
 
-    protected void handleTreeViewOnKeyReleasedImpl(KeyEvent event, TreeItem<T> treeItem) {
+    protected void handleOnKeyReleasedImpl(KeyEvent event, TreeItem<T> treeItem) {
         if (event.getCode() == KeyCode.ENTER) {
-            handleTreeViewOnEnterOrDoubleClicked(event, treeItem);
+            handleOnEnterOrDoubleClicked(event, treeItem);
             event.consume();
         }
     }
 
-    protected void handleTreeViewOnMouseReleasedImpl(MouseEvent event, TreeItem<T> treeItem) {
+    protected void handleOnMouseReleasedImpl(MouseEvent event, TreeItem<T> treeItem) {
         if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() > 1) {
-            handleTreeViewOnEnterOrDoubleClicked(event, treeItem);
+            handleOnEnterOrDoubleClicked(event, treeItem);
             event.consume();
         }
     }
 
-    protected void handleTreeViewOnEnterOrDoubleClicked(InputEvent event, TreeItem<T> treeItem) {
+    protected void handleOnEnterOrDoubleClicked(InputEvent event, TreeItem<T> treeItem) {
         if (null != enterOrDoubleClickAction)
             enterOrDoubleClickAction.accept(event, treeItem);
         else throw new UnsupportedOperationException("Not impl");
