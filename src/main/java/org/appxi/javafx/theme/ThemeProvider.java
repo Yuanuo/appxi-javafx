@@ -109,6 +109,10 @@ public class ThemeProvider {
             this.eventBus.fireEvent(new ThemeEvent(oldTheme, theme));
     }
 
+    public void applyThemeFor(Scene... scenes) {
+        this.applyThemeFor(getTheme(), scenes);
+    }
+
     public void applyThemeFor(Theme theme, Scene... scenes) {
         if (null == theme || null == scenes || scenes.length == 0)
             return;

@@ -67,16 +67,28 @@ public interface FxHelper {
         return FxHelper.withTheme(application, alert);
     }
 
+    static Scene withStyle(DesktopApplication application, Scene scene) {
+        scene.getRoot().setStyle(application.getPrimaryFontStyle().concat(";").concat(scene.getRoot().getStyle()));
+        final Stage stage = (Stage) scene.getWindow();
+        if (null != stage)
+            stage.getIcons().addAll(application.getPrimaryStage().getIcons());
+        return scene;
+    }
+
+    static Scene withTheme(DesktopApplication application, Scene scene) {
+        withStyle(application, scene);
+        application.themeProvider.applyThemeFor(scene);
+        return scene;
+    }
+
     static Alert withTheme(DesktopApplication application, Alert alert) {
+        if (null == alert.getOwner())
+            alert.initOwner(application.getPrimaryStage());
         final DialogPane pane = alert.getDialogPane();
         // 必须要有至少一个按钮才能关闭此窗口
         if (pane.getButtonTypes().isEmpty())
             pane.getButtonTypes().add(ButtonType.OK);
-        final Scene scene = pane.getScene();
-        scene.getRoot().setStyle(application.getPrimaryScene().getRoot().getStyle());
-        final Stage stage = (Stage) scene.getWindow();
-        stage.getIcons().addAll(application.getPrimaryStage().getIcons());
-        application.themeProvider.applyThemeFor(application.themeProvider.getTheme(), scene);
+        withStyle(application, pane.getScene());
         return alert;
     }
 }
