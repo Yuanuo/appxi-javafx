@@ -109,7 +109,7 @@ public abstract class DesktopApplication extends Application {
         this.setPrimaryTitle(null);
         this.primaryFontStyle = createPrimaryFontStyle();
         final Parent root = primaryScene.getRoot();
-        root.setStyle(primaryFontStyle.concat(" ").concat(root.getStyle()));
+        root.setStyle(primaryFontStyle.concat(";").concat(root.getStyle()));
 
         // 4, init the theme provider
         themeProvider.addScene(primaryScene);
