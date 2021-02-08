@@ -5,21 +5,22 @@ import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.ToolBar;
-import javafx.scene.layout.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 
 import java.util.Arrays;
 
-public class AlignedBar extends StackPane {
+public class ToolBarEx extends ToolBar {
     private final Pane spaceFill1, spaceFill2;
-    private final ToolBar bar;
 
-    public AlignedBar() {
+    public ToolBarEx() {
         this(Orientation.HORIZONTAL);
     }
 
-    public AlignedBar(Orientation orientation) {
+    public ToolBarEx(Orientation orientation) {
         super();
-        this.getStyleClass().add("aligned-bar");
 
         this.spaceFill1 = new Pane();
         this.spaceFill1.getStyleClass().add("space-fill");
@@ -27,18 +28,17 @@ public class AlignedBar extends StackPane {
         this.spaceFill2 = new Pane();
         this.spaceFill2.getStyleClass().add("space-fill");
 
-        this.bar = new ToolBar(this.spaceFill1, this.spaceFill2);
-        this.bar.setOrientation(orientation);
-        this.getChildren().add(this.bar);
+        this.setOrientation(orientation);
+        this.getItems().setAll(this.spaceFill1, this.spaceFill2);
 
         updateGrowsInfo(orientation);
     }
 
-    public void setOrientation(Orientation orientation) {
+    public void setOrientationEx(Orientation orientation) {
         orientation = null == orientation ? Orientation.HORIZONTAL : orientation;
-        if (this.bar.getOrientation() == orientation)
+        if (this.getOrientation() == orientation)
             return;
-        this.bar.setOrientation(orientation);
+        this.setOrientation(orientation);
         updateGrowsInfo(orientation);
     }
 
@@ -57,10 +57,10 @@ public class AlignedBar extends StackPane {
     }
 
     public ObservableList<Node> getAlignedItems() {
-        return this.bar.getItems();
+        return this.getItems();
     }
 
-    public AlignedBar addAligned(Pos pos, Node... nodes) {
+    public ToolBarEx addAligned(Pos pos, Node... nodes) {
         switch (pos) {
             case TOP_LEFT, CENTER_LEFT, BOTTOM_LEFT -> this.addLeft(nodes);
             case TOP_CENTER, CENTER, BOTTOM_CENTER -> this.addCenter(nodes);
@@ -69,21 +69,21 @@ public class AlignedBar extends StackPane {
         return this;
     }
 
-    public AlignedBar addLeft(Node... nodes) {
+    public ToolBarEx addLeft(Node... nodes) {
         final ObservableList<Node> items = getAlignedItems();
         final int idx = items.indexOf(this.spaceFill1);
         items.addAll(idx == -1 ? 0 : idx, Arrays.asList(nodes));
         return this;
     }
 
-    public AlignedBar addCenter(Node... nodes) {
+    public ToolBarEx addCenter(Node... nodes) {
         final ObservableList<Node> items = getAlignedItems();
         final int idx = items.indexOf(this.spaceFill2);
         items.addAll(idx == -1 ? 0 : idx, Arrays.asList(nodes));
         return this;
     }
 
-    public AlignedBar addRight(Node... nodes) {
+    public ToolBarEx addRight(Node... nodes) {
         getAlignedItems().addAll(nodes);
         return this;
     }

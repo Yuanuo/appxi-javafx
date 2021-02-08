@@ -12,7 +12,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import org.appxi.javafx.control.AlignedBar;
+import org.appxi.javafx.control.ToolBarEx;
 import org.appxi.javafx.control.StackPaneEx;
 import org.appxi.javafx.control.TabPaneEx;
 import org.appxi.util.StringHelper;
@@ -26,7 +26,7 @@ public class WorkbenchPane extends StackPaneEx {
     private static final Object AK_FIRST_TIME = new Object();
 
     private final ToggleGroup sideToolsGroup = new ToggleGroup();
-    protected final AlignedBar sideTools;
+    protected final ToolBarEx sideTools;
     protected final SplitPane rootViews;
     protected final StackPane sideViews;
     protected final TabPane mainViews;
@@ -37,7 +37,7 @@ public class WorkbenchPane extends StackPaneEx {
         super();
         this.getStyleClass().add("workbench");
         //
-        sideTools = new AlignedBar(Orientation.VERTICAL);
+        sideTools = new ToolBarEx(Orientation.VERTICAL);
         sideTools.getStyleClass().add("side-tools");
 
         rootViews = new SplitPane();
