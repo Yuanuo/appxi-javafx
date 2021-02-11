@@ -64,9 +64,8 @@ public class TreeViewExt<T> extends TreeViewEx<T> {
         if (!treeItem.isLeaf()) {
             final boolean expanded = !treeItem.isExpanded();
             treeItem.setExpanded(expanded);
-            if (expanded) {
-                this.scrollToIfNotVisible(treeItem);
-            }
+            this.layout();
+            this.scrollToIfNotVisible(treeItem);
             return;
         }
 
