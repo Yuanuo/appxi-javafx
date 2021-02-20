@@ -1,68 +1,34 @@
 package org.appxi.javafx.control;
 
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.scene.input.*;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
+import org.appxi.javafx.control.skin.ListViewSkinEx;
 
-import java.util.function.BiConsumer;
-
-public class ListViewEx<T> extends ListView<T> {
-    private BiConsumer<InputEvent, T> enterOrDoubleClickAction;
-
+public abstract class ListViewEx<T> extends ListView<T> {
     public ListViewEx() {
-        this(null);
-    }
-
-    public ListViewEx(BiConsumer<InputEvent, T> enterOrDoubleClickAction) {
         super();
-        this.enterOrDoubleClickAction = enterOrDoubleClickAction;
-
-        VBox.setVgrow(this, Priority.ALWAYS);
-        this.setOnKeyReleased(this::handleOnKeyReleased);
-        this.setOnMouseReleased(this::handleOnMouseReleased);
     }
 
-    public ListViewEx<T> setEnterOrDoubleClickAction(BiConsumer<InputEvent, T> enterOrDoubleClickAction) {
-        this.enterOrDoubleClickAction = enterOrDoubleClickAction;
-        return this;
+    @Override
+    protected final ListViewSkinEx<T> createDefaultSkin() {
+        return new ListViewSkinEx<>(this);
     }
 
-    private void handleOnKeyReleased(KeyEvent event) {
-        if (event.getCode() != KeyCode.ENTER)
+    protected final ListViewSkinEx<T> getSkinEx() {
+        return (ListViewSkinEx<T>) getSkin();
+    }
+
+    public boolean isRowVisible(int rowIndex) {
+        final ListCell<T> firstCell = getSkinEx().getVirtualFlowEx().getFirstVisibleCell();
+        final ListCell<T> lastCell = getSkinEx().getVirtualFlowEx().getLastVisibleCell();
+        if (null == firstCell || null == lastCell)
+            return false;
+        return rowIndex > firstCell.getIndex() && rowIndex < lastCell.getIndex();
+    }
+
+    public void scrollToIfNotVisible(int rowIndex) {
+        if (this.isRowVisible(rowIndex))
             return;
-        final T listItem = this.getSelectionModel().getSelectedItem();
-        if (null == listItem)
-            return;
-        handleOnKeyReleasedImpl(event, listItem);
-    }
-
-    private void handleOnMouseReleased(MouseEvent event) {
-        if (event.getButton() != MouseButton.PRIMARY)
-            return;
-        final T listItem = this.getSelectionModel().getSelectedItem();
-        if (null == listItem)
-            return;
-        handleOnMouseReleasedImpl(event, listItem);
-    }
-
-    protected void handleOnKeyReleasedImpl(KeyEvent event, T listItem) {
-        if (event.getCode() == KeyCode.ENTER) {
-            handleTreeViewOnEnterOrDoubleClicked(event, listItem);
-            event.consume();
-        }
-    }
-
-    protected void handleOnMouseReleasedImpl(MouseEvent event, T listItem) {
-        if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() > 1) {
-            handleTreeViewOnEnterOrDoubleClicked(event, listItem);
-            event.consume();
-        }
-    }
-
-    protected void handleTreeViewOnEnterOrDoubleClicked(InputEvent event, T listItem) {
-        if (null != enterOrDoubleClickAction)
-            enterOrDoubleClickAction.accept(event, listItem);
-        else throw new UnsupportedOperationException("Not impl");
+        this.scrollTo(rowIndex);
     }
 }

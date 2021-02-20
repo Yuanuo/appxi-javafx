@@ -1,5 +1,6 @@
 package org.appxi.javafx.helper;
 
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
@@ -47,7 +48,10 @@ public interface FxHelper {
     }
 
     static void alertError(DesktopApplication application, Throwable throwable) {
-        alertErrorEx(application, throwable).show();
+        Runnable runnable = () -> alertErrorEx(application, throwable).show();
+        if (Platform.isFxApplicationThread())
+            runnable.run();
+        else Platform.runLater(runnable);
     }
 
     static Alert alertErrorEx(DesktopApplication application, Throwable throwable) {

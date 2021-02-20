@@ -1,8 +1,8 @@
 package org.appxi.javafx.views;
 
 import javafx.scene.Scene;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-import org.appxi.javafx.control.StackPaneEx;
 import org.appxi.javafx.desktop.DesktopApplication;
 import org.appxi.javafx.event.EventBus;
 import org.appxi.javafx.theme.ThemeProvider;
@@ -38,7 +38,7 @@ public abstract class ViewController extends Attributes {
         return this.application.getPrimaryScene();
     }
 
-    public StackPaneEx getPrimaryViewport() {
+    public StackPane getPrimaryViewport() {
         return this.application.getPrimaryViewport();
     }
 

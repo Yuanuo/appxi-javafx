@@ -21,9 +21,11 @@ import org.appxi.util.StringHelper;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public class WebViewer extends StackPaneEx {
+public class WebViewer extends StackPane {
     private WebView viewer;
     private WebEngine engine;
+
+    private final MaskingPane masking = new MaskingPane();
 
     private ContextMenu contextMenu;
     private Consumer<WebEngine> onLoadSucceedAction, onLoadFailedAction;
@@ -112,11 +114,11 @@ public class WebViewer extends StackPaneEx {
         dialogPane.setContentText(event.getData());
         dialogPane.getButtonTypes().add(ButtonType.CLOSE);
         ((Button) dialogPane.lookupButton(ButtonType.CLOSE)).setOnAction(event1 -> {
-            viewer.setDisable(false);
-            hide(dialogPane);
+//            viewer.setDisable(false);
+            this.getChildren().removeAll(masking, dialogPane);
         });
-        viewer.setDisable(true);
-        show(dialogPane);
+//        viewer.setDisable(true);
+        this.getChildren().addAll(masking, dialogPane);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

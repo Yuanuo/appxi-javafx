@@ -6,8 +6,8 @@ import javafx.application.Preloader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-import org.appxi.javafx.control.StackPaneEx;
 import org.appxi.javafx.event.EventBus;
 import org.appxi.javafx.helper.FxHelper;
 import org.appxi.javafx.helper.StateHelper;
@@ -33,7 +33,7 @@ public abstract class DesktopApplication extends Application {
     private Stage primaryStage;
     private Scene primaryScene;
     private ViewController primaryController;
-    private StackPaneEx primaryViewport;
+    private StackPane primaryViewport;
     private String primaryFontStyle;
 
     //
@@ -48,7 +48,7 @@ public abstract class DesktopApplication extends Application {
         return primaryScene;
     }
 
-    public StackPaneEx getPrimaryViewport() {
+    public StackPane getPrimaryViewport() {
         return primaryViewport;
     }
 
@@ -87,7 +87,7 @@ public abstract class DesktopApplication extends Application {
         UserPrefs.prefs = new PreferencesInProperties(UserPrefs.confDir().resolve(".prefs"));
         UserPrefs.recents = new PreferencesInProperties(UserPrefs.confDir().resolve(".recents"));
         this.steps = UserPrefs.prefs.getDouble("ui.used", 20);
-        Thread.setDefaultUncaughtExceptionHandler((t, throwable) -> FxHelper.alertError(this, throwable));
+        Thread.setDefaultUncaughtExceptionHandler((t, err) -> FxHelper.alertError(this, err));
     }
 
     @Override
@@ -98,7 +98,7 @@ public abstract class DesktopApplication extends Application {
 
         // 2, init main ui
         this.primaryController = createPrimaryController();
-        this.primaryViewport = null == primaryController ? new StackPaneEx() : primaryController.getViewport();
+        this.primaryViewport = null == primaryController ? new StackPane() : primaryController.getViewport();
 
         updateStartingProgress();
 
@@ -114,6 +114,7 @@ public abstract class DesktopApplication extends Application {
         // 4, init the theme provider
         themeProvider.addScene(primaryScene);
 
+        start();
         // 9, init something in async mode, then show the main stage
         CompletableFuture.runAsync(() -> {
             updateStartingProgress();
@@ -162,21 +163,30 @@ public abstract class DesktopApplication extends Application {
 
     protected String createPrimaryFontStyle() {
         /*-fx-font-family: "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", STXihei, Arial, "Helvetica Neue", Helvetica, sans-serif;*/
-        String fontStyle = UserPrefs.prefs.getString("ui.font", null);
-        if (fontStyle == null || fontStyle.isBlank()) {
+        String fontSize = UserPrefs.prefs.getString("ui.font.size", null);
+        if (null == fontSize || fontSize.isBlank()) {
+            fontSize = "16";
+            UserPrefs.prefs.setProperty("ui.font.size", fontSize);
+        }
+
+        String fontName = UserPrefs.prefs.getString("ui.font.name", null);
+        if (fontName == null || fontName.isBlank()) {
             final String osName = System.getProperty("os.name").toLowerCase();
             if (osName.contains("windows")) {
-                fontStyle = "-fx-font: 16 \"Microsoft YaHei\"";
+                fontName = "Microsoft YaHei";
             } else if (osName.contains("mac") || osName.contains("osx")) {
-                fontStyle = "-fx-font: 16 \"PingFang SC\"";
+                fontName = "PingFang SC";
             } else if (osName.contains("linux") || osName.contains("ubuntu")) {
-                fontStyle = "-fx-font: 16 \"WenQuanYi Micro Hei\"";
+                fontName = "WenQuanYi Micro Hei";
             } else {
-                fontStyle = "-fx-font: 16 sans-serif";
+                fontName = "SYSTEM";
             }
-            UserPrefs.prefs.setProperty("ui.font", fontStyle);
+            UserPrefs.prefs.setProperty("ui.font.name", fontName);
         }
-        return fontStyle;
+        return "-fx-font: ".concat(fontSize).concat(" \"").concat(fontName).concat("\";");
+    }
+
+    protected void start() {
     }
 
     protected void starting() {

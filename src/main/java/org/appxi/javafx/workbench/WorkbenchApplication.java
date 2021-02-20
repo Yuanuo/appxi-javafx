@@ -1,6 +1,5 @@
 package org.appxi.javafx.workbench;
 
-import org.appxi.javafx.desktop.ApplicationEvent;
 import org.appxi.javafx.desktop.DesktopApplication;
 
 public abstract class WorkbenchApplication extends DesktopApplication {
@@ -12,10 +11,8 @@ public abstract class WorkbenchApplication extends DesktopApplication {
     }
 
     @Override
-    public void init() throws Exception {
-        super.init();
-        eventBus.addEventHandler(ApplicationEvent.STARTING,
-                event -> getPrimaryStage().getScene().getStylesheets().add(CSS));
+    protected void start() {
+        getPrimaryStage().getScene().getStylesheets().add(CSS);
     }
 
     @Override

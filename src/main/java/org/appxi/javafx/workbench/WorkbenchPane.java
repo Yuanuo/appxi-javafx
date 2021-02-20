@@ -12,9 +12,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import org.appxi.javafx.control.ToolBarEx;
-import org.appxi.javafx.control.StackPaneEx;
 import org.appxi.javafx.control.TabPaneEx;
+import org.appxi.javafx.control.ToolBarEx;
 import org.appxi.util.StringHelper;
 import org.appxi.util.ext.Attributes;
 
@@ -22,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class WorkbenchPane extends StackPaneEx {
+public class WorkbenchPane extends StackPane {
     private static final Object AK_FIRST_TIME = new Object();
 
     private final ToggleGroup sideToolsGroup = new ToggleGroup();
@@ -155,12 +154,15 @@ public class WorkbenchPane extends StackPaneEx {
         });
         tool.selectedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
-                Platform.runLater(() -> {
+                final Runnable runnable = () -> {
                     final boolean firstTime = ensureFirstTime(controller);
                     if (firstTime) // always lazy init
                         tool.setContent(controller.getViewport());
                     controller.onViewportShow(firstTime);
-                });
+                };
+                if (Platform.isFxApplicationThread())
+                    runnable.run();
+                else Platform.runLater(runnable);
             } else if (oldValue && controller.hasAttr(AK_FIRST_TIME)) {
                 controller.onViewportHide(true);
             }
@@ -192,10 +194,12 @@ public class WorkbenchPane extends StackPaneEx {
             tool.setTooltip(new Tooltip(controller.viewName));
 
         final Node iconGraphic = controller.createToolIconGraphic(false);
-        if (null != iconGraphic)
+        if (null != iconGraphic) {
             tool.setGraphic(iconGraphic);
-
-        this.sideTools.addAligned(pos, tool);
+            if (controller.hasAttr(Pos.class))
+                pos = controller.attr(Pos.class);
+            this.sideTools.addAligned(pos, tool);
+        }
     }
 
     private boolean ensureFirstTime(Attributes attrs) {

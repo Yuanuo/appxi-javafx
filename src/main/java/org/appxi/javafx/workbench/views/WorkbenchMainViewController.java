@@ -1,13 +1,13 @@
 package org.appxi.javafx.workbench.views;
 
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.Tab;
+import javafx.scene.control.Tooltip;
+import javafx.scene.layout.StackPane;
 import org.appxi.javafx.workbench.WorkbenchApplication;
 import org.appxi.javafx.workbench.WorkbenchViewController;
 
 public abstract class WorkbenchMainViewController extends WorkbenchViewController {
-    protected BorderPane viewport;
-    protected VBox viewportVBox;
+    private StackPane viewport;
 
     public WorkbenchMainViewController(String viewId, String viewName, WorkbenchApplication application) {
         super(viewId, viewName, application);
@@ -19,20 +19,26 @@ public abstract class WorkbenchMainViewController extends WorkbenchViewControlle
     }
 
     @Override
-    public final BorderPane getViewport() {
+    public final StackPane getViewport() {
         if (null == this.viewport) {
-            this.viewportVBox = new VBox();
-            this.viewportVBox.getStyleClass().addAll("vbox", "main-vbox");
-            this.viewport = new BorderPane(this.viewportVBox);
+            this.viewport = new StackPane();
             //
-            onViewportInitOnce();
+            onViewportInitOnce(this.viewport);
         }
         return viewport;
     }
 
-    protected abstract void onViewportInitOnce();
+    protected abstract void onViewportInitOnce(StackPane viewport);
 
     @Override
     public void onViewportHide(boolean hideOrElseClose) {
+    }
+
+    protected final void setSecondaryTitle(String title) {
+        if (null == title)
+            title = this.viewName;
+        Tab tab = getPrimaryViewport().findMainViewTab(this.viewId);
+        tab.setText(title);
+        tab.setTooltip(new Tooltip(title));
     }
 }
