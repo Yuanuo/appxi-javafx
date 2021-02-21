@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.appxi</groupId>
     <artifactId>appxi-javafx</artifactId>
-    <version>21.02.19</version>
+    <version>21.02.21</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -36,19 +36,16 @@
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
+                <configuration>
+                    <compilerArgs>
+                        <arg>--add-exports</arg>
+                        <arg>javafx.web/com.sun.webkit=appxi.javafx</arg>
+                    </compilerArgs>
+                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-source-plugin</artifactId>
                 <version>3.2.1</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>jar-no-fork</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
