@@ -1,5 +1,6 @@
 package org.appxi.javafx.control;
 
+import com.sun.webkit.WebPage;
 import javafx.beans.Observable;
 import javafx.concurrent.Worker;
 import javafx.event.Event;
@@ -18,6 +19,7 @@ import javafx.scene.web.WebView;
 import org.appxi.javafx.helper.FxHelper;
 import org.appxi.util.StringHelper;
 
+import java.lang.reflect.Field;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -56,27 +58,42 @@ public class WebViewer extends StackPane {
         return this.engine;
     }
 
+    public final WebPage getPage() {
+        try {
+            Field pageField = getEngine().getClass().getDeclaredField("page");
+            pageField.setAccessible(true);
+            return (WebPage) pageField.get(engine);
+        } catch (Throwable ignored) {
+        }
+        return null;
+    }
+
     public void setContextMenuBuilder(Supplier<ContextMenu> contextMenuBuilder) {
         this.contextMenuBuilder = contextMenuBuilder;
         if (null == contextMenuBuilder) {
             this.viewer.setContextMenuEnabled(true);
             this.viewer.removeEventHandler(MouseEvent.MOUSE_RELEASED, this::handleContextMenuVisible);
-            this.viewer.removeEventHandler(ScrollEvent.SCROLL, this::handleContextMenuVisible);
+            this.viewer.removeEventHandler(MouseEvent.MOUSE_PRESSED, this::handleContextMenuHidden);
+            this.viewer.removeEventHandler(ScrollEvent.SCROLL, this::handleContextMenuHidden);
             return;
         }
         this.viewer.setContextMenuEnabled(false);
         this.viewer.addEventHandler(MouseEvent.MOUSE_RELEASED, this::handleContextMenuVisible);
-        this.viewer.addEventHandler(ScrollEvent.SCROLL, this::handleContextMenuVisible);
+        this.viewer.addEventHandler(MouseEvent.MOUSE_PRESSED, this::handleContextMenuHidden);
+        this.viewer.addEventHandler(ScrollEvent.SCROLL, this::handleContextMenuHidden);
     }
 
     private ContextMenu contextMenu;
 
-    private void handleContextMenuVisible(Event event) {
+    private void handleContextMenuHidden(Event event) {
         if (null != contextMenu && this.contextMenu.isShowing()) {
             this.contextMenu.hide();
             this.contextMenu = null;
             event.consume();
         }
+    }
+
+    private void handleContextMenuVisible(Event event) {
         // only for right click
         if (event instanceof MouseEvent mEvent && mEvent.getButton() == MouseButton.SECONDARY) {
             contextMenu = null == contextMenuBuilder ? null : contextMenuBuilder.get();
@@ -84,6 +101,41 @@ public class WebViewer extends StackPane {
                 this.contextMenu.show(this.viewer, mEvent.getScreenX(), mEvent.getScreenY());
             event.consume();
         }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public boolean findInPage(String query, boolean forwards) {
+        return findInPage(query, forwards, true, false);
+    }
+
+    public boolean findInPage(String query, boolean forwards, boolean wrapAround, boolean caseSensitive) {
+        try {
+            WebPage page = getPage();
+            return null != page
+                    ? page.find(query, forwards, wrapAround, caseSensitive)
+                    : findInWindow(query, forwards, wrapAround, caseSensitive);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean findInWindow(String query, boolean forwards) {
+        return findInWindow(query, forwards, true, false);
+    }
+
+    public boolean findInWindow(String query, boolean forwards, boolean wrapAround, boolean caseSensitive) {
+        WebEngine engine = getEngine();
+        if (engine.getDocument() != null) {
+            if (null != query && !query.isBlank()) {
+                //window.find(aString, aCaseSensitive, aBackwards, aWrapAround, aWholeWord, aSearchInFrames, aShowDialog);
+                return (Boolean) engine.executeScript(StringHelper.concat("window.find(\"", query, "\", ",
+                        StringHelper.joinArray(",", caseSensitive, !forwards, wrapAround, false, false, false)
+                        , ")"));
+            }
+        }
+        return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
