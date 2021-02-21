@@ -20,6 +20,7 @@ import org.appxi.util.StringHelper;
 
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class WebViewer extends StackPane {
     private WebView viewer;
@@ -27,7 +28,7 @@ public class WebViewer extends StackPane {
 
     private final MaskingPane masking = new MaskingPane();
 
-    private ContextMenu contextMenu;
+    private Supplier<ContextMenu> contextMenuBuilder;
     private Consumer<WebEngine> onLoadSucceedAction, onLoadFailedAction;
 
     public WebViewer() {
@@ -55,28 +56,32 @@ public class WebViewer extends StackPane {
         return this.engine;
     }
 
-    public void setContextMenu(ContextMenu contextMenu) {
-        this.contextMenu = contextMenu;
-        if (null == contextMenu) {
+    public void setContextMenuBuilder(Supplier<ContextMenu> contextMenuBuilder) {
+        this.contextMenuBuilder = contextMenuBuilder;
+        if (null == contextMenuBuilder) {
             this.viewer.setContextMenuEnabled(true);
-            this.viewer.removeEventHandler(MouseEvent.MOUSE_PRESSED, this::handleContextMenuVisible);
+            this.viewer.removeEventHandler(MouseEvent.MOUSE_RELEASED, this::handleContextMenuVisible);
             this.viewer.removeEventHandler(ScrollEvent.SCROLL, this::handleContextMenuVisible);
             return;
         }
         this.viewer.setContextMenuEnabled(false);
-        this.viewer.addEventHandler(MouseEvent.MOUSE_PRESSED, this::handleContextMenuVisible);
+        this.viewer.addEventHandler(MouseEvent.MOUSE_RELEASED, this::handleContextMenuVisible);
         this.viewer.addEventHandler(ScrollEvent.SCROLL, this::handleContextMenuVisible);
     }
 
+    private ContextMenu contextMenu;
+
     private void handleContextMenuVisible(Event event) {
+        if (null != contextMenu && this.contextMenu.isShowing()) {
+            this.contextMenu.hide();
+            this.contextMenu = null;
+            event.consume();
+        }
         // only for right click
         if (event instanceof MouseEvent mEvent && mEvent.getButton() == MouseButton.SECONDARY) {
-            if (this.contextMenu.getItems().isEmpty())
-                return;
-            this.contextMenu.show(this.viewer, mEvent.getScreenX(), mEvent.getScreenY());
-            event.consume();
-        } else if (this.contextMenu.isShowing()) {
-            this.contextMenu.hide();
+            contextMenu = null == contextMenuBuilder ? null : contextMenuBuilder.get();
+            if (null != contextMenu)
+                this.contextMenu.show(this.viewer, mEvent.getScreenX(), mEvent.getScreenY());
             event.consume();
         }
     }
@@ -113,12 +118,8 @@ public class WebViewer extends StackPane {
         dialogPane.setHeaderText("Alert");
         dialogPane.setContentText(event.getData());
         dialogPane.getButtonTypes().add(ButtonType.CLOSE);
-        ((Button) dialogPane.lookupButton(ButtonType.CLOSE)).setOnAction(event1 -> {
-//            viewer.setDisable(false);
-            this.getChildren().removeAll(masking, dialogPane);
-        });
-//        viewer.setDisable(true);
-        this.getChildren().addAll(masking, dialogPane);
+        ((Button) dialogPane.lookupButton(ButtonType.CLOSE)).setOnAction(e -> getChildren().removeAll(masking, dialogPane));
+        getChildren().addAll(masking, dialogPane);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
