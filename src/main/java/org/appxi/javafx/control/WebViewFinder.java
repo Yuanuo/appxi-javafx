@@ -34,8 +34,10 @@ public class WebViewFinder extends HBox {
         next.setDisable(true);
 
         final Consumer<Boolean> searcher = forwardsOrElseBackwards -> {
-            final String inputText = inputConvertor.apply(input.getText());
-            if (!inputText.isEmpty() && webViewer.findInPage(inputText, forwardsOrElseBackwards)) {
+            String inputText = input.getText();
+            if (null != inputText && null != inputConvertor)
+                inputText = inputConvertor.apply(inputText);
+            if (null != inputText && !inputText.isBlank() && webViewer.findInPage(inputText, forwardsOrElseBackwards)) {
                 prev.setDisable(false);
                 next.setDisable(false);
             } else {
