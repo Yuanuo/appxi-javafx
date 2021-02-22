@@ -1,6 +1,7 @@
 package org.appxi.javafx.control;
 
 import com.sun.webkit.WebPage;
+import com.sun.webkit.event.WCMouseWheelEvent;
 import javafx.beans.Observable;
 import javafx.concurrent.Worker;
 import javafx.event.Event;
@@ -27,6 +28,7 @@ import java.util.function.Supplier;
 public class WebViewer extends StackPane {
     private WebView viewer;
     private WebEngine engine;
+    private WebPage page;
 
     private final MaskingPane masking = new MaskingPane();
 
@@ -43,8 +45,20 @@ public class WebViewer extends StackPane {
     public final WebView getViewer() {
         if (null == this.viewer) {
             this.viewer = new WebView();
+            this.viewer.addEventFilter(ScrollEvent.SCROLL, ev -> {
+                if (getPage() == null)
+                    return;
+                getPage().dispatchMouseWheelEvent(new WCMouseWheelEvent(
+                        (int) ev.getX(), (int) ev.getY(),
+                        (int) ev.getScreenX(), (int) ev.getScreenY(),
+                        System.currentTimeMillis(),
+                        ev.isShiftDown(), ev.isControlDown(), ev.isAltDown(), ev.isMetaDown(),
+                        (float) (-ev.getDeltaX() * viewer.getFontScale() * getScaleX() * 8),
+                        (float) (-ev.getDeltaY() * viewer.getFontScale() * getScaleY() * 8)
+                ));
+                ev.consume();
+            });
             this.getChildren().add(0, this.viewer);
-            FxHelper.setDisabledEffects(viewer);
         }
         return this.viewer;
     }
@@ -59,11 +73,15 @@ public class WebViewer extends StackPane {
     }
 
     public final WebPage getPage() {
+        if (null != page)
+            return page;
         try {
             Field pageField = getEngine().getClass().getDeclaredField("page");
             pageField.setAccessible(true);
-            return (WebPage) pageField.get(engine);
-        } catch (Throwable ignored) {
+            return this.page = (WebPage) pageField.get(engine);
+        } catch (Throwable throwable) {
+            if (!FxHelper.productionMode)
+                throwable.printStackTrace();
         }
         return null;
     }
