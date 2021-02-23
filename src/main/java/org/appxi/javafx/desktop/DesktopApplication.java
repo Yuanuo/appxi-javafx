@@ -83,7 +83,7 @@ public abstract class DesktopApplication extends Application {
     @Override
     public void init() throws Exception {
         // 1, init user prefs
-        UserPrefs.setupDataDirectory(UserPrefs.dataDir().resolve("." + getApplicationId()), null);
+        UserPrefs.setupPortable(".".concat(getApplicationId()), null);
         UserPrefs.prefs = new PreferencesInProperties(UserPrefs.confDir().resolve(".prefs"));
         UserPrefs.recents = new PreferencesInProperties(UserPrefs.confDir().resolve(".recents"));
         this.steps = UserPrefs.prefs.getDouble("ui.used", 20);
