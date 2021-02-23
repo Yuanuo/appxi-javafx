@@ -22,7 +22,7 @@ public class WebViewFinder extends HBox {
         getStyleClass().add("web-view-finder");
 
         input = new TextField();
-        input.setPromptText("Find in page");
+        input.setPromptText("页内查找");
         input.setTooltip(new Tooltip("输入即查找，Enter 查找下一个，Shift + Enter 查找上一个"));
 
         prev = new Button("<");
