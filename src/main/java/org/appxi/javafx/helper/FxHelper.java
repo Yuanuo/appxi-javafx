@@ -14,15 +14,51 @@ import javafx.stage.Stage;
 import org.appxi.javafx.desktop.DesktopApplication;
 import org.appxi.util.StringHelper;
 
+import java.nio.file.Path;
 import java.util.List;
 
-public interface FxHelper {
+public abstract class FxHelper {
     /**
      * 用于标记当前App是否是用户安装后的运行状态
      */
-    boolean productionMode = null != System.getProperty("jpackage.app-path");
+    public static final boolean productionMode = null != System.getProperty("jpackage.app-path");
+    private static Path _appDir = null;
+    private static final Object appDirInit = new Object();
 
-    class DisabledEffectsListener implements ChangeListener<Boolean> {
+    public static Path appDir() {
+        if (null != _appDir)
+            return _appDir;
+
+        synchronized (appDirInit) {
+            if (null != _appDir)
+                return _appDir;
+
+            String appDir = System.getenv("app-dir");
+            if (null == appDir)
+                appDir = System.getProperty("jpackage.app-dir");
+
+            if (null == appDir) {
+                appDir = System.getProperty("jpackage.app-path");
+                if (null != appDir) {
+                    String osName = System.getProperty("os.name").toLowerCase();
+                    Path appPath = Path.of(appDir).getParent();
+                    if (osName.contains("win")) {
+                        appDir = appPath.resolve("app").toString();
+                    } else if (osName.contains("mac")) {
+
+                    } else {
+                        appDir = appPath.resolve("lib").toString();
+                    }
+                }
+            }
+            if (null == appDir)
+                appDir = "";
+            _appDir = Path.of(appDir).toAbsolutePath();
+        }
+        return _appDir;
+    }
+
+    static class DisabledEffectsListener implements ChangeListener<Boolean> {
         private final Node node;
         private final ColorAdjust effects = new ColorAdjust();
 
@@ -38,7 +74,7 @@ public interface FxHelper {
         }
     }
 
-    static <T extends Node> T setDisabledEffects(T node) {
+    public static <T extends Node> T setDisabledEffects(T node) {
         DisabledEffectsListener listener = (DisabledEffectsListener) node.getProperties().get(DisabledEffectsListener.class);
         if (null == listener)
             node.getProperties().put(DisabledEffectsListener.class, listener = new DisabledEffectsListener(node));
@@ -47,14 +83,20 @@ public interface FxHelper {
         return node;
     }
 
-    static void alertError(DesktopApplication application, Throwable throwable) {
+    public static void runLater(Runnable runnable) {
+        if (Platform.isFxApplicationThread())
+            runnable.run();
+        else Platform.runLater(runnable);
+    }
+
+    public static void alertError(DesktopApplication application, Throwable throwable) {
         Runnable runnable = () -> alertErrorEx(application, throwable).show();
         if (Platform.isFxApplicationThread())
             runnable.run();
         else Platform.runLater(runnable);
     }
 
-    static Alert alertErrorEx(DesktopApplication application, Throwable throwable) {
+    public static Alert alertErrorEx(DesktopApplication application, Throwable throwable) {
         // for debug only
         throwable.printStackTrace();
 
@@ -71,7 +113,7 @@ public interface FxHelper {
         return FxHelper.withTheme(application, alert);
     }
 
-    static Scene withStyle(DesktopApplication application, Scene scene) {
+    public static Scene withStyle(DesktopApplication application, Scene scene) {
         scene.getRoot().setStyle(application.getPrimaryFontStyle().concat(";").concat(scene.getRoot().getStyle()));
         final Stage stage = (Stage) scene.getWindow();
         if (null != stage)
@@ -79,13 +121,13 @@ public interface FxHelper {
         return scene;
     }
 
-    static Scene withTheme(DesktopApplication application, Scene scene) {
+    public static Scene withTheme(DesktopApplication application, Scene scene) {
         withStyle(application, scene);
         application.themeProvider.applyThemeFor(scene);
         return scene;
     }
 
-    static Alert withTheme(DesktopApplication application, Alert alert) {
+    public static Alert withTheme(DesktopApplication application, Alert alert) {
         if (null == alert.getOwner())
             alert.initOwner(application.getPrimaryStage());
         final DialogPane pane = alert.getDialogPane();

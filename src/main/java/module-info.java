@@ -17,4 +17,6 @@ module appxi.javafx {
     exports org.appxi.javafx.views;
     exports org.appxi.javafx.workbench;
     exports org.appxi.javafx.workbench.views;
+
+    opens appxi.javafx.themes;
 }
