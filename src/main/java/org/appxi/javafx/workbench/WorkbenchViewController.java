@@ -18,12 +18,9 @@ public abstract class WorkbenchViewController extends ViewController {
         return this.getApplication().getPrimaryViewport();
     }
 
-    /**
-     * @return null for side-tools only; true for side-views; false for main-views;
-     */
-    public abstract Boolean isPlaceInSideViews();
+    public abstract WorkbenchViewLocation getWorkbenchViewLocation();
 
-    public abstract Node createToolIconGraphic(Boolean placeInSideViews);
+    public abstract Node createToolIconGraphic(boolean sideToolOrElseViewTool);
 
     public abstract void onViewportShow(boolean firstTime);
 

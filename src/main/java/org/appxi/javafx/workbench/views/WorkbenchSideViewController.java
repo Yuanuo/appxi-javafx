@@ -8,6 +8,7 @@ import javafx.scene.layout.VBox;
 import org.appxi.javafx.control.ToolBarEx;
 import org.appxi.javafx.workbench.WorkbenchApplication;
 import org.appxi.javafx.workbench.WorkbenchViewController;
+import org.appxi.javafx.workbench.WorkbenchViewLocation;
 
 public abstract class WorkbenchSideViewController extends WorkbenchViewController {
     protected BorderPane viewport;
@@ -20,8 +21,8 @@ public abstract class WorkbenchSideViewController extends WorkbenchViewControlle
     }
 
     @Override
-    public final Boolean isPlaceInSideViews() {
-        return true;
+    public final WorkbenchViewLocation getWorkbenchViewLocation() {
+        return WorkbenchViewLocation.sideView;
     }
 
     @Override

@@ -5,6 +5,7 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.layout.StackPane;
 import org.appxi.javafx.workbench.WorkbenchApplication;
 import org.appxi.javafx.workbench.WorkbenchViewController;
+import org.appxi.javafx.workbench.WorkbenchViewLocation;
 
 public abstract class WorkbenchMainViewController extends WorkbenchViewController {
     private StackPane viewport;
@@ -14,7 +15,11 @@ public abstract class WorkbenchMainViewController extends WorkbenchViewControlle
     }
 
     @Override
-    public final Boolean isPlaceInSideViews() {
+    public final WorkbenchViewLocation getWorkbenchViewLocation() {
+        return isWithSideTool() ? WorkbenchViewLocation.mainViewWithSideTool : WorkbenchViewLocation.mainView;
+    }
+
+    protected boolean isWithSideTool() {
         return false;
     }
 

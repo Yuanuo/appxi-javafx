@@ -105,13 +105,14 @@ public class WorkbenchPane extends StackPane {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public void addWorkbenchView(WorkbenchViewController controller) {
-        final Boolean placeInSideViews = controller.isPlaceInSideViews();
-        if (null == placeInSideViews) {
-            addWorkbenchViewAsSideTool(controller);
-        } else if (placeInSideViews) {
-            addWorkbenchViewAsSideView(controller);
-        } else {
-            addWorkbenchViewAsMainView(controller, false);
+        final WorkbenchViewLocation location = controller.getWorkbenchViewLocation();
+        if (null == location)
+            return;
+        switch (location) {
+            case sideTool -> addWorkbenchViewAsSideTool(controller);
+            case sideView -> addWorkbenchViewAsSideView(controller);
+            case mainView -> addWorkbenchViewAsMainView(controller, false);
+            case mainViewWithSideTool -> addWorkbenchViewAsMainViewWithSideTool(controller);
         }
     }
 
@@ -156,7 +157,7 @@ public class WorkbenchPane extends StackPane {
             if (newValue) {
                 final Runnable runnable = () -> {
                     final boolean firstTime = ensureFirstTime(controller);
-                    if (firstTime) // always lazy init
+                    if (firstTime || tool.getContent() == null) // always lazy init
                         tool.setContent(controller.getViewport());
                     controller.onViewportShow(firstTime);
                 };
@@ -193,7 +194,7 @@ public class WorkbenchPane extends StackPane {
         if (StringHelper.isNotBlank(controller.viewName))
             tool.setTooltip(new Tooltip(controller.viewName));
 
-        final Node iconGraphic = controller.createToolIconGraphic(false);
+        final Node iconGraphic = controller.createToolIconGraphic(true);
         if (null != iconGraphic) {
             tool.setGraphic(iconGraphic);
             if (controller.hasAttr(Pos.class))
@@ -278,10 +279,10 @@ public class WorkbenchPane extends StackPane {
             return;
         if (tab.isSelected()) {
             final WorkbenchViewController controller = (WorkbenchViewController) tab.getUserData();
-            if (!controller.hasAttr(AK_FIRST_TIME)) {
+            if (!controller.hasAttr(AK_FIRST_TIME) || tab.getContent() == null) {
                 Platform.runLater(() -> {
                     final boolean firstTime = ensureFirstTime(controller);
-                    if (firstTime) // always lazy init
+                    if (firstTime || tab.getContent() == null) // always lazy init
                         tab.setContent(controller.getViewport());
                     controller.onViewportShow(firstTime);
                 });

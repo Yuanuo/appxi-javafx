@@ -1,17 +1,23 @@
 package org.appxi.javafx.workbench.views;
 
+import javafx.scene.Node;
 import org.appxi.javafx.workbench.WorkbenchApplication;
 import org.appxi.javafx.workbench.WorkbenchViewController;
 import org.appxi.javafx.workbench.WorkbenchViewLocation;
 
-public abstract class WorkbenchSideToolController extends WorkbenchViewController {
-    public WorkbenchSideToolController(String viewId, String viewName, WorkbenchApplication application) {
+public abstract class WorkbenchNoneViewController extends WorkbenchViewController {
+    public WorkbenchNoneViewController(String viewId, String viewName, WorkbenchApplication application) {
         super(viewId, viewName, application);
     }
 
     @Override
     public final WorkbenchViewLocation getWorkbenchViewLocation() {
-        return WorkbenchViewLocation.sideTool;
+        return null;
+    }
+
+    @Override
+    public final Node createToolIconGraphic(boolean sideToolOrElseViewTool) {
+        return null;
     }
 
     @Override
@@ -20,11 +26,6 @@ public abstract class WorkbenchSideToolController extends WorkbenchViewControlle
     }
 
     @Override
-    public void setupInitialize() {
-    }
-
-    @Override
     public final void onViewportHide(boolean hideOrElseClose) {
-        // do nothing, should never called
     }
 }
