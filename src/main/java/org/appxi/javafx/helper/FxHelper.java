@@ -7,6 +7,7 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.effect.BoxBlur;
 import javafx.scene.effect.ColorAdjust;
@@ -127,14 +128,14 @@ public abstract class FxHelper {
         return scene;
     }
 
-    public static Alert withTheme(DesktopApplication application, Alert alert) {
-        if (null == alert.getOwner())
-            alert.initOwner(application.getPrimaryStage());
-        final DialogPane pane = alert.getDialogPane();
+    public static <T extends Dialog<?>> T withTheme(DesktopApplication application, T dialog) {
+        if (null == dialog.getOwner())
+            dialog.initOwner(application.getPrimaryStage());
+        final DialogPane pane = dialog.getDialogPane();
         // 必须要有至少一个按钮才能关闭此窗口
         if (pane.getButtonTypes().isEmpty())
             pane.getButtonTypes().add(ButtonType.OK);
         withStyle(application, pane.getScene());
-        return alert;
+        return dialog;
     }
 }
