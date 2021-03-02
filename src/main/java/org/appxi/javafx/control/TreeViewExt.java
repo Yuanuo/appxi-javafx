@@ -13,11 +13,30 @@ public class TreeViewExt<T> extends TreeViewEx<T> {
     private BiConsumer<InputEvent, TreeItem<T>> enterOrDoubleClickAction;
 
     public TreeViewExt() {
-        this(null);
+        this(true, null);
+    }
+
+    /**
+     * 允许TreeView扩展控件在构造时指定是否禁用左侧三角按钮事件
+     *
+     * @param disableArrowAction 指定是否禁用左侧三角按钮事件
+     */
+    public TreeViewExt(boolean disableArrowAction) {
+        this(disableArrowAction, null);
     }
 
     public TreeViewExt(BiConsumer<InputEvent, TreeItem<T>> enterOrDoubleClickAction) {
-        super();
+        this(true, enterOrDoubleClickAction);
+    }
+
+    /**
+     * 允许TreeView扩展控件在构造时指定是否禁用左侧三角按钮事件
+     *
+     * @param disableArrowAction       指定是否禁用左侧三角按钮事件
+     * @param enterOrDoubleClickAction 响应Enter或双击事件
+     */
+    public TreeViewExt(boolean disableArrowAction, BiConsumer<InputEvent, TreeItem<T>> enterOrDoubleClickAction) {
+        super(disableArrowAction);
         this.enterOrDoubleClickAction = enterOrDoubleClickAction;
 
         VBox.setVgrow(this, Priority.ALWAYS);

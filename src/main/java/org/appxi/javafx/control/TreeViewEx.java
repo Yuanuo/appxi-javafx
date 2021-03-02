@@ -10,23 +10,37 @@ import javafx.scene.layout.StackPane;
 import org.appxi.javafx.control.skin.TreeViewSkinEx;
 
 public class TreeViewEx<T> extends TreeView<T> {
-    private final EventDispatcher originalDispatcher;
-
+    /**
+     * 默认禁用左侧三角按钮事件
+     *
+     * @see #TreeViewEx(boolean)
+     */
     public TreeViewEx() {
+        this(true);
+    }
+
+    /**
+     * 允许TreeView扩展控件在构造时指定是否禁用左侧三角按钮事件
+     *
+     * @param disableArrowAction 指定是否禁用左侧三角按钮事件
+     */
+    public TreeViewEx(boolean disableArrowAction) {
         super();
-        this.originalDispatcher = super.getEventDispatcher();
-        this.setEventDispatcher((event, tail) -> {
-            if (event instanceof MouseEvent msEvt) {
-                if (msEvt.getEventType() == MouseEvent.MOUSE_PRESSED) {
-                    final Node pickedNode = msEvt.getPickResult().getIntersectedNode();
-                    if (pickedNode instanceof StackPane
-                            && (pickedNode.getParent() instanceof TreeCell
-                            || pickedNode.getParent().getParent() instanceof TreeCell))
-                        event.consume();
+        if (disableArrowAction) {
+            final EventDispatcher originalDispatcher = super.getEventDispatcher();
+            this.setEventDispatcher((event, tail) -> {
+                if (event instanceof MouseEvent msEvt) {
+                    if (msEvt.getEventType() == MouseEvent.MOUSE_PRESSED) {
+                        final Node pickedNode = msEvt.getPickResult().getIntersectedNode();
+                        if (pickedNode instanceof StackPane
+                                && (pickedNode.getParent() instanceof TreeCell
+                                || pickedNode.getParent().getParent() instanceof TreeCell))
+                            event.consume();
+                    }
                 }
-            }
-            return originalDispatcher.dispatchEvent(event, tail);
-        });
+                return originalDispatcher.dispatchEvent(event, tail);
+            });
+        }
     }
 
     @Override
