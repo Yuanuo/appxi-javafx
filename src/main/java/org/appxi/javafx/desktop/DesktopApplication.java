@@ -201,11 +201,15 @@ public abstract class DesktopApplication extends Application {
             eventBus.fireEvent(new ApplicationEvent(ApplicationEvent.STOPPING));
         } catch (Throwable ignored) {
         }
-        UserPrefs.prefs.setProperty("ui.used", this.step);
-        StateHelper.storeScene(UserPrefs.prefs, primaryStage.getScene());
-        StateHelper.storeStage(UserPrefs.prefs, primaryStage);
-        UserPrefs.prefs.save();
-        UserPrefs.recents.save();
+        try {
+            UserPrefs.prefs.setProperty("ui.used", this.step);
+            StateHelper.storeScene(UserPrefs.prefs, primaryStage.getScene());
+            StateHelper.storeStage(UserPrefs.prefs, primaryStage);
+            UserPrefs.prefs.save();
+            UserPrefs.recents.save();
+        } catch (Throwable ignored) {
+        }
+        System.exit(0);
     }
 
     private double step = 1, steps = 20;
