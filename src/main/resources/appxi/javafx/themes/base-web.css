@@ -1,11 +1,11 @@
 :root {
-    --text-size: 1.3rem;
+    --zoom: 1.5;
+    --font-size: calc(var(--zoom) * 1rem);
+    --char-size: calc(var(--font-size) * 1.1);
     --font-family: "PingFang SC", "Hiragino Sans GB", "Heiti SC", "Microsoft YaHei", "WenQuanYi Micro Hei", STXihei, Arial, "Helvetica Neue", Helvetica, sans-serif;
 
     -webkit-font-smoothing: subpixel-antialiased;
     -moz-osx-font-smoothing: grayscale;
-    
-    --char-size: calc(1.1 * var(--text-size));
 }
 
 * {
@@ -17,160 +17,9 @@
 
 body {
     font-family: var(--font-family);
-    font-size: var(--text-size);
+    font-size: var(--font-size);
     color: var(--text-color);
-    line-height: 2.4rem;
-    letter-spacing: .1rem;
+    line-height: calc(var(--font-size) * 1.85);
+    letter-spacing: calc(var(--font-size) / 10);
     margin: 0;
-}
-/*   *************************************************************************************************************    */
-.cb-docNumber {
-    opacity: .75;
-}
-
-.cb-juan {
-    padding-top: 1rem;
-    padding-bottom: 1rem;
-}
-
-.cb-juan.open {
-    text-align: center;
-}
-
-.cb-juan .cb-jhead {
-    font-size: calc(var(--text-size) * 1.4);
-    font-weight: bold;
-}
-
-.cb-juan.close {
-    text-align: left;
-}
-
-.cb-juan.close div:nth-child(1)::after {
-    content: '（圆满）';
-    font-size: 80%;
-}
-
-.byline {
-    text-align: right;
-    font-style: italic;
-}
-
-.cb-mulu {
-    font-weight: bold;
-    padding-top: 1rem;
-    padding-bottom: 1rem;
-    text-align: center;
-}
-.cb-mulu[leveln^='1-'] {
-    font-size: calc(var(--text-size) * 1.2);
-}
-.cb-mulu[leveln^='2-'] {
-    font-size: calc(var(--text-size) * 1.12);
-}
-.cb-mulu[leveln^='3-'] {
-    font-size: calc(var(--text-size) * 1.09);
-}
-.cb-mulu[leveln^='4-'] {
-    font-size: calc(var(--text-size) * 1.06);
-}
-.cb-mulu[leveln^='5-'] {
-    font-size: calc(var(--text-size) * 1.03);
-}
-
-.head {
-    font-weight: bold;
-    text-align: center;
-}
-
-.place-inline {
-    font-size: 75%;
-    font-weight: normal;
-}
-.place-inline::before {
-    content: '（';
-}
-.place-inline::after {
-    content: '）';
-}
-
-div.p,
-p {
-    padding-bottom: 1rem;
-}
-
-p.lg {
-    text-align:center;
-}
-p.lg .l {
-    display: block;
-}
-
-/*   *************************************************************************************************************    */
-article {
-    padding: 3rem;
-}
-
-.wrap-lines-on,
-.wrap-pages-on {
-    margin-left: 6rem;
-}
-.wrap-lines-on div,
-.wrap-lines-on p,
-.wrap-lines-on .lg .l,
-.wrap-pages-on div,
-.wrap-pages-on p,
-.wrap-pages-on .lg .l {
-    display: inline;
-}
-.wrap-pages-on span.lb:before,
-.wrap-lines-on span.lb:before {
-    content: "\A" attr(id) " : ";
-    white-space: pre;
-    color: var(--text-color);
-    font-family: Helvetica;
-    font-weight: normal;
-    opacity: .5;
-}
-
-.wrap-pages-on span.pb:before {
-    content: "\A\A\A" attr(id) "\A\A";
-    white-space: pre;
-    color: var(--text-color);
-    font-family: Helvetica;
-    font-weight: normal;
-    opacity: .5;
-}
-
-.pretty-indent-on .indent-first-letter,
-.pretty-indent-on .indent-first-letter-lg .l:first-child{
-    text-indent: calc(-1 * var(--char-size));
-}
-.pretty-indent-on .indent-last-letter-lg .l:last-child{
-    text-indent: calc(1 * var(--char-size));
-}
-/*   *************************************************************************************************************    */
-.edit-orig-inline-on span.note.orig:before {
-    content: attr(data-t);
-    font-size: 75%;
-    color: #20b771;
-}
-
-.edit-mod-sharp-on span.note.mod:before {
-    content: "[#]";
-    font-size: 75%;
-    font-weight: 600;
-    color: #20b771;
-}
-
-.edit-mod-color-on span.lem > .tmp,
-.edit-mod-popover-on span.lem > .tmp {
-    color: #20b771;
-    padding: 0 .25rem;
-}
-
-.edit-mod-inline-on span.note.mod:before {
-    content: attr(data-t);
-    font-size: 75%;
-    color: #20b771;
 }
