@@ -23,6 +23,7 @@ import java.util.Objects;
 
 public class WorkbenchPane extends StackPane {
     private static final Object AK_FIRST_TIME = new Object();
+    private static final Object AK_CLOSED = new Object();
 
     private final ToggleGroup sideToolsGroup = new ToggleGroup();
     protected final ToolBarEx sideTools;
@@ -148,10 +149,12 @@ public class WorkbenchPane extends StackPane {
             this.mainViews.getTabs().add(addIdx, tool);
         }
         // 先添加到tabs后再绑定事件，避免添加时触发第一次加载事件
-        tool.setOnClosed(event -> {
+        tool.setOnCloseRequest(event -> {
             // 只有已经触发过第一次加载事件的视图才处理此操作
-            if (controller.hasAttr(AK_FIRST_TIME))
+            if (controller.hasAttr(AK_FIRST_TIME)) {
+                controller.attr(AK_CLOSED, true);
                 controller.onViewportHide(false);
+            }
         });
         tool.selectedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
@@ -164,7 +167,7 @@ public class WorkbenchPane extends StackPane {
                 if (Platform.isFxApplicationThread())
                     runnable.run();
                 else Platform.runLater(runnable);
-            } else if (oldValue && controller.hasAttr(AK_FIRST_TIME)) {
+            } else if (oldValue && controller.hasAttr(AK_FIRST_TIME) && !controller.hasAttr(AK_CLOSED)) {
                 controller.onViewportHide(true);
             }
         });
