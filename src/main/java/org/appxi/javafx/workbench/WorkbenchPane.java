@@ -1,6 +1,5 @@
 package org.appxi.javafx.workbench;
 
-import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Orientation;
@@ -14,6 +13,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import org.appxi.javafx.control.TabPaneEx;
 import org.appxi.javafx.control.ToolBarEx;
+import org.appxi.javafx.helper.FxHelper;
 import org.appxi.util.StringHelper;
 import org.appxi.util.ext.Attributes;
 
@@ -120,7 +120,7 @@ public class WorkbenchPane extends StackPane {
     public void addWorkbenchViewAsSideTool(WorkbenchViewController controller) {
         final Button tool = new Button();
         addSideTool(tool, controller, Pos.CENTER_RIGHT);
-        tool.setOnAction(event -> Platform.runLater(() -> controller.onViewportShow(ensureFirstTime(controller))));
+        tool.setOnAction(event -> FxHelper.runLater(() -> controller.onViewportShow(ensureFirstTime(controller))));
     }
 
     public void addWorkbenchViewAsSideView(WorkbenchViewController controller) {
@@ -164,9 +164,7 @@ public class WorkbenchPane extends StackPane {
                         tool.setContent(controller.getViewport());
                     controller.onViewportShow(firstTime);
                 };
-                if (Platform.isFxApplicationThread())
-                    runnable.run();
-                else Platform.runLater(runnable);
+                FxHelper.runLater(runnable);
             } else if (oldValue && controller.hasAttr(AK_FIRST_TIME) && !controller.hasAttr(AK_CLOSED)) {
                 controller.onViewportHide(true);
             }
@@ -283,7 +281,7 @@ public class WorkbenchPane extends StackPane {
         if (tab.isSelected()) {
             final WorkbenchViewController controller = (WorkbenchViewController) tab.getUserData();
             if (!controller.hasAttr(AK_FIRST_TIME) || tab.getContent() == null) {
-                Platform.runLater(() -> {
+                FxHelper.runLater(() -> {
                     final boolean firstTime = ensureFirstTime(controller);
                     if (firstTime || tab.getContent() == null) // always lazy init
                         tab.setContent(controller.getViewport());
