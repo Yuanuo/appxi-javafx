@@ -88,6 +88,11 @@ public abstract class DesktopApplication extends Application {
         UserPrefs.recents = new PreferencesInProperties(UserPrefs.confDir().resolve(".recents"));
         this.steps = UserPrefs.prefs.getDouble("ui.used", 20);
         Thread.setDefaultUncaughtExceptionHandler((t, err) -> FxHelper.alertError(this, err));
+
+
+        updateStartingProgress();
+        // a very special notification for special things(if you catch it)
+        notifyPreloader(new Preloader.ProgressNotification(0.111));
     }
 
     @Override
@@ -130,9 +135,6 @@ public abstract class DesktopApplication extends Application {
             }
             primaryStage.getIcons().setAll(icons);
 
-            updateStartingProgress();
-            // 6, a very special notification for special things(if you catch it)
-            notifyPreloader(new Preloader.ProgressNotification(0.111));
             //
             updateStartingProgress();
 
@@ -140,12 +142,11 @@ public abstract class DesktopApplication extends Application {
             if (null != primaryController) {
                 primaryController.setupInitialize();
             }
+
             // 8, fire starting event for more custom things
             eventBus.fireEvent(new ApplicationEvent(ApplicationEvent.STARTING));
             starting();
-        }).whenComplete((o, throwable) -> {
-            if (null != throwable)
-                FxHelper.alertError(this, throwable);
+
             // for show main stage
             Platform.runLater(primaryStage::show);
 
@@ -158,6 +159,9 @@ public abstract class DesktopApplication extends Application {
 
             // for debug only
             DevtoolHelper.LOG.info(StringHelper.msg("App startup used steps/times: ", step, "/", System.currentTimeMillis() - startTime));
+        }).whenComplete((o, throwable) -> {
+            if (null != throwable)
+                FxHelper.alertError(this, throwable);
         });
     }
 
