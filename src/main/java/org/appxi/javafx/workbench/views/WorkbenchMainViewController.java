@@ -36,14 +36,40 @@ public abstract class WorkbenchMainViewController extends WorkbenchViewControlle
     protected abstract void onViewportInitOnce(StackPane viewport);
 
     @Override
-    public void onViewportHide(boolean hideOrElseClose) {
+    public final void onViewportShow(boolean firstTime) {
+        setPrimaryTitle(null == viewTitle ? this.viewName : viewTitle);
+        onViewportShowing(firstTime);
     }
 
-    protected final void setSecondaryTitle(String title) {
+    protected abstract void onViewportShowing(boolean firstTime);
+
+    @Override
+    public final void onViewportHide(boolean hideOrElseClose) {
+        setPrimaryTitle(null);
+        if (hideOrElseClose) {
+            onViewportHiding();
+        } else {
+            onViewportClosing();
+        }
+    }
+
+    protected void onViewportHiding() {
+    }
+
+    protected void onViewportClosing() {
+    }
+
+    private String viewTitle;
+
+    protected final void setViewTitle(String title) {
         if (null == title)
             title = this.viewName;
+
+        this.viewTitle = title;
+
         Tab tab = getPrimaryViewport().findMainViewTab(this.viewId);
         tab.setText(title);
         tab.setTooltip(new Tooltip(title));
+        setPrimaryTitle(title);
     }
 }
