@@ -45,11 +45,14 @@ public abstract class WorkbenchMainViewController extends WorkbenchViewControlle
 
     @Override
     public final void onViewportHide(boolean hideOrElseClose) {
-        setPrimaryTitle(null);
         if (hideOrElseClose) {
             onViewportHiding();
+            setPrimaryTitle(null);
         } else {
             onViewportClosing();
+            Tab tab = getPrimaryViewport().findMainViewTab(this.viewId);
+            if (null != tab && tab.isSelected())
+                setPrimaryTitle(null);
         }
     }
 
