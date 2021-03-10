@@ -6,6 +6,7 @@ import javafx.scene.layout.StackPane;
 import org.appxi.javafx.workbench.WorkbenchApplication;
 import org.appxi.javafx.workbench.WorkbenchViewController;
 import org.appxi.javafx.workbench.WorkbenchViewLocation;
+import org.appxi.util.StringHelper;
 
 public abstract class WorkbenchMainViewController extends WorkbenchViewController {
     private StackPane viewport;
@@ -37,7 +38,7 @@ public abstract class WorkbenchMainViewController extends WorkbenchViewControlle
 
     @Override
     public final void onViewportShow(boolean firstTime) {
-        setPrimaryTitle(null == viewTitle ? this.viewName : viewTitle);
+        setPrimaryTitle(getMainTitle());
         onViewportShowing(firstTime);
     }
 
@@ -62,17 +63,25 @@ public abstract class WorkbenchMainViewController extends WorkbenchViewControlle
     protected void onViewportClosing() {
     }
 
-    private String viewTitle;
+    protected String getMainTitle() {
+        return null == mainTitle ? this.viewName : mainTitle;
+    }
 
-    protected final void setViewTitle(String title) {
-        if (null == title)
-            title = this.viewName;
+    private String mainTitle;
 
-        this.viewTitle = title;
+    protected final void setTitles(String title) {
+        this.setTitles(title, title, title);
+    }
 
-        Tab tab = getPrimaryViewport().findMainViewTab(this.viewId);
-        tab.setText(title);
-        tab.setTooltip(new Tooltip(title));
-        setPrimaryTitle(title);
+    protected final void setTitles(String mainTitle, String toolTitle, String toolTip) {
+        if (null != mainTitle)
+            setPrimaryTitle(this.mainTitle = mainTitle);
+
+        if (null != toolTitle) {
+            toolTitle = StringHelper.trimBytes(toolTitle, 24);
+            Tab tab = getPrimaryViewport().findMainViewTab(this.viewId);
+            tab.setText(toolTitle);
+            tab.setTooltip(new Tooltip(null == toolTip ? toolTitle : toolTip));
+        }
     }
 }
