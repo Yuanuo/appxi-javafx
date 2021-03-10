@@ -133,10 +133,15 @@ public class WorkbenchPane extends StackPane {
         final Tab tool = new Tab();
         tool.setId(controller.viewId);
         tool.setUserData(controller);
-        if (StringHelper.isNotBlank(controller.viewName)) {
+        if (StringHelper.isNotBlank(controller.viewName))
             tool.setText(StringHelper.trimBytes(controller.viewName, 24));
-            tool.setTooltip(new Tooltip(controller.viewName));
-        }
+
+        String tooltip = controller.createToolTooltipText();
+        if (null == tooltip)
+            tooltip = controller.viewName;
+        if (StringHelper.isNotBlank(tooltip))
+            tool.setTooltip(new Tooltip(tooltip));
+
 
         final Node iconGraphic = controller.createToolIconGraphic(false);
         if (null != iconGraphic)
@@ -192,8 +197,11 @@ public class WorkbenchPane extends StackPane {
         tool.setUserData(controller);
         tool.setContentDisplay(ContentDisplay.TOP);
 
-        if (StringHelper.isNotBlank(controller.viewName))
-            tool.setTooltip(new Tooltip(controller.viewName));
+        String tooltip = controller.createToolTooltipText();
+        if (null == tooltip)
+            tooltip = controller.viewName;
+        if (StringHelper.isNotBlank(tooltip))
+            tool.setTooltip(new Tooltip(tooltip));
 
         final Node iconGraphic = controller.createToolIconGraphic(true);
         if (null != iconGraphic) {

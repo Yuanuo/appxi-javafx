@@ -22,6 +22,10 @@ public abstract class WorkbenchViewController extends ViewController {
 
     public abstract Node createToolIconGraphic(boolean sideToolOrElseViewTool);
 
+    public String createToolTooltipText() {
+        return this.viewName;
+    }
+
     public abstract void onViewportShow(boolean firstTime);
 
     public abstract void onViewportHide(boolean hideOrElseClose);
