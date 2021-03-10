@@ -5,6 +5,7 @@ import com.sun.webkit.event.WCMouseWheelEvent;
 import javafx.beans.Observable;
 import javafx.concurrent.Worker;
 import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -26,6 +27,8 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class WebViewer extends StackPane {
+    private final EventHandler<MouseEvent> handleContextMenuVisible = this::handleContextMenuVisible;
+    private final EventHandler<Event> handleContextMenuHidden = this::handleContextMenuHidden;
     private WebView viewer;
     private WebEngine engine;
     private WebPage page;
@@ -90,15 +93,15 @@ public class WebViewer extends StackPane {
         this.contextMenuBuilder = contextMenuBuilder;
         if (null == contextMenuBuilder) {
             this.viewer.setContextMenuEnabled(true);
-            this.viewer.removeEventHandler(MouseEvent.MOUSE_RELEASED, this::handleContextMenuVisible);
-            this.viewer.removeEventHandler(MouseEvent.MOUSE_PRESSED, this::handleContextMenuHidden);
-            this.viewer.removeEventHandler(ScrollEvent.SCROLL, this::handleContextMenuHidden);
+            this.viewer.removeEventHandler(MouseEvent.MOUSE_RELEASED, handleContextMenuVisible);
+            this.viewer.removeEventHandler(MouseEvent.MOUSE_PRESSED, handleContextMenuHidden);
+            this.viewer.removeEventHandler(ScrollEvent.SCROLL, handleContextMenuHidden);
             return;
         }
         this.viewer.setContextMenuEnabled(false);
-        this.viewer.addEventHandler(MouseEvent.MOUSE_RELEASED, this::handleContextMenuVisible);
-        this.viewer.addEventHandler(MouseEvent.MOUSE_PRESSED, this::handleContextMenuHidden);
-        this.viewer.addEventHandler(ScrollEvent.SCROLL, this::handleContextMenuHidden);
+        this.viewer.addEventHandler(MouseEvent.MOUSE_RELEASED, handleContextMenuVisible);
+        this.viewer.addEventHandler(MouseEvent.MOUSE_PRESSED, handleContextMenuHidden);
+        this.viewer.addEventHandler(ScrollEvent.SCROLL, handleContextMenuHidden);
     }
 
     private ContextMenu contextMenu;
