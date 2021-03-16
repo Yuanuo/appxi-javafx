@@ -107,7 +107,7 @@ public class WorkbenchPane extends StackPane {
 
     public void addWorkbenchView(WorkbenchViewController controller) {
         final WorkbenchViewLocation location = controller.getWorkbenchViewLocation();
-        if (null == location)
+        if (null == location || location == WorkbenchViewLocation.noneView)
             return;
         switch (location) {
             case sideTool -> addWorkbenchViewAsSideTool(controller);

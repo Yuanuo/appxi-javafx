@@ -12,7 +12,7 @@ public abstract class WorkbenchNoneViewController extends WorkbenchViewControlle
 
     @Override
     public final WorkbenchViewLocation getWorkbenchViewLocation() {
-        return null;
+        return WorkbenchViewLocation.noneView;
     }
 
     @Override

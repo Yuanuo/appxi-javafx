@@ -4,5 +4,6 @@ public enum WorkbenchViewLocation {
     sideTool,
     sideView,
     mainView,
-    mainViewWithSideTool
+    mainViewWithSideTool,
+    noneView
 }
