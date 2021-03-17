@@ -165,31 +165,6 @@ public abstract class DesktopApplication extends Application {
         });
     }
 
-    protected String createPrimaryFontStyle() {
-        /*-fx-font-family: "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", STXihei, Arial, "Helvetica Neue", Helvetica, sans-serif;*/
-        String fontSize = UserPrefs.prefs.getString("ui.font.size", null);
-        if (null == fontSize || fontSize.isBlank()) {
-            fontSize = "16";
-            UserPrefs.prefs.setProperty("ui.font.size", fontSize);
-        }
-
-        String fontName = UserPrefs.prefs.getString("ui.font.name", null);
-        if (fontName == null || fontName.isBlank()) {
-            final String osName = System.getProperty("os.name").toLowerCase();
-            if (osName.contains("windows")) {
-                fontName = "Microsoft YaHei";
-            } else if (osName.contains("mac") || osName.contains("osx")) {
-                fontName = "PingFang SC";
-            } else if (osName.contains("linux") || osName.contains("ubuntu")) {
-                fontName = "WenQuanYi Micro Hei";
-            } else {
-                fontName = "SYSTEM";
-            }
-            UserPrefs.prefs.setProperty("ui.font.name", fontName);
-        }
-        return "-fx-font: ".concat(fontSize).concat(" \"").concat(fontName).concat("\";");
-    }
-
     protected void start() {
     }
 
@@ -220,5 +195,38 @@ public abstract class DesktopApplication extends Application {
 
     public final void updateStartingProgress() {
         notifyPreloader(new Preloader.ProgressNotification(step++ / steps));
+    }
+
+    protected String createPrimaryFontStyle() {
+        String fontSize = UserPrefs.prefs.getString("ui.font.size", null);
+        if (null == fontSize || fontSize.isBlank()) {
+            fontSize = "14";
+            UserPrefs.prefs.setProperty("ui.font.size", fontSize);
+        }
+        fontSize = "-fx-font-size:".concat(fontSize).concat(";");
+
+        String fontName = UserPrefs.prefs.getString("ui.font.name", null);
+        if (fontName == null || fontName.isBlank()) {
+            final String osName = System.getProperty("os.name").toLowerCase();
+            if (osName.contains("windows")) {
+                fontName = "Microsoft YaHei";
+            } else if (osName.contains("mac") || osName.contains("osx")) {
+                fontName = "PingFang SC";
+            } else if (osName.contains("linux") || osName.contains("ubuntu")) {
+                fontName = "WenQuanYi Micro Hei";
+            } else {
+                fontName = "SYSTEM";
+            }
+            UserPrefs.prefs.setProperty("ui.font.name", fontName);
+        }
+        fontName = "-fx-font-family: \"".concat(fontName).concat("\";");
+
+        return fontSize.concat(fontName);
+    }
+
+    public final void updatePrimaryFontStyle() {
+        final String updatedFontStyle = this.createPrimaryFontStyle();
+        primaryScene.getRoot().setStyle(primaryScene.getRoot().getStyle().replace(primaryFontStyle, updatedFontStyle));
+        this.primaryFontStyle = updatedFontStyle;
     }
 }
