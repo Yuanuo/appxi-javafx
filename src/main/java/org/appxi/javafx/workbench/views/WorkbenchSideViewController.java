@@ -8,7 +8,6 @@ import javafx.scene.layout.VBox;
 import org.appxi.javafx.control.ToolBarEx;
 import org.appxi.javafx.workbench.WorkbenchApplication;
 import org.appxi.javafx.workbench.WorkbenchViewController;
-import org.appxi.javafx.workbench.WorkbenchViewLocation;
 
 public abstract class WorkbenchSideViewController extends WorkbenchViewController {
     protected BorderPane viewport;
@@ -16,13 +15,8 @@ public abstract class WorkbenchSideViewController extends WorkbenchViewControlle
     protected ToolBarEx toolbar;
     protected Label titleBar;
 
-    public WorkbenchSideViewController(String viewId, String viewName, WorkbenchApplication application) {
-        super(viewId, viewName, application);
-    }
-
-    @Override
-    public final WorkbenchViewLocation getWorkbenchViewLocation() {
-        return WorkbenchViewLocation.sideView;
+    public WorkbenchSideViewController(String viewId, WorkbenchApplication application) {
+        super(viewId, application);
     }
 
     @Override
@@ -30,18 +24,17 @@ public abstract class WorkbenchSideViewController extends WorkbenchViewControlle
         if (null == this.viewport) {
             this.viewport = new BorderPane();
 
-            this.titleBar = new Label(this.viewName);
+            this.titleBar = new Label();
             this.titleBar.getStyleClass().add("title-bar");
+            this.titleBar.textProperty().bind(viewTitle);
 
             final HBox headBar = new HBox(titleBar);
             headBar.getStyleClass().add("head-bar");
             this.viewport.setTop(headBar);
 
-            if (isToolbarEnable()) {
-                this.toolbar = new ToolBarEx();
-                HBox.setHgrow(this.toolbar, Priority.ALWAYS);
-                headBar.getChildren().add(this.toolbar);
-            }
+            this.toolbar = new ToolBarEx();
+            HBox.setHgrow(this.toolbar, Priority.ALWAYS);
+            headBar.getChildren().add(this.toolbar);
 
             this.viewportVBox = new VBox();
             this.viewportVBox.getStyleClass().addAll("vbox", "side-vbox");
@@ -52,24 +45,7 @@ public abstract class WorkbenchSideViewController extends WorkbenchViewControlle
         return viewport;
     }
 
-    protected boolean isToolbarEnable() {
-        return false;
-    }
-
     protected abstract void onViewportInitOnce();
 
-    @Override
-    public void onViewportHide(boolean hideOrElseClose) {
-    }
-
-    public final void setViewTitle(String title) {
-        if (null == this.titleBar)
-            return;
-
-        if (null == title)
-            title = this.viewName;
-        else
-            title = this.viewName.concat(" ").concat(title);
-        this.titleBar.setText(title);
-    }
+    public abstract void onViewportHiding();
 }

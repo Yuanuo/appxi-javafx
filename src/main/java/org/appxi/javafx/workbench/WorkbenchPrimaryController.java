@@ -10,18 +10,17 @@ import java.util.List;
 public abstract class WorkbenchPrimaryController extends ViewController {
     private WorkbenchPane viewport;
 
-    public WorkbenchPrimaryController(String viewId, String viewName, WorkbenchApplication application) {
-        super(viewId, viewName, application);
+    public WorkbenchPrimaryController(String viewId, WorkbenchApplication application) {
+        super(viewId, application);
     }
 
-    @Override
     public final WorkbenchApplication getApplication() {
-        return (WorkbenchApplication) super.getApplication();
+        return (WorkbenchApplication) super.application;
     }
 
     @Override
     public final WorkbenchPane getViewport() {
-        return null != this.viewport ? this.viewport : (this.viewport = new WorkbenchPane());
+        return null != this.viewport ? this.viewport : (this.viewport = new WorkbenchPane(getApplication()));
     }
 
     @Override

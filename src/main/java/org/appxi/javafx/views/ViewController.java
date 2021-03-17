@@ -1,7 +1,11 @@
 package org.appxi.javafx.views;
 
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import org.appxi.javafx.desktop.DesktopApplication;
 import org.appxi.javafx.event.EventBus;
@@ -9,12 +13,11 @@ import org.appxi.javafx.theme.ThemeProvider;
 import org.appxi.util.ext.Attributes;
 
 public abstract class ViewController extends Attributes {
-    public final String viewId, viewName;
+    public final String viewId;
     public final DesktopApplication application;
 
-    public ViewController(String viewId, String viewName, DesktopApplication application) {
+    public ViewController(String viewId, DesktopApplication application) {
         this.viewId = viewId;
-        this.viewName = viewName;
         this.application = application;
     }
 
@@ -23,12 +26,25 @@ public abstract class ViewController extends Attributes {
     public abstract void setupInitialize();
 
     /*
-     * methods just for easy access
+     * titles
      */
 
-    public DesktopApplication getApplication() {
-        return application;
+    protected void setTitles(String title) {
+        setTitles(title, title);
     }
+
+    protected void setTitles(String title, String tooltip) {
+        viewTitle.set(title);
+        viewTooltip.set(tooltip);
+    }
+
+    public final StringProperty viewTitle = new SimpleStringProperty();
+    public final StringProperty viewTooltip = new SimpleStringProperty();
+    public final ObjectProperty<Node> viewIcon = new SimpleObjectProperty<>();
+
+    /*
+     * methods just for easy access
+     */
 
     public final Stage getPrimaryStage() {
         return this.application.getPrimaryStage();
@@ -38,20 +54,11 @@ public abstract class ViewController extends Attributes {
         return this.application.getPrimaryScene();
     }
 
-    public StackPane getPrimaryViewport() {
-        return this.application.getPrimaryViewport();
-    }
-
     public final EventBus getEventBus() {
         return this.application.eventBus;
     }
 
     public final ThemeProvider getThemeProvider() {
         return this.application.themeProvider;
-    }
-
-    public final ViewController setPrimaryTitle(String title) {
-        this.application.setPrimaryTitle(title);
-        return this;
     }
 }

@@ -151,6 +151,7 @@ public abstract class LookupView<T> {
                 protected void updateItem(T item, boolean empty) {
                     super.updateItem(item, empty);
                     if (empty) {
+                        updatedItem = null;
                         this.setText(null);
                         return;
                     }
