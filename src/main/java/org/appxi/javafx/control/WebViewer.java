@@ -56,8 +56,8 @@ public class WebViewer extends StackPane {
                         (int) ev.getScreenX(), (int) ev.getScreenY(),
                         System.currentTimeMillis(),
                         ev.isShiftDown(), ev.isControlDown(), ev.isAltDown(), ev.isMetaDown(),
-                        (float) (-ev.getDeltaX() * viewer.getFontScale() * getScaleX() * 8),
-                        (float) (-ev.getDeltaY() * viewer.getFontScale() * getScaleY() * 8)
+                        (float) (-ev.getDeltaX() * viewer.getFontScale() * getScaleX() * 5),
+                        (float) (-ev.getDeltaY() * viewer.getFontScale() * getScaleY() * 5)
                 ));
                 ev.consume();
             });
