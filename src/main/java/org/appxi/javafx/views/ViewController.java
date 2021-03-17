@@ -10,6 +10,7 @@ import javafx.stage.Stage;
 import org.appxi.javafx.desktop.DesktopApplication;
 import org.appxi.javafx.event.EventBus;
 import org.appxi.javafx.theme.ThemeProvider;
+import org.appxi.util.StringHelper;
 import org.appxi.util.ext.Attributes;
 
 public abstract class ViewController extends Attributes {
@@ -34,7 +35,7 @@ public abstract class ViewController extends Attributes {
     }
 
     protected void setTitles(String title, String tooltip) {
-        viewTitle.set(title);
+        viewTitle.set(null == title ? null : StringHelper.trimChars(title, 20));
         viewTooltip.set(tooltip);
     }
 
