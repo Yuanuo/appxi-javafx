@@ -3,11 +3,14 @@ package org.appxi.javafx.workbench;
 import org.appxi.javafx.desktop.ApplicationEvent;
 import org.appxi.javafx.views.ViewController;
 import org.appxi.prefs.UserPrefs;
-import org.appxi.util.DevtoolHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 public abstract class WorkbenchPrimaryController extends ViewController {
+    private static final Logger logger = LoggerFactory.getLogger(WorkbenchPrimaryController.class);
+
     private WorkbenchPane viewport;
 
     public WorkbenchPrimaryController(String viewId, WorkbenchApplication application) {
@@ -50,7 +53,8 @@ public abstract class WorkbenchPrimaryController extends ViewController {
         this.viewport.setRootViewsDividerPosition(UserPrefs.prefs.getDouble("workbench.views.divider", 0.2));
         if (UserPrefs.prefs.getBoolean("workbench.sideviews.visible", true))
             this.viewport.selectSideTool(null);
-        DevtoolHelper.LOG.info("load views used time: " + (System.currentTimeMillis() - st0));
+        if (logger.isDebugEnabled())
+            logger.debug("load views used time: " + (System.currentTimeMillis() - st0));
     }
 
     protected abstract List<WorkbenchViewController> createViewControllers();

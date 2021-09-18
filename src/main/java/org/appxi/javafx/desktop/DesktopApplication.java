@@ -15,8 +15,9 @@ import org.appxi.javafx.theme.ThemeProvider;
 import org.appxi.javafx.views.ViewController;
 import org.appxi.prefs.PreferencesInProperties;
 import org.appxi.prefs.UserPrefs;
-import org.appxi.util.DevtoolHelper;
 import org.appxi.util.StringHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -25,6 +26,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public abstract class DesktopApplication extends Application {
+    protected final Logger logger = LoggerFactory.getLogger(DesktopApplication.class);
+
     private final long startTime = System.currentTimeMillis();
 
     public final EventBus eventBus = new EventBus();
@@ -83,9 +86,9 @@ public abstract class DesktopApplication extends Application {
     @Override
     public void init() throws Exception {
         // 1, init user prefs
-        UserPrefs.setupPortable(".".concat(getApplicationId()), null);
         UserPrefs.prefs = new PreferencesInProperties(UserPrefs.confDir().resolve(".prefs"));
         UserPrefs.recents = new PreferencesInProperties(UserPrefs.confDir().resolve(".recents"));
+        UserPrefs.favorites = new PreferencesInProperties(UserPrefs.confDir().resolve(".favorites"));
         this.steps = UserPrefs.prefs.getDouble("ui.used", 20);
         Thread.setDefaultUncaughtExceptionHandler((t, err) -> FxHelper.alertError(this, err));
 
@@ -111,6 +114,8 @@ public abstract class DesktopApplication extends Application {
         this.primaryScene = StateHelper.restoreScene(UserPrefs.prefs, this.primaryViewport);
         primaryStage.setScene(primaryScene);
         StateHelper.restoreStage(UserPrefs.prefs, primaryStage);
+        primaryStage.setMinWidth(1366);
+        primaryStage.setMinHeight(768);
         this.setPrimaryTitle(null);
         this.primaryFontStyle = createPrimaryFontStyle();
         final Parent root = primaryScene.getRoot();
@@ -158,7 +163,7 @@ public abstract class DesktopApplication extends Application {
             started();
 
             // for debug only
-            DevtoolHelper.LOG.info(StringHelper.msg("App startup used steps/times: ", step, "/", System.currentTimeMillis() - startTime));
+            logger.info(StringHelper.concat("App startup used steps/times: ", step, "/", System.currentTimeMillis() - startTime));
         }).whenComplete((o, throwable) -> {
             if (null != throwable)
                 FxHelper.alertError(this, throwable);
@@ -182,10 +187,9 @@ public abstract class DesktopApplication extends Application {
         }
         try {
             UserPrefs.prefs.setProperty("ui.used", this.step);
-            StateHelper.storeScene(UserPrefs.prefs, primaryStage.getScene());
+            StateHelper.storeScene(UserPrefs.prefs, primaryStage);
             StateHelper.storeStage(UserPrefs.prefs, primaryStage);
             UserPrefs.prefs.save();
-            UserPrefs.recents.save();
         } catch (Throwable ignored) {
         }
         System.exit(0);
