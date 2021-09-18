@@ -36,9 +36,9 @@
     -fx-padding: 0;
 }
 
-.tool-bar .glyph-icon {
+.glyph-icon {
     -fx-font-size: 1.35em !important;
-    -fx-fill: -fx-mid-text-color;
+    -fx-fill: derive(-fx-mid-text-color, 30%);
 }
 
 .tool-bar {
@@ -60,6 +60,9 @@
 .context-menu {
     -fx-min-width: 18em;
     -fx-border-width: 1;
+}
+#choice-box-popup-menu {
+    -fx-min-width: 0;
 }
 
 .separator:horizontal .line {
@@ -133,6 +136,11 @@
 .list-view .list-cell:filled {
     -fx-border-width: 0 0 .05em 0;
     -fx-border-style: dashed;
+}
+
+.tree-view .tree-cell:filled .glyph-icon,
+.list-view .list-cell:filled .glyph-icon {
+    -fx-fill: derive(-fx-accent, 60%);
 }
 
 
