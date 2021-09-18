@@ -65,6 +65,14 @@ public interface TreeHelper {
         return holder.value;
     }
 
+    static <T> TreeItem<T> findFirstChild(TreeItem<T> treeItem, Predicate<TreeItem<T>> predicate) {
+        for (TreeItem<T> child : treeItem.getChildren()) {
+            if (predicate.test(child))
+                return child;
+        }
+        return null;
+    }
+
     static <T> T findFirstParentValue(TreeItem<T> treeItem, Predicate<TreeItem<T>> predicate) {
         final TreeItem<T> first = findFirstParent(treeItem, predicate);
         return null == first ? null : first.getValue();
