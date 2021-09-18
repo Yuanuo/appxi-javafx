@@ -70,7 +70,6 @@ public abstract class LookupView<T> {
             dialogPane = new DialogPaneEx();
             dialogPane.getStyleClass().add("lookup-view");
             StackPane.setAlignment(dialogPane, Pos.TOP_CENTER);
-            dialogPane.setPrefSize(getPrefWidth(), getPrefHeight());
             dialogPane.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
             dialogPane.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
             dialogPane.addEventHandler(KeyEvent.KEY_PRESSED, handleEventToHide);
@@ -166,6 +165,7 @@ public abstract class LookupView<T> {
         }
         if (!showing) {
             showing = true;
+            dialogPane.setPrefSize(getPrefWidth(), getPrefHeight());
             owner.getChildren().addAll(masking, dialogPane);
         }
         searchInput.requestFocus();
@@ -174,11 +174,11 @@ public abstract class LookupView<T> {
     }
 
     protected int getPrefWidth() {
-        return 1280;
+        return 1080;
     }
 
     protected int getPrefHeight() {
-        return 720;
+        return 640;
     }
 
     protected int getResultLimit() {
