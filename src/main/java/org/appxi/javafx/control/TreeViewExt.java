@@ -51,6 +51,11 @@ public class TreeViewExt<T> extends TreeViewEx<T> {
     }
 
     private void handleOnKeyReleased(KeyEvent event) {
+        if (event.getCode() == KeyCode.ESCAPE) {
+            this.getSelectionModel().clearSelection();
+            event.consume();
+            return;
+        }
         if (event.getCode() != KeyCode.ENTER)
             return;
         final TreeItem<T> treeItem = this.getSelectionModel().getSelectedItem();
@@ -58,6 +63,7 @@ public class TreeViewExt<T> extends TreeViewEx<T> {
             return;
         if (!treeItem.isLeaf()) {
             treeItem.setExpanded(!treeItem.isExpanded());
+            event.consume();
             return;
         }
 
