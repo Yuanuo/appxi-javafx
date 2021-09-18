@@ -29,6 +29,7 @@ public abstract class WorkbenchApplication extends DesktopApplication {
 
         };
         themeProvider.addTheme(ThemeSet.light("light", "Light", "#e9e9eb")
+                .addStylesheet(resourcesGetter.apply("themes/theme-app.css"))
                 .addStylesheet(resourcesGetter.apply("themes/theme-light-default-app.css"))
                 .addTheme(Theme.light("default", "Default", "#e9e9eb")
                         .addStylesheet(resourcesGetter.apply("themes/base-web.css"))
@@ -37,6 +38,7 @@ public abstract class WorkbenchApplication extends DesktopApplication {
         );
 
         themeProvider.addTheme(ThemeSet.light("light-2", "Green", "#328291")
+                .addStylesheet(resourcesGetter.apply("themes/theme-app.css"))
                 .addStylesheet(resourcesGetter.apply("themes/theme-light-extend-app.css"))
                 .addTheme(Theme.light("default", "Default", "#328291")
                         .addStylesheet(resourcesGetter.apply("themes/base-web.css"))
@@ -45,6 +47,7 @@ public abstract class WorkbenchApplication extends DesktopApplication {
         );
 
         themeProvider.addTheme(ThemeSet.light("light-javafx", "JavaFX Light", "#dddddd")
+                .addStylesheet(resourcesGetter.apply("themes/theme-app.css"))
                 .addStylesheet(resourcesGetter.apply("themes/theme-light-javafx-app.css"))
                 .addTheme(Theme.light("default", "Default", "#e9e9eb")
                         .addStylesheet(resourcesGetter.apply("themes/base-web.css"))
@@ -53,6 +56,7 @@ public abstract class WorkbenchApplication extends DesktopApplication {
         );
 
         themeProvider.addTheme(ThemeSet.dark("dark", "Dark", "#3b3b3b")
+                .addStylesheet(resourcesGetter.apply("themes/theme-app.css"))
                 .addStylesheet(resourcesGetter.apply("themes/theme-dark-default-app.css"))
                 .addTheme(Theme.dark("default", "Default", "#3b3b3b")
                         .addStylesheet(resourcesGetter.apply("themes/base-web.css"))
