@@ -3,6 +3,7 @@ package org.appxi.javafx.helper;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -11,7 +12,12 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.effect.BoxBlur;
 import javafx.scene.effect.ColorAdjust;
+import javafx.scene.layout.Pane;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
+import javafx.stage.Window;
+import javafx.stage.WindowEvent;
+import org.appxi.javafx.control.BlockingView;
 import org.appxi.javafx.desktop.DesktopApplication;
 import org.appxi.util.StringHelper;
 
@@ -136,6 +142,42 @@ public abstract class FxHelper {
         if (pane.getButtonTypes().isEmpty())
             pane.getButtonTypes().add(ButtonType.OK);
         withStyle(application, pane.getScene());
+        // force center on screen
+        final Window window = dialog.getDialogPane().getScene().getWindow();
+        window.addEventHandler(WindowEvent.WINDOW_SHOWN, event -> {
+            Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+            window.setX((screenBounds.getWidth() - window.getWidth()) / 2);
+            window.setY((screenBounds.getHeight() - window.getHeight()) / 2);
+
+        });
         return dialog;
+    }
+
+    /////////////////
+    public static void runBlocking(Pane pane, Runnable runnable) {
+        new Thread(() -> {
+            final BlockingView blockingView = new BlockingView();
+            try {
+                Platform.runLater(() -> pane.getChildren().add(blockingView));
+                runnable.run();
+            } finally {
+                Platform.runLater(() -> pane.getChildren().remove(blockingView));
+            }
+        }).start();
+    }
+
+    public static Runnable manualBlocking(Pane pane, Runnable runnable) {
+        final BlockingView blockingView = new BlockingView();
+        new Thread(() -> {
+            Platform.runLater(() -> pane.getChildren().add(blockingView));
+            runnable.run();
+        }).start();
+        return () -> Platform.runLater(() -> pane.getChildren().remove(blockingView));
+    }
+
+    public static Runnable manualBlocking(Pane pane) {
+        final BlockingView blockingView = new BlockingView();
+        Platform.runLater(() -> pane.getChildren().add(blockingView));
+        return () -> Platform.runLater(() -> pane.getChildren().remove(blockingView));
     }
 }
