@@ -24,7 +24,8 @@ public interface StateHelper {
     }
 
     static void storeStage(Preferences prefs, Stage stage) {
-        storeWindow(prefs, stage);
+        if (!stage.isMaximized())
+            storeWindow(prefs, stage);
         storeMaximized(prefs, stage);
     }
 
@@ -38,12 +39,14 @@ public interface StateHelper {
     }
 
     static void restoreMaximized(Preferences prefs, Stage stage) {
-        stage.setMaximized(prefs.getBoolean("ui.window.maximized", true));
+        stage.setMaximized(prefs.getBoolean("ui.window.maximized", false));
     }
 
-    static void storeScene(Preferences prefs, Scene scene) {
-        prefs.setProperty("ui.scene.width", scene.getWidth());
-        prefs.setProperty("ui.scene.height", scene.getHeight());
+    static void storeScene(Preferences prefs, Stage stage) {
+        if (stage.isMaximized())
+            return;
+        prefs.setProperty("ui.scene.width", stage.getScene().getWidth());
+        prefs.setProperty("ui.scene.height", stage.getScene().getHeight());
     }
 
     static Scene restoreScene(Preferences prefs, Parent root) {
