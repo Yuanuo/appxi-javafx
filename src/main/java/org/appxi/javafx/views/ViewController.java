@@ -14,11 +14,11 @@ import org.appxi.util.StringHelper;
 import org.appxi.util.ext.Attributes;
 
 public abstract class ViewController extends Attributes {
-    public final String viewId;
+    public final SimpleStringProperty viewId;
     public final DesktopApplication application;
 
     public ViewController(String viewId, DesktopApplication application) {
-        this.viewId = viewId;
+        this.viewId = new SimpleStringProperty(this, "id", viewId);
         this.application = application;
     }
 

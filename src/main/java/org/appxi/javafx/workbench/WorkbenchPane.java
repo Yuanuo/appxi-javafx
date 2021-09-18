@@ -134,7 +134,7 @@ public class WorkbenchPane extends StackPane {
 
     public void addWorkbenchViewAsMainView(WorkbenchMainViewController controller, boolean addToEnd) {
         final Tab tool = new Tab();
-        tool.setId(controller.viewId);
+        tool.idProperty().bind(controller.viewId);
         tool.setUserData(controller);
         tool.textProperty().bind(controller.viewTitle);
 
@@ -182,7 +182,7 @@ public class WorkbenchPane extends StackPane {
     }
 
     private void addSideTool(ButtonBase tool, WorkbenchViewController controller, Pos pos) {
-        tool.setId(controller.viewId);
+        tool.idProperty().bind(controller.viewId);
         tool.setUserData(controller);
         tool.setContentDisplay(ContentDisplay.TOP);
         // FIXME 是否通过配置允许显示文字标签？
@@ -241,7 +241,7 @@ public class WorkbenchPane extends StackPane {
     }
 
     public List<Tab> getMainViewsTabs() {
-        return mainViews.getTabs();
+        return List.copyOf(mainViews.getTabs());
     }
 
     public List<Node> getMainViewsNodes() {
