@@ -186,6 +186,11 @@ public abstract class DesktopApplication extends Application {
         } catch (Throwable ignored) {
         }
         try {
+            UserPrefs.recents.save();
+            UserPrefs.favorites.save();
+        } catch (Throwable ignored) {
+        }
+        try {
             UserPrefs.prefs.setProperty("ui.used", this.step);
             StateHelper.storeScene(UserPrefs.prefs, primaryStage);
             StateHelper.storeStage(UserPrefs.prefs, primaryStage);
