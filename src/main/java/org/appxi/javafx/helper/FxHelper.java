@@ -145,9 +145,8 @@ public abstract class FxHelper {
         // force center on screen
         final Window window = dialog.getDialogPane().getScene().getWindow();
         window.addEventHandler(WindowEvent.WINDOW_SHOWN, event -> {
-            Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
-            window.setX((screenBounds.getWidth() - window.getWidth()) / 2);
-            window.setY((screenBounds.getHeight() - window.getHeight()) / 2);
+            window.setX((application.getPrimaryStage().getWidth() - window.getWidth()) / 2);
+            window.setY((application.getPrimaryStage().getHeight() - window.getHeight()) / 2);
 
         });
         return dialog;
