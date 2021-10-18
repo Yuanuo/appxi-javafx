@@ -26,7 +26,7 @@ public abstract class WorkbenchSideViewController extends WorkbenchViewControlle
             titleBar.textProperty().bind(viewTitle);
 
             this.headBar = new HBox(titleBar);
-            this.headBar.getStyleClass().add("head-bar");
+            this.headBar.getStyleClass().addAll("flat-tool-bar");
             this.viewport.setTop(headBar);
 
             this.viewportVBox = new VBox();

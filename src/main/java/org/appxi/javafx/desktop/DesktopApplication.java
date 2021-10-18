@@ -153,10 +153,10 @@ public abstract class DesktopApplication extends Application {
             starting();
 
             // for show main stage
-            Platform.runLater(primaryStage::show);
-
-            // for hide stage of preloader
-            notifyPreloader(new Preloader.StateChangeNotification(Preloader.StateChangeNotification.Type.BEFORE_START));
+            Platform.runLater(() -> {
+                primaryStage.show();
+                showing();
+            });
 
             // finally
             eventBus.fireEvent(new ApplicationEvent(ApplicationEvent.STARTED));
@@ -174,6 +174,9 @@ public abstract class DesktopApplication extends Application {
     }
 
     protected void starting() {
+    }
+
+    protected void showing() {
     }
 
     protected void started() {
@@ -220,11 +223,11 @@ public abstract class DesktopApplication extends Application {
             if (osName.contains("windows")) {
                 fontName = "Microsoft YaHei";
             } else if (osName.contains("mac") || osName.contains("osx")) {
-                fontName = "PingFang SC";
+                fontName = "System";
             } else if (osName.contains("linux") || osName.contains("ubuntu")) {
-                fontName = "WenQuanYi Micro Hei";
+                fontName = "System";
             } else {
-                fontName = "SYSTEM";
+                fontName = "System";
             }
             UserPrefs.prefs.setProperty("ui.font.name", fontName);
         }

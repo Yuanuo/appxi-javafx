@@ -11,7 +11,7 @@ module appxi.javafx {
     exports org.appxi.javafx.control.skin;
     exports org.appxi.javafx.desktop;
     exports org.appxi.javafx.event;
-    exports org.appxi.javafx.glyphfont;
+    exports org.appxi.javafx.iconfont;
     exports org.appxi.javafx.helper;
     exports org.appxi.javafx.theme;
     exports org.appxi.javafx.views;
@@ -19,5 +19,4 @@ module appxi.javafx {
     exports org.appxi.javafx.workbench.views;
 
     opens appxi.javafx.themes;
-    opens appxi.javafx.glyphfont;
 }

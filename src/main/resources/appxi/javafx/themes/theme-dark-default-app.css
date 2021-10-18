@@ -59,18 +59,22 @@
     -fx-background-color: -fx-mid-text-color;
 }
 
-.button,
-.toggle-button,
-.menu-button,
-.combo-box {
-    -fx-border-color: derive(-fx-base, 20%);
+.flat-button:hover,
+.flat-toggle-button:hover,
+.flat-tool-bar .button:hover,
+.flat-tool-bar .toggle-button:hover {
+    -fx-padding: .2em .4em;
+    -fx-body-color: derive(-fx-base, 50%);
+    -fx-outer-border: -fx-accent;
+    -fx-background-color: -fx-shadow-highlight-color, -fx-outer-border, -fx-inner-border, -fx-body-color;
 }
 
 .button:hover,
 .toggle-button:hover,
 .menu-button:hover,
 .combo-box:hover {
-    -fx-background-color: derive(-fx-base, 30%);
+    -fx-body-color: derive(-fx-base, 50%);
+    -fx-outer-border: -fx-accent;
 }
 
 .tool-bar .toggle-button:selected {
@@ -78,7 +82,7 @@
     -fx-text-fill: derive(-fx-light-text-color, 45%);
 }
 
-.tool-bar .toggle-button:selected .glyph-icon {
+.tool-bar .toggle-button:selected .font-icon {
     -fx-fill: derive(-fx-light-text-color, 45%);
 }
 
@@ -90,13 +94,13 @@
 .context-menu {
     -fx-border-color: darkgray;
 }
-
-.context-menu .separator {
-    -fx-background-color: darkgray;
+.context-menu .menu-item:hover {
+    -fx-background-color: derive(-fx-base, 35%);
 }
 
 .separator .line {
-    -fx-background: darkgray;
+    -fx-background-color: derive(-fx-base, 35%);
+    -fx-border-color: derive(-fx-base, 35%);
 }
 
 .check-box .box,
@@ -121,11 +125,9 @@
 .scroll-bar {
     -fx-background-color: transparent;
 }
-
 .scroll-bar .thumb {
     -fx-background-color: derive(-fx-base, 60%);
 }
-
 .web-view .scroll-bar .thumb {
     -fx-background-color: derive(-fx-base, 80%);
 }
@@ -147,7 +149,7 @@
     -fx-background-color: derive(-fx-base, 20%);
 }
 
-.list-view .glyph-icon {
+.list-view .font-icon {
     -fx-fill: derive(-fx-background, 120%);
 }
 
@@ -210,12 +212,12 @@
     -fx-background-color: derive(-fx-background, -50%);
 }
 
-.side-tools .glyph-icon {
+.side-tools .font-icon {
     -fx-fill: derive(-fx-base, 60%);
 }
 
-.side-views .head-bar,
-.main-views .tool-bar {
+.flat-tool-bar,
+.tool-bar {
     -fx-border-color: #555555;
     -fx-border-width: 0 0 1 0;
 }
@@ -226,12 +228,4 @@
 
 .lookup-view {
     -fx-background-color: derive(-fx-background, 20%);
-}
-
-.search-view .result-item .texts.highlight {
-    -fx-fill: -fx-light-text-color;
-}
-
-.toast-pane {
-    -fx-background-color: rgba(95, 95, 95, 0.95);
 }

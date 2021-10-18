@@ -1,43 +1,26 @@
 * {
     -fx-font-smoothing-type: gray;
-    -fx-background-radius: 1;
 }
 
 /* ****************************************************************************************************************** */
-.radio,
-.radio .dot {
-    -fx-background-radius: 1000;
-}
-
-.button,
-.toggle-button,
-.menu-button,
-.combo-box {
-    -fx-background-color: transparent;
-    -fx-border-width: 1;
-}
-
-.button,
-.toggle-button,
-.menu-button {
-    -fx-padding: .275em .8em;
-}
-
-.tool-bar .button,
-.tool-bar .toggle-button,
-.tool-bar .menu-button {
+.flat-button,
+.flat-toggle-button,
+.flat-tool-bar .button,
+.flat-tool-bar .toggle-button {
     -fx-padding: .2em .4em;
-    -fx-border-width: 0;
+    -fx-background-color: transparent;
 }
 
-.tool-bar .menu-button > .label,
-.tool-bar .menu-button > .arrow-button,
-.tool-bar .menu-button > .arrow-button > .arrow {
-    -fx-padding: 0;
+.button,
+.toggle-button {
+    -fx-padding: .275em .8em;
+    -fx-body-color: transparent;
+    -fx-outer-border: transparent;
+    -fx-inner-border: transparent;
 }
 
-.glyph-icon {
-    -fx-font-size: 1.35em !important;
+.font-icon {
+    -fx-font-size: 1.35em;
     -fx-fill: derive(-fx-mid-text-color, 30%);
 }
 
@@ -45,34 +28,40 @@
     /*-fx-padding: .5em;*/
 }
 
-.text-area .content {
-    -fx-background-insets: 0;
-    -fx-background-radius: 0;
-}
-
-.context-menu,
-.context-menu .custom-menu-item {
-    -fx-background-insets: 1;
-    -fx-background-radius: 0;
-    -fx-padding: 1;
-    -fx-spacing: 0;
-}
 .context-menu {
+    -fx-padding: 5 0;
+    -fx-background-color: -fx-background;
+    -fx-background-radius: 5;
     -fx-min-width: 18em;
     -fx-border-width: 1;
+    -fx-border-radius: 5;
+}
+.context-menu .menu-item {
+    -fx-padding: 6 14;
+    -fx-background-radius: 3;
+    -fx-background-insets: 0 4;
+    -fx-background-color: -fx-background;
+}
+.context-menu .menu-item .label,
+.context-menu .menu-item:hover .label {
+    -fx-text-fill: -fx-mid-text-color;
+    -fx-fill: -fx-mid-text-color;
 }
 #choice-box-popup-menu {
     -fx-min-width: 0;
 }
 
+.separator:horizontal {
+    -fx-padding: 4 0;
+}
 .separator:horizontal .line {
     -fx-pref-height: 1;
 }
 .separator:vertical .line {
-    -fx-pref-width: 5;
+    -fx-pref-width: 1;
 }
 .separator:vertical {
-    -fx-max-height: 1.8em;
+    -fx-max-height: 1.75em;
 }
 
 
@@ -90,25 +79,19 @@
     -fx-border-color: -fx-control-inner-background;
 }
 
-.virtual-flow .corner,
-.scroll-bar {
-    -fx-background-color: transparent;
-    -fx-opacity: 0.5;
+.scroll-bar .thumb {
+    -fx-background-radius: 16;
+    -fx-opacity: .75;
 }
-
-.scroll-bar:hover,
-.scroll-bar:pressed {
+.scroll-bar:hover .thumb,
+.scroll-bar:pressed .thumb {
     -fx-opacity: 1;
 }
-
 .scroll-bar:vertical {
     -fx-pref-width: .75em;
-    -fx-background-radius: 0;
 }
-
 .scroll-bar:horizontal {
     -fx-pref-height: .75em;
-    -fx-background-radius: 0;
 }
 
 .scroll-bar .increment-button,
@@ -118,12 +101,6 @@
     -fx-opacity: 0;
 }
 
-.scroll-bar .thumb,
-.web-view .scroll-bar .thumb {
-    -fx-background-insets: 0;
-    -fx-background-radius: 0;
-}
-
 
 .tree-view,
 .list-view {
@@ -131,16 +108,35 @@
     -fx-background-insets: 0;
     -fx-background-color: -fx-background;
 }
-
 .tree-view .tree-cell:filled,
 .list-view .list-cell:filled {
     -fx-border-width: 0 0 .05em 0;
     -fx-border-style: dashed;
 }
-
-.tree-view .tree-cell:filled .glyph-icon,
-.list-view .list-cell:filled .glyph-icon {
+.tree-view .tree-cell:filled .font-icon,
+.list-view .list-cell:filled .font-icon {
     -fx-fill: derive(-fx-accent, 60%);
+}
+.tree-view .tree-cell.visited:filled,
+.list-view .list-cell.visited:filled {
+    -fx-text-fill: #20b771;
+}
+.tree-view .tree-cell.visited:filled .font-icon,
+.list-view .list-cell.visited:filled .font-icon,
+.tree-view .tree-cell.visited:filled .plaintext,
+.list-view .list-cell.visited:filled .plaintext {
+    -fx-fill: #20b771;
+}
+.tree-view .tree-cell:filled .plaintext,
+.list-view .list-cell:filled .plaintext {
+    -fx-fill: -fx-mid-text-color;
+}
+.tree-view .tree-cell:filled .highlight,
+.list-view .list-cell:filled .highlight,
+.tree-view .tree-cell.visited:filled .highlight,
+.list-view .list-cell.visited:filled .highlight {
+    -fx-fill: derive(-fx-accent, -10%);
+    -fx-font-weight: bolder;
 }
 
 
@@ -228,14 +224,22 @@
     -fx-background-color: -fx-background;
 }
 
+.flat-tool-bar,
+.tool-bar {
+    -fx-alignment: center-left;
+}
+
 .title-bar {
     -fx-font-weight: bold;
-    -fx-padding: 0.58em 0.75em;
+    -fx-padding: 0.58em 0.5em;
     -fx-text-overrun: ellipsis;
 }
 
+.lookup-view {
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+}
 .lookup-view .text-field {
-    -fx-background-radius: 0;
     -fx-background-insets: 0 0 1 0;
 }
 
@@ -243,15 +247,6 @@
     -fx-opacity: 0;
     -fx-pref-width: 0;
     -fx-pref-height: 0;
-}
-
-.search-view .result-item .texts {
-    -fx-fill: -fx-mid-text-color;
-}
-
-.toast-pane {
-    -fx-background-radius: 3;
-    -fx-font-size: 200% !important;
 }
 
 .prefs-dialog-pane .group-label {

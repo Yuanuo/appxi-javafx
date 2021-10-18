@@ -1,6 +1,7 @@
 package org.appxi.javafx.theme;
 
 import javafx.scene.Scene;
+import javafx.stage.Window;
 import org.appxi.javafx.event.EventBus;
 
 import java.util.*;
@@ -131,5 +132,22 @@ public class ThemeProvider {
             for (Scene scene : scenes)
                 scene.getStylesheets().removeAll(styles);
         }
+    }
+
+    public void reloadTheme() {
+        this.reloadTheme(this.currentTheme);
+    }
+
+    public void reloadTheme(Theme theme) {
+        if (null == theme) return;
+        Scene[] scenes= Window.getWindows().stream().map(Window::getScene).toList().toArray(new Scene[0]);
+
+        // remove
+        removeThemeFor(theme, scenes);
+        // apply
+        applyThemeFor(theme, scenes);
+        // fire events
+        if (null != this.eventBus)
+            this.eventBus.fireEvent(new ThemeEvent(null, theme));
     }
 }

@@ -333,4 +333,13 @@ public class WorkbenchPane extends StackPane {
         final Tab tool = this.findMainViewTab(id);
         return null != tool ? (WorkbenchMainViewController) tool.getUserData() : null;
     }
+
+    public final boolean removeMainView(Tab tab) {
+        return null != tab && this.mainViews.getTabs().remove(tab);
+    }
+
+    public final boolean removeMainView(WorkbenchMainViewController controller) {
+        Tab tab = findMainViewTab(controller.viewId.get());
+        return null != tab && this.mainViews.getTabs().remove(tab);
+    }
 }

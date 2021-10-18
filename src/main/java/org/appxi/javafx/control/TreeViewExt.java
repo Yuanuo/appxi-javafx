@@ -114,6 +114,5 @@ public class TreeViewExt<T> extends TreeViewEx<T> {
     protected void handleOnEnterOrDoubleClicked(InputEvent event, TreeItem<T> treeItem) {
         if (null != enterOrDoubleClickAction)
             enterOrDoubleClickAction.accept(event, treeItem);
-        else throw new UnsupportedOperationException("Not impl");
     }
 }

@@ -3,7 +3,6 @@ package org.appxi.javafx.helper;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -13,8 +12,6 @@ import javafx.scene.control.DialogPane;
 import javafx.scene.effect.BoxBlur;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.layout.Pane;
-import javafx.stage.Screen;
-import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import org.appxi.javafx.control.BlockingView;
@@ -41,6 +38,8 @@ public abstract class FxHelper {
                 return _appDir;
 
             String appDir = System.getenv("app-dir");
+            if (null == appDir)
+                appDir = System.getProperty("app-dir");
             if (null == appDir)
                 appDir = System.getProperty("jpackage.app-dir");
 
@@ -114,40 +113,23 @@ public abstract class FxHelper {
 
         final Alert alert = new Alert(Alert.AlertType.ERROR, StringHelper.joinLines(lines));
         alert.setResizable(true);
-        alert.initOwner(application.getPrimaryStage());
         alert.setWidth(800);
         alert.setHeight(600);
         return FxHelper.withTheme(application, alert);
     }
 
-    public static Scene withStyle(DesktopApplication application, Scene scene) {
-        scene.getRoot().setStyle(application.getPrimaryFontStyle().concat(";").concat(scene.getRoot().getStyle()));
-        final Stage stage = (Stage) scene.getWindow();
-        if (null != stage)
-            stage.getIcons().addAll(application.getPrimaryStage().getIcons());
-        return scene;
-    }
-
-    public static Scene withTheme(DesktopApplication application, Scene scene) {
-        withStyle(application, scene);
-        application.themeProvider.applyThemeFor(scene);
-        return scene;
-    }
-
     public static <T extends Dialog<?>> T withTheme(DesktopApplication application, T dialog) {
-        if (null == dialog.getOwner())
-            dialog.initOwner(application.getPrimaryStage());
         final DialogPane pane = dialog.getDialogPane();
         // 必须要有至少一个按钮才能关闭此窗口
         if (pane.getButtonTypes().isEmpty())
             pane.getButtonTypes().add(ButtonType.OK);
-        withStyle(application, pane.getScene());
-        // force center on screen
+        pane.getScene().getRoot().setStyle(application.getPrimaryScene().getRoot().getStyle());
+        if (null == dialog.getOwner())
+            dialog.initOwner(application.getPrimaryStage());
         final Window window = dialog.getDialogPane().getScene().getWindow();
         window.addEventHandler(WindowEvent.WINDOW_SHOWN, event -> {
-            window.setX((application.getPrimaryStage().getWidth() - window.getWidth()) / 2);
-            window.setY((application.getPrimaryStage().getHeight() - window.getHeight()) / 2);
-
+            window.setX(Math.max(0, window.getX()));
+            window.setY(Math.max(0, window.getY()));
         });
         return dialog;
     }
