@@ -19,8 +19,10 @@ public abstract class ListViewEx<T> extends ListView<T> {
     }
 
     public boolean isRowVisible(int rowIndex) {
-        final ListCell<T> firstCell = getSkinEx().getVirtualFlowEx().getFirstVisibleCell();
-        final ListCell<T> lastCell = getSkinEx().getVirtualFlowEx().getLastVisibleCell();
+        final ListViewSkinEx<T> skinEx = getSkinEx();
+        if (null == skinEx) return false;
+        final ListCell<T> firstCell = skinEx.getVirtualFlowEx().getFirstVisibleCell();
+        final ListCell<T> lastCell = skinEx.getVirtualFlowEx().getLastVisibleCell();
         if (null == firstCell || null == lastCell)
             return false;
         return rowIndex > firstCell.getIndex() && rowIndex < lastCell.getIndex();
