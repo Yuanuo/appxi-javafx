@@ -124,6 +124,7 @@ public abstract class FxHelper {
         if (pane.getButtonTypes().isEmpty())
             pane.getButtonTypes().add(ButtonType.OK);
         pane.getScene().getRoot().setStyle(application.getPrimaryScene().getRoot().getStyle());
+        pane.setPrefWidth(640);
         if (null == dialog.getOwner())
             dialog.initOwner(application.getPrimaryStage());
         final Window window = dialog.getDialogPane().getScene().getWindow();
