@@ -262,7 +262,7 @@ public abstract class LookupView<T> {
     }
 
     protected int getResultLimit() {
-        return 100;
+        return 300;
     }
 
     protected abstract void updateItemLabel(Labeled labeled, T item);
