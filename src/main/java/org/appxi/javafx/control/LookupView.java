@@ -4,21 +4,19 @@ import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
 import org.appxi.util.StringHelper;
 
-import java.util.*;
-import java.util.stream.Stream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Objects;
 
-public abstract class LookupView {
+public abstract class LookupView<T> {
     private final StackPane owner;
 
     private boolean showing;
@@ -26,11 +24,10 @@ public abstract class LookupView {
     private DialogPaneEx dialogPane;
     private Label searchInfo;
     private TextField searchInput;
-    private ListViewExt<Object> searchResult;
+    private ListViewExt<T> searchResult;
 
     private boolean searching;
     private String searchedText;
-    private LookupRequest lookupRequest;
 
     public LookupView(StackPane owner) {
         this.owner = owner;
@@ -60,10 +57,12 @@ public abstract class LookupView {
         this.searchedText = inputText;
 
         final int resultLimit = getResultLimit();
-        final Collection<Object> lookupResult = lookup(inputText, resultLimit);
+        final Collection<T> lookupResult = lookup(inputText, resultLimit);
         // 允许具体实现中无必要进行新搜索时返回null以保持现状
-        if (null != lookupResult)
+        if (null != lookupResult) {
             searchResult.getItems().setAll(lookupResult);
+            searchResult.scrollToIfNotVisible(0);
+        }
         if (this.searchResult.getItems().isEmpty()) {
             searchInfo.setText("请输入...");
         } else {
@@ -150,44 +149,83 @@ public abstract class LookupView {
                 doSearch();
             });
             searchInput.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
-                if (event.getCode() == KeyCode.UP) {
-                    SelectionModel<Object> model = searchResult.getSelectionModel();
-                    int selIdx = model.getSelectedIndex() - 1;
-                    if (selIdx < 0)
-                        selIdx = searchResult.getItems().size() - 1;
-                    model.select(selIdx);
-                    searchResult.scrollToIfNotVisible(selIdx);
-                    event.consume();
-                } else if (event.getCode() == KeyCode.DOWN) {
-                    SelectionModel<Object> model = searchResult.getSelectionModel();
-                    int selIdx = model.getSelectedIndex() + 1;
-                    if (selIdx >= searchResult.getItems().size())
-                        selIdx = 0;
-                    model.select(selIdx);
-                    searchResult.scrollToIfNotVisible(selIdx);
-                    event.consume();
-                } else if (event.getCode() == KeyCode.ENTER) {
-                    event.consume();
-                    Object item = searchResult.getSelectionModel().getSelectedItem();
-                    if (null != item)
-                        handleEnterOrDoubleClickActionOnSearchResultList(event, item);
-                } else if (event.getCode() == KeyCode.QUOTE && event.isShiftDown()) {
-                    String selectedText = searchInput.getSelectedText();
-                    if (null != selectedText && !selectedText.isEmpty()) {
+                switch (event.getCode()) {
+                    case UP -> {
+                        SelectionModel<T> model = searchResult.getSelectionModel();
+                        int selIdx = model.getSelectedIndex() - 1;
+                        if (selIdx < 0)
+                            selIdx = searchResult.getItems().size() - 1;
+                        model.select(selIdx);
+                        searchResult.scrollToIfNotVisible(selIdx);
                         event.consume();
-                        selectedText = "\"".concat(selectedText);
-                        searchInput.replaceSelection(selectedText);
                     }
+                    case DOWN -> {
+                        SelectionModel<T> model = searchResult.getSelectionModel();
+                        int selIdx = model.getSelectedIndex() + 1;
+                        if (selIdx >= searchResult.getItems().size())
+                            selIdx = 0;
+                        model.select(selIdx);
+                        searchResult.scrollToIfNotVisible(selIdx);
+                        event.consume();
+                    }
+                    case ENTER -> {
+                        event.consume();
+                        T item = searchResult.getSelectionModel().getSelectedItem();
+                        if (null != item)
+                            handleEnterOrDoubleClickActionOnSearchResultList(event, item);
+                    }
+                }
+            });
+            searchInput.addEventHandler(KeyEvent.KEY_TYPED, event -> {
+                if (!searchInput.isEditable() || searchInput.isDisabled()) return;
+
+                final String character = event.getCharacter();
+                if (character.length() == 0) return;
+                String autoPairLeft = null, autoPairRight = null;
+                switch (character) {
+                    case "\"", "'" -> {
+                        autoPairLeft = character;
+                        autoPairRight = character;
+                    }
+                    case "“" -> {
+                        autoPairLeft = character;
+                        autoPairRight = "”";
+                    }
+                    case "(" -> {
+                        autoPairLeft = character;
+                        autoPairRight = ")";
+                    }
+                    case "（" -> {
+                        autoPairLeft = character;
+                        autoPairRight = "）";
+                    }
+                }
+                if (null != autoPairLeft) {
+                    final String selectedText = searchInput.getSelectedText();
+                    String changedText;
+                    if (null == selectedText || selectedText.isEmpty()) {
+                        changedText = autoPairLeft.concat(autoPairRight);
+                        searchInput.insertText(searchInput.getCaretPosition(), changedText);
+                        searchInput.backward();
+                    } else if (selectedText.matches("[" + autoPairLeft + "].*[" + autoPairRight + "]")) {
+                        changedText = selectedText.substring(1, selectedText.length() - 1);
+                        searchInput.replaceSelection(changedText);
+                    } else {
+                        changedText = autoPairLeft.concat(selectedText).concat(autoPairRight);
+                        searchInput.replaceSelection(changedText);
+                        searchInput.backward();
+                    }
+                    event.consume();
                 }
             });
             searchResult = new ListViewExt<>(this::handleEnterOrDoubleClickActionOnSearchResultList);
             VBox.setVgrow(searchResult, Priority.ALWAYS);
             searchResult.setFocusTraversable(false);
             searchResult.setCellFactory(v -> new ListCell<>() {
-                Object updatedItem;
+                T updatedItem;
 
                 @Override
-                protected void updateItem(Object item, boolean empty) {
+                protected void updateItem(T item, boolean empty) {
                     super.updateItem(item, empty);
                     if (empty) {
                         updatedItem = null;
@@ -199,7 +237,7 @@ public abstract class LookupView {
                     if (item == updatedItem)
                         return;//
                     updatedItem = item;
-                    updateItemOnce(this, item);
+                    updateItemLabel(this, item);
                 }
             });
 
@@ -227,102 +265,27 @@ public abstract class LookupView {
         return 100;
     }
 
-    protected void updateItemOnce(Labeled labeled, Object item) {
-        String text = labeled.getText();
-        if (null == text) text = null == item ? "<TEXT>" : item.toString();
-        //
-        if (null != lookupRequest && !lookupRequest.keywords.isEmpty()) {
-            List<String> lines = new ArrayList<>(List.of(text));
-            for (LookupKeyword keyword : lookupRequest.keywords()) {
-                for (int i = 0; i < lines.size(); i++) {
-                    final String line = lines.get(i);
-                    if (line.startsWith("§§#§§")) continue;
-
-                    List<String> list = List.of(line
-                            .replace(keyword.text, "\n§§#§§".concat(keyword.text).concat("\n"))
-                            .split("\n"));
-                    if (list.size() > 1) {
-                        lines.remove(i);
-                        lines.addAll(i, list);
-                        i++;
-                    }
-                }
-            }
-            List<Text> texts = new ArrayList<>(lines.size());
-            for (String line : lines) {
-                if (line.startsWith("§§#§§")) {
-                    Text text1 = new Text(line.substring(5));
-                    text1.getStyleClass().add("highlight");
-                    texts.add(text1);
-                } else {
-                    final Text text1 = new Text(line);
-                    text1.getStyleClass().add("plaintext");
-                    texts.add(text1);
-                }
-            }
-            TextFlow textFlow = new TextFlow(texts.toArray(new Node[0]));
-            textFlow.getStyleClass().add("text-flow");
-            labeled.setText(text);
-            labeled.setGraphic(textFlow);
-            labeled.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
-        } else {
-            labeled.setText(text);
-            labeled.setContentDisplay(ContentDisplay.TEXT_ONLY);
-        }
-    }
+    protected abstract void updateItemLabel(Labeled labeled, T item);
 
     protected abstract String getHeaderText();
 
     protected abstract String getUsagesText();
 
-    protected abstract void handleEnterOrDoubleClickActionOnSearchResultList(InputEvent event, Object item);
+    protected abstract void handleEnterOrDoubleClickActionOnSearchResultList(InputEvent event, T item);
 
-    private Collection<Object> lookup(String inputText, int resultLimit) {
-        if (!inputText.isEmpty() && inputText.matches("[(（“\"]")) return null;
+    private Collection<T> lookup(String inputText, int resultLimit) {
         if (!inputText.isEmpty() && inputText.charAt(0) == '#') {
             String[] searchTerms = inputText.substring(1).split("[;；]");
-            Collection<Object> result = new ArrayList<>(searchTerms.length);
+            Collection<T> result = new ArrayList<>(searchTerms.length);
             for (String searchTerm : searchTerms) {
                 lookupByCommands(searchTerm.strip(), result);
             }
             return result;
         }
-        // 如果此时的输入并无必要进行搜索，允许子类实现中返回null以中断并保持现状
-        inputText = prepareLookupText(inputText);
-        if (null == inputText) return null;
-
-        lookupRequest = new LookupRequest(
-                Stream.of(StringHelper.split(inputText, " ", "[()（）“”\"]"))
-                        .map(str -> str.replaceAll("[()（）“”\"]", "")
-                                .replaceAll("\s+", " ").toLowerCase().strip())
-                        .filter(str -> !str.isEmpty())
-                        .map(str -> new LookupKeyword(str, str.matches("[a-zA-Z0-9\s]+")))
-                        .toList(),
-                inputText, resultLimit);
-        List<LookupResultItem> result = lookupByKeywords(lookupRequest);
-        if (!inputText.isEmpty()) {
-            // 默认时无输入，不需对结果进行排序
-            result.sort(Comparator.<LookupResultItem>comparingDouble(v -> v.score).reversed());
-            if (result.size() > resultLimit + 1)
-                result = result.subList(0, resultLimit + 1);
-        }
-        return result.stream().map(v -> v.data).toList();
+        return lookupByKeywords(inputText, resultLimit);
     }
 
-    protected String prepareLookupText(String lookupText) {
-        return lookupText;
-    }
+    protected abstract Collection<T> lookupByKeywords(String lookupText, int resultLimit);
 
-    protected abstract List<LookupResultItem> lookupByKeywords(LookupRequest lookupRequest);
-
-    protected abstract void lookupByCommands(String searchTerm, Collection<Object> result);
-
-    public record LookupKeyword(String text, boolean isFullAscii) {
-    }
-
-    public record LookupRequest(List<LookupKeyword> keywords, String text, int resultLimit) {
-    }
-
-    public record LookupResultItem(Object data, double score) {
-    }
+    protected abstract void lookupByCommands(String searchTerm, Collection<T> result);
 }
