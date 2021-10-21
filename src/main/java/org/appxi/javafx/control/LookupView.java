@@ -1,5 +1,6 @@
 package org.appxi.javafx.control;
 
+import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
@@ -87,6 +88,8 @@ public abstract class LookupView<T> {
         if (!showing)
             return;
         showing = false;
+        dialogPane.prefWidthProperty().unbind();
+        dialogPane.prefHeightProperty().unbind();
         owner.getChildren().removeAll(masking, dialogPane);
     }
 
@@ -245,7 +248,13 @@ public abstract class LookupView<T> {
         }
         if (!showing) {
             showing = true;
-            dialogPane.setPrefSize(getPrefWidth(), getPrefHeight());
+            int pad = getPaddingSizeOfParent();
+            dialogPane.prefWidthProperty().bind(Bindings.createDoubleBinding(
+                    () -> owner.getWidth() - pad,
+                    owner.widthProperty(), owner.paddingProperty()));
+            dialogPane.prefHeightProperty().bind(Bindings.createDoubleBinding(
+                    () -> owner.getHeight() - pad / 2,
+                    owner.heightProperty(), owner.paddingProperty()));
             owner.getChildren().addAll(masking, dialogPane);
         }
         searchInput.requestFocus();
@@ -253,16 +262,12 @@ public abstract class LookupView<T> {
         searchInput.selectAll();
     }
 
-    protected int getPrefWidth() {
-        return 1080;
-    }
-
-    protected int getPrefHeight() {
-        return 640;
+    protected int getPaddingSizeOfParent() {
+        return 100;
     }
 
     protected int getResultLimit() {
-        return 300;
+        return 200;
     }
 
     protected abstract void updateItemLabel(Labeled labeled, T item);
