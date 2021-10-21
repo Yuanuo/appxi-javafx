@@ -4,7 +4,6 @@ import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
@@ -12,6 +11,7 @@ import javafx.scene.control.DialogPane;
 import javafx.scene.effect.BoxBlur;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.layout.Pane;
+import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import org.appxi.javafx.control.BlockingView;
@@ -124,13 +124,18 @@ public abstract class FxHelper {
         if (pane.getButtonTypes().isEmpty())
             pane.getButtonTypes().add(ButtonType.OK);
         pane.getScene().getRoot().setStyle(application.getPrimaryScene().getRoot().getStyle());
-        pane.setPrefWidth(640);
+        pane.setMinSize(640, 320);
+        pane.setMaxSize(1280, 720);
+        if (pane.getPrefWidth() > pane.getMaxWidth()) pane.setPrefWidth(pane.getMaxWidth());
+        if (pane.getPrefHeight() > pane.getMaxHeight()) pane.setPrefHeight(pane.getMaxHeight());
+
+        final Stage stage = application.getPrimaryStage();
         if (null == dialog.getOwner())
-            dialog.initOwner(application.getPrimaryStage());
+            dialog.initOwner(stage);
         final Window window = dialog.getDialogPane().getScene().getWindow();
         window.addEventHandler(WindowEvent.WINDOW_SHOWN, event -> {
-            window.setX(Math.max(0, window.getX()));
-            window.setY(Math.max(0, window.getY()));
+            window.setX(Math.max(0, stage.getX() + (stage.getWidth() - pane.getWidth()) / 2));
+            if (window.getY() < 0) window.setY(0);
         });
         return dialog;
     }
