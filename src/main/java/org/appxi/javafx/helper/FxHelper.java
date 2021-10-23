@@ -11,9 +11,8 @@ import javafx.scene.control.DialogPane;
 import javafx.scene.effect.BoxBlur;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.layout.Pane;
-import javafx.stage.Stage;
+import javafx.stage.Screen;
 import javafx.stage.Window;
-import javafx.stage.WindowEvent;
 import org.appxi.javafx.control.BlockingView;
 import org.appxi.javafx.desktop.DesktopApplication;
 import org.appxi.util.StringHelper;
@@ -119,25 +118,32 @@ public abstract class FxHelper {
     }
 
     public static <T extends Dialog<?>> T withTheme(DesktopApplication application, T dialog) {
-        final DialogPane pane = dialog.getDialogPane();
+        final DialogPane dialogPane = dialog.getDialogPane();
         // 必须要有至少一个按钮才能关闭此窗口
-        if (pane.getButtonTypes().isEmpty())
-            pane.getButtonTypes().add(ButtonType.OK);
-        pane.getScene().getRoot().setStyle(application.getPrimaryScene().getRoot().getStyle());
-        pane.setMinSize(640, 320);
-        pane.setMaxSize(1280, 720);
-        if (pane.getPrefWidth() > pane.getMaxWidth()) pane.setPrefWidth(pane.getMaxWidth());
-        if (pane.getPrefHeight() > pane.getMaxHeight()) pane.setPrefHeight(pane.getMaxHeight());
+        if (dialogPane.getButtonTypes().isEmpty())
+            dialogPane.getButtonTypes().add(ButtonType.OK);
+        dialogPane.getScene().getRoot().setStyle(application.getPrimaryScene().getRoot().getStyle());
+        if (dialogPane.getPrefWidth() < 1) dialogPane.setPrefWidth(640);
+        if (dialogPane.getPrefHeight() < 1) dialogPane.setPrefHeight(480);
 
-        final Stage stage = application.getPrimaryStage();
+        dialog.setResizable(true);
+
         if (null == dialog.getOwner())
-            dialog.initOwner(stage);
-        final Window window = dialog.getDialogPane().getScene().getWindow();
-        window.addEventHandler(WindowEvent.WINDOW_SHOWN, event -> {
-            window.setX(Math.max(0, stage.getX() + (stage.getWidth() - pane.getWidth()) / 2));
-            if (window.getY() < 0) window.setY(0);
+            dialog.initOwner(application.getPrimaryStage());
+        dialog.setOnShown(event -> {
+            if (dialog.getX() < 0) dialog.setX(0);
+            if (dialog.getY() < 0) dialog.setY(0);
         });
         return dialog;
+    }
+
+    public static Screen getWindowScreen(Window window) {
+        if (!Double.isNaN(window.getX()) && !Double.isNaN(window.getY())
+                && !Double.isNaN(window.getWidth()) && !Double.isNaN(window.getHeight())) {
+            return Screen.getScreensForRectangle(window.getX(), window.getY(), window.getWidth(), window.getHeight())
+                    .stream().findFirst().orElseGet(Screen::getPrimary);
+        }
+        return Screen.getPrimary();
     }
 
     /////////////////
