@@ -18,7 +18,8 @@ public final class CardChooser {
     private String title, headerText;
     private Node headerGraphic;
     private Window owner;
-    private boolean cancelable, resizable, offButtonStyle;
+    private boolean cancelable = true, resizable = true, buttonStyle = true;
+    private double prefWidth = 640, prefHeight = 480;
     private final List<Card> cards = new ArrayList<>();
 
     private CardChooser() {
@@ -48,18 +49,24 @@ public final class CardChooser {
         return this;
     }
 
-    public CardChooser cancelable() {
-        this.cancelable = true;
+    public CardChooser notCancelable() {
+        this.cancelable = false;
         return this;
     }
 
-    public CardChooser resizable() {
-        this.resizable = true;
+    public CardChooser notResizable() {
+        this.resizable = false;
         return this;
     }
 
-    public CardChooser offButtonStyle() {
-        this.offButtonStyle = true;
+    public CardChooser notButtonStyle() {
+        this.buttonStyle = false;
+        return this;
+    }
+
+    public CardChooser prefSize(double prefWidth, double prefHeight) {
+        this.prefWidth = prefWidth;
+        this.prefHeight = prefHeight;
         return this;
     }
 
@@ -90,7 +97,7 @@ public final class CardChooser {
 
         final List<CardView> cardViews = this.cards.stream().map(CardView::new).toList();
         cardViews.forEach(cardView -> {
-            if (!this.offButtonStyle)
+            if (this.buttonStyle)
                 cardView.getStyleClass().add("button");
             if (!cardView.hasActions()) {
                 cardView.setOnMouseReleased(evt -> {
@@ -108,10 +115,7 @@ public final class CardChooser {
         scrollPane.setFitToWidth(true);
 
         dialogPane.setContent(scrollPane);
-        dialogPane.setPrefWidth(640);
-        dialogPane.heightProperty().addListener((o, ov, nv) -> {
-            if (nv != null && nv.doubleValue() > 720) dialogPane.setPrefHeight(720);
-        });
+        dialogPane.setPrefSize(prefWidth, prefHeight);
         if (this.cancelable) {
             dialogPane.getButtonTypes().add(ButtonType.CANCEL);
             dialog.setResultConverter(v -> null);
@@ -119,18 +123,18 @@ public final class CardChooser {
         dialog.setDialogPane(dialogPane);
 
         Window owner = this.owner;
-        if (owner == null) {
-            for (Window w : Window.getWindows()) {
-                if (w.isFocused() && !(w instanceof PopupWindow)) {
-                    owner = w;
-                    break;
-                }
-            }
-        }
+        if (owner == null)
+            owner = Window.getWindows().filtered(w -> w.isFocused() && !(w instanceof PopupWindow)).stream().findFirst().orElse(null);
+        if (owner == null)
+            owner = Window.getWindows().filtered(w -> !(w instanceof PopupWindow)).stream().findFirst().orElse(null);
         if (null != owner && null != owner.getScene()) {
             dialogPane.getScene().getRoot().setStyle(owner.getScene().getRoot().getStyle());
         }
         dialog.initOwner(owner);
+        dialog.setOnShown(event -> {
+            if (dialog.getX() < 0) dialog.setX(0);
+            if (dialog.getY() < 0) dialog.setY(0);
+        });
         return dialog.showAndWait();
     }
 
