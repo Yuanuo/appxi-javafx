@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.appxi</groupId>
     <artifactId>appxi-javafx</artifactId>
-    <version>21.10.21</version>
+    <version>21.10.24</version>
     <parent>
         <groupId>org.openjfx</groupId>
         <artifactId>javafx</artifactId>
