@@ -46,7 +46,8 @@ public abstract class LookupView<T> {
         String inputText = null == text ? "" : text.strip();
         if (inputText.length() > 32)
             inputText = inputText.substring(0, 32);
-        if (Objects.equals(this.searchedText, inputText))
+        // 如果相同关键词在上一次获得空列表，此时有必要再次尝试
+        if (Objects.equals(this.searchedText, inputText) && !searchResult.getItems().isEmpty())
             return;
         searching = true;
 //        try {
