@@ -4,13 +4,12 @@ import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.DialogPane;
+import javafx.scene.control.*;
 import javafx.scene.effect.BoxBlur;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.layout.Pane;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.stage.Screen;
 import javafx.stage.Window;
 import org.appxi.javafx.control.BlockingView;
@@ -18,7 +17,9 @@ import org.appxi.javafx.desktop.DesktopApplication;
 import org.appxi.util.StringHelper;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public abstract class FxHelper {
     /**
@@ -172,5 +173,51 @@ public abstract class FxHelper {
         final BlockingView blockingView = new BlockingView();
         Platform.runLater(() -> pane.getChildren().add(blockingView));
         return () -> Platform.runLater(() -> pane.getChildren().remove(blockingView));
+    }
+
+    public static void highlight(Labeled labeled, Set<String> keywords) {
+        String text = labeled.getText();
+        if (null == text) {
+            text = "<TEXT-LABEL>";
+            keywords = null;// skip
+        }
+        if (null != keywords && !keywords.isEmpty()) {
+            List<String> lines = new ArrayList<>(List.of(text));
+            for (String keyword : keywords) {
+                for (int i = 0; i < lines.size(); i++) {
+                    final String line = lines.get(i);
+                    if (line.startsWith("§§#§§")) continue;
+
+                    List<String> list = List.of(line
+                            .replace(keyword, "\n§§#§§".concat(keyword).concat("\n"))
+                            .split("\n"));
+                    if (list.size() > 1) {
+                        lines.remove(i);
+                        lines.addAll(i, list);
+                        i++;
+                    }
+                }
+            }
+            List<Text> texts = new ArrayList<>(lines.size());
+            for (String line : lines) {
+                if (line.startsWith("§§#§§")) {
+                    Text text1 = new Text(line.substring(5));
+                    text1.getStyleClass().add("highlight");
+                    texts.add(text1);
+                } else {
+                    final Text text1 = new Text(line);
+                    text1.getStyleClass().add("plaintext");
+                    texts.add(text1);
+                }
+            }
+            TextFlow textFlow = new TextFlow(texts.toArray(new Node[0]));
+            textFlow.getStyleClass().add("text-flow");
+            labeled.setText(text);
+            labeled.setGraphic(textFlow);
+            labeled.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+        } else {
+            labeled.setText(text);
+            labeled.setContentDisplay(ContentDisplay.TEXT_ONLY);
+        }
     }
 }
