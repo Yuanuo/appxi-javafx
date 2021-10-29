@@ -114,8 +114,8 @@ public abstract class DesktopApplication extends Application {
         this.primaryScene = StateHelper.restoreScene(UserPrefs.prefs, this.primaryViewport);
         primaryStage.setScene(primaryScene);
         StateHelper.restoreStage(UserPrefs.prefs, primaryStage);
-        primaryStage.setMinWidth(1366);
-        primaryStage.setMinHeight(768);
+        primaryStage.setMinWidth(960);
+        primaryStage.setMinHeight(540);
         this.setPrimaryTitle(null);
         this.primaryFontStyle = createPrimaryFontStyle();
         final Parent root = primaryScene.getRoot();
@@ -163,7 +163,7 @@ public abstract class DesktopApplication extends Application {
             started();
 
             // for debug only
-            logger.info(StringHelper.concat("App startup used steps/times: ", step, "/", System.currentTimeMillis() - startTime));
+            logger.warn(StringHelper.concat("App startup used steps/times: ", step, "/", System.currentTimeMillis() - startTime));
         }).whenComplete((o, throwable) -> {
             if (null != throwable)
                 FxHelper.alertError(this, throwable);
