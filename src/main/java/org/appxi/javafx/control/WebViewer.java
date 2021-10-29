@@ -27,6 +27,13 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class WebViewer extends StackPane {
+    public static void preloadLibrary() {
+        try {
+            com.sun.webkit.WebPage.getWorkerThreadCount();
+        } catch (Throwable ignore) {
+        }
+    }
+
     private final EventHandler<MouseEvent> handleContextMenuVisible = this::handleContextMenuVisible;
     private final EventHandler<Event> handleContextMenuHidden = this::handleContextMenuHidden;
     private WebView viewer;
