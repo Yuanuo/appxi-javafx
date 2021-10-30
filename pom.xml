@@ -4,11 +4,11 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.appxi</groupId>
     <artifactId>appxi-javafx</artifactId>
-    <version>21.10.29</version>
+    <version>21.10.30</version>
     <parent>
         <groupId>org.openjfx</groupId>
         <artifactId>javafx</artifactId>
-        <version>18-ea+4</version>
+        <version>18-ea+5</version>
     </parent>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
