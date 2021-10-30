@@ -61,6 +61,8 @@
 .toggle-button:hover,
 .flat-tool-bar .toggle-button:hover,
 .menu-button:hover,
+.color-picker:hover,
+.choice-box:hover,
 .combo-box:hover {
     -fx-background-color: derive(-fx-base, -20%);
 }

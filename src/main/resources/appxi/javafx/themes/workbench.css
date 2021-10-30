@@ -1,6 +1,4 @@
-.workbench .side-tools,
-.workbench .side-tools .context-menu,
-.workbench .side-tools .context-menu .custom-menu-item {
+.workbench .side-tools {
     -fx-background-insets: 0;
     -fx-background-radius: 0;
     -fx-padding: 0;
@@ -8,6 +6,7 @@
 }
 .workbench .side-tools .context-menu,
 .workbench .side-tools .context-menu .custom-menu-item {
+    -fx-padding: 0;
     -fx-min-width: 0;
 }
 

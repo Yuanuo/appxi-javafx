@@ -19,6 +19,14 @@
     -fx-inner-border: transparent;
 }
 
+.color-picker,
+.choice-box,
+.combo-box {
+    -fx-body-color: transparent;
+    -fx-outer-border: transparent;
+    -fx-inner-border: transparent;
+}
+
 .font-icon {
     -fx-font-size: 1.35em;
     -fx-fill: derive(-fx-mid-text-color, 30%);
@@ -26,6 +34,16 @@
 
 .tool-bar {
     /*-fx-padding: .5em;*/
+}
+.tool-bar:vertical .tool-bar-overflow-button {
+    -fx-padding: 1em;
+}
+.tool-bar:horizontal .tool-bar-overflow-button {
+    -fx-padding: .5em 1em;
+}
+.tool-bar-overflow-button:hover .arrow {
+    -fx-cursor: hand;
+    -fx-background-color: -fx-accent;
 }
 
 .context-menu {
@@ -47,6 +65,7 @@
     -fx-text-fill: -fx-mid-text-color;
     -fx-fill: -fx-mid-text-color;
 }
+.tool-bar .context-menu,
 #choice-box-popup-menu {
     -fx-min-width: 0;
 }
