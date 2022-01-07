@@ -13,7 +13,7 @@ import javafx.scene.layout.VBox;
 import java.util.Arrays;
 
 public class ToolBarEx extends ToolBar {
-    private final Pane spaceFill1, spaceFill2;
+    private final Pane spaceFill;
 
     public ToolBarEx() {
         this(Orientation.HORIZONTAL);
@@ -22,37 +22,22 @@ public class ToolBarEx extends ToolBar {
     public ToolBarEx(Orientation orientation) {
         super();
 
-        this.spaceFill1 = new Pane();
-        this.spaceFill1.getStyleClass().add("space-fill");
-
-        this.spaceFill2 = new Pane();
-        this.spaceFill2.getStyleClass().add("space-fill");
+        this.spaceFill = new Pane();
+        this.spaceFill.getStyleClass().add("space-fill");
 
         this.setOrientation(orientation);
-        this.getItems().setAll(this.spaceFill1, this.spaceFill2);
+        this.getItems().setAll(this.spaceFill);
 
-        updateGrowsInfo(orientation);
-    }
-
-    public void setOrientationEx(Orientation orientation) {
-        orientation = null == orientation ? Orientation.HORIZONTAL : orientation;
-        if (this.getOrientation() == orientation)
-            return;
-        this.setOrientation(orientation);
         updateGrowsInfo(orientation);
     }
 
     private void updateGrowsInfo(Orientation orientation) {
         if (orientation == Orientation.HORIZONTAL) {
-            HBox.setHgrow(spaceFill1, Priority.ALWAYS);
-            HBox.setHgrow(spaceFill2, Priority.ALWAYS);
-            VBox.setVgrow(spaceFill1, null);
-            VBox.setVgrow(spaceFill2, null);
+            HBox.setHgrow(spaceFill, Priority.ALWAYS);
+            VBox.setVgrow(spaceFill, null);
         } else {
-            VBox.setVgrow(spaceFill1, Priority.ALWAYS);
-            VBox.setVgrow(spaceFill2, Priority.ALWAYS);
-            HBox.setHgrow(spaceFill1, null);
-            HBox.setHgrow(spaceFill2, null);
+            VBox.setVgrow(spaceFill, Priority.ALWAYS);
+            HBox.setHgrow(spaceFill, null);
         }
     }
 
@@ -63,7 +48,6 @@ public class ToolBarEx extends ToolBar {
     public ToolBarEx addAligned(Pos pos, Node... nodes) {
         switch (pos) {
             case TOP_LEFT, CENTER_LEFT, BOTTOM_LEFT -> this.addLeft(nodes);
-            case TOP_CENTER, CENTER, BOTTOM_CENTER -> this.addCenter(nodes);
             default -> this.addRight(nodes);
         }
         return this;
@@ -71,14 +55,7 @@ public class ToolBarEx extends ToolBar {
 
     public ToolBarEx addLeft(Node... nodes) {
         final ObservableList<Node> items = getAlignedItems();
-        final int idx = items.indexOf(this.spaceFill1);
-        items.addAll(idx == -1 ? 0 : idx, Arrays.asList(nodes));
-        return this;
-    }
-
-    public ToolBarEx addCenter(Node... nodes) {
-        final ObservableList<Node> items = getAlignedItems();
-        final int idx = items.indexOf(this.spaceFill2);
+        final int idx = items.indexOf(this.spaceFill);
         items.addAll(idx == -1 ? 0 : idx, Arrays.asList(nodes));
         return this;
     }

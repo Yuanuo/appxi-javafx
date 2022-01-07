@@ -1,11 +1,11 @@
 package org.appxi.javafx.workbench.views;
 
-import org.appxi.javafx.workbench.WorkbenchApplication;
+import org.appxi.javafx.workbench.WorkbenchPane;
 import org.appxi.javafx.workbench.WorkbenchViewController;
 
 public abstract class WorkbenchNoneViewController extends WorkbenchViewController {
-    public WorkbenchNoneViewController(String viewId, WorkbenchApplication application) {
-        super(viewId, application);
+    public WorkbenchNoneViewController(String viewId, WorkbenchPane workbench) {
+        super(viewId, workbench);
     }
 
     @Override

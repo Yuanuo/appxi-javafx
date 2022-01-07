@@ -3,101 +3,25 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.appxi</groupId>
-    <artifactId>appxi-javafx</artifactId>
-    <version>21.10.30</version>
-    <parent>
-        <groupId>org.openjfx</groupId>
-        <artifactId>javafx</artifactId>
-        <version>18-ea+5</version>
-    </parent>
+    <artifactId>javafx</artifactId>
+    <version>22.01.07</version>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>18</maven.compiler.release>
+        <maven.compiler.release>17</maven.compiler.release>
+        <javafx.version>18-ea+9</javafx.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.openjfx</groupId>
-            <artifactId>javafx-fxml</artifactId>
-            <version>${javafx.version}</version>
-            <classifier>${javafx.platform}</classifier>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
             <artifactId>javafx-web</artifactId>
             <version>${javafx.version}</version>
-            <classifier>${javafx.platform}</classifier>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-base</artifactId>
-            <version>${javafx.version}</version>
-            <classifier>${javafx.platform}</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-controls</artifactId>
-            <version>${javafx.version}</version>
-            <classifier>${javafx.platform}</classifier>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-graphics</artifactId>
-            <version>${javafx.version}</version>
-            <classifier>${javafx.platform}</classifier>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-media</artifactId>
-            <version>${javafx.version}</version>
-            <classifier>${javafx.platform}</classifier>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-swing</artifactId>
-            <version>${javafx.version}</version>
-            <classifier>${javafx.platform}</classifier>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>org.appxi</groupId>
-            <artifactId>appxi-shared</artifactId>
+            <artifactId>shared</artifactId>
             <version>[1.0.0,)</version>
         </dependency>
     </dependencies>
@@ -111,7 +35,6 @@
                     <compilerArgs>
                         <arg>--add-exports=javafx.web/com.sun.webkit=appxi.javafx</arg>
                         <arg>--add-exports=javafx.web/com.sun.webkit.event=appxi.javafx</arg>
-                        <arg>--add-opens=javafx.web/javafx.scene.web=appxi.javafx</arg>
                     </compilerArgs>
                 </configuration>
             </plugin>

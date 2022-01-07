@@ -1,15 +1,25 @@
 package org.appxi.javafx.control;
 
+import javafx.event.Event;
 import javafx.event.EventDispatcher;
 import javafx.scene.Node;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.scene.input.InputEvent;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import org.appxi.javafx.control.skin.TreeViewSkinEx;
 
+import java.util.function.BiConsumer;
+
 public class TreeViewEx<T> extends TreeView<T> {
+    private final EventDispatcher originalEventDispatcher;
+    private BiConsumer<InputEvent, TreeItem<T>> enterOrDoubleClickAction;
+
     /**
      * 默认禁用左侧三角按钮事件
      *
@@ -26,21 +36,27 @@ public class TreeViewEx<T> extends TreeView<T> {
      */
     public TreeViewEx(boolean disableArrowAction) {
         super();
+        originalEventDispatcher = super.getEventDispatcher();
         if (disableArrowAction) {
-            final EventDispatcher originalDispatcher = super.getEventDispatcher();
             this.setEventDispatcher((event, tail) -> {
                 if (event instanceof MouseEvent msEvt) {
                     if (msEvt.getEventType() == MouseEvent.MOUSE_PRESSED) {
                         final Node pickedNode = msEvt.getPickResult().getIntersectedNode();
-                        if (pickedNode instanceof StackPane
-                                && (pickedNode.getParent() instanceof TreeCell
-                                || pickedNode.getParent().getParent() instanceof TreeCell))
+                        if (pickedNode instanceof StackPane && (
+                                pickedNode.getParent() instanceof TreeCell
+                                || pickedNode.getParent().getParent() instanceof TreeCell)
+                        )
                             event.consume();
                     }
                 }
-                return originalDispatcher.dispatchEvent(event, tail);
+                return originalEventDispatcher.dispatchEvent(event, tail);
             });
         }
+
+        this.setShowRoot(false);
+        this.setOnKeyReleased(this::handleOnKeyReleased);
+        this.setOnMousePressed(Event::consume);
+        this.setOnMouseReleased(this::handleOnMouseReleased);
     }
 
     @Override
@@ -78,5 +94,82 @@ public class TreeViewEx<T> extends TreeView<T> {
         if (this.isRowVisible(rowIndex))
             return;
         this.scrollTo(rowIndex);
+    }
+
+
+    public TreeViewEx<T> setEnterOrDoubleClickAction(BiConsumer<InputEvent, TreeItem<T>> enterOrDoubleClickAction) {
+        this.enterOrDoubleClickAction = enterOrDoubleClickAction;
+        return this;
+    }
+
+    private void handleOnKeyReleased(KeyEvent event) {
+        if (event.getCode() == KeyCode.ESCAPE) {
+            this.getSelectionModel().clearSelection();
+            event.consume();
+            return;
+        }
+//        if (event.getCode() != KeyCode.ENTER)
+//            return;
+//        final TreeItem<T> treeItem = this.getSelectionModel().getSelectedItem();
+//        if (null == treeItem)
+//            return;
+//        if (!treeItem.isLeaf()) {
+//            treeItem.setExpanded(!treeItem.isExpanded());
+//            event.consume();
+//            return;
+//        }
+//
+//        handleOnKeyReleasedImpl(event, treeItem);
+    }
+
+//    protected void handleOnKeyReleasedImpl(KeyEvent event, TreeItem<T> treeItem) {
+//        if (event.getCode() == KeyCode.ENTER) {
+//            handleOnEnterOrDoubleClicked(event, treeItem);
+//            event.consume();
+//        }
+//    }
+
+    private void handleOnMouseReleased(MouseEvent event) {
+        if (event.getButton() == MouseButton.MIDDLE) {
+            this.getSelectionModel().clearSelection();
+            event.consume();
+            return;
+        }
+        if (event.getButton() != MouseButton.PRIMARY)
+            return;
+
+        TreeItem<T> treeItem = null;
+        final Node pickedNode = event.getPickResult().getIntersectedNode();
+        if (pickedNode instanceof TreeCell cell)
+            treeItem = cell.getTreeItem();
+        else if (pickedNode.getParent() instanceof TreeCell cell)
+            treeItem = cell.getTreeItem();
+        else if (pickedNode.getParent().getParent() instanceof TreeCell cell)
+            treeItem = cell.getTreeItem();
+
+        if (null == treeItem)
+            return;
+
+        if (!treeItem.isLeaf()) {
+            final boolean expanded = !treeItem.isExpanded();
+            treeItem.setExpanded(expanded);
+            this.layout();
+            this.scrollToIfNotVisible(treeItem);
+            return;
+        }
+
+        handleOnMouseReleasedImpl(event, treeItem);
+    }
+
+    protected void handleOnMouseReleasedImpl(MouseEvent event, TreeItem<T> treeItem) {
+        if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() > 1) {
+            handleOnEnterOrDoubleClicked(event, treeItem);
+            event.consume();
+        }
+    }
+
+    protected void handleOnEnterOrDoubleClicked(InputEvent event, TreeItem<T> treeItem) {
+        if (null != enterOrDoubleClickAction)
+            enterOrDoubleClickAction.accept(event, treeItem);
     }
 }

@@ -10,14 +10,13 @@ import javafx.scene.layout.Priority;
 import javafx.scene.web.HTMLEditor;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
-import org.appxi.javafx.helper.FxHelper;
 
 import java.lang.reflect.Field;
 
 public class HTMLEditorEx extends HTMLEditor {
     private WebView webView;
-    private WebEngine engine;
-    private WebPage page;
+    private WebEngine webEngine;
+    private WebPage webPage;
     private ToolBar topToolbar, bottomToolbar;
 
     public HTMLEditorEx() {
@@ -54,22 +53,21 @@ public class HTMLEditorEx extends HTMLEditor {
     }
 
     public final WebEngine webEngine() {
-        if (null != engine)
-            return engine;
-        this.engine = this.webView().getEngine();
-        return this.engine;
+        if (null != webEngine)
+            return webEngine;
+        this.webEngine = this.webView().getEngine();
+        return this.webEngine;
     }
 
     public final WebPage webPage() {
-        if (null != page)
-            return page;
+        if (null != webPage)
+            return webPage;
         try {
             Field pageField = webEngine().getClass().getDeclaredField("page");
             pageField.setAccessible(true);
-            return this.page = (WebPage) pageField.get(engine);
+            return this.webPage = (WebPage) pageField.get(webEngine);
         } catch (Throwable throwable) {
-            if (!FxHelper.productionMode)
-                throwable.printStackTrace();
+            throwable.printStackTrace();
         }
         return null;
     }

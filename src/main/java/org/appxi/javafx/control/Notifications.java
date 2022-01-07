@@ -1,7 +1,12 @@
 package org.appxi.javafx.control;
 
-import org.appxi.javafx.iconfont.MaterialIcon;
-import javafx.animation.*;
+import javafx.animation.Animation;
+import javafx.animation.Interpolator;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.ParallelTransition;
+import javafx.animation.Timeline;
+import javafx.animation.Transition;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.event.Event;
@@ -20,9 +25,16 @@ import javafx.stage.PopupWindow;
 import javafx.stage.Screen;
 import javafx.stage.Window;
 import javafx.util.Duration;
+import org.appxi.javafx.visual.MaterialIcon;
 
 import java.lang.ref.WeakReference;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public final class Notifications {
     private Notifications() {
@@ -376,22 +388,22 @@ public final class Notifications {
             }
 
             public void showWarning() {
-                graphic(MaterialIcon.WARNING.iconView()); //$NON-NLS-1$
+                graphic(MaterialIcon.WARNING.graphic()); //$NON-NLS-1$
                 show();
             }
 
             public void showInformation() {
-                graphic(MaterialIcon.INFO.iconView()); //$NON-NLS-1$
+                graphic(MaterialIcon.INFO.graphic()); //$NON-NLS-1$
                 show();
             }
 
             public void showError() {
-                graphic(MaterialIcon.ERROR.iconView()); //$NON-NLS-1$
+                graphic(MaterialIcon.ERROR.graphic()); //$NON-NLS-1$
                 show();
             }
 
             public void showConfirm() {
-                graphic(MaterialIcon.HELP.iconView()); //$NON-NLS-1$
+                graphic(MaterialIcon.HELP.graphic()); //$NON-NLS-1$
                 show();
             }
         }

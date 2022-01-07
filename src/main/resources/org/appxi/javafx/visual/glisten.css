@@ -1,0 +1,1728 @@
+@font-face {
+	font-family: Material-Icons;
+	src: url('MaterialIcons-Regular.ttf');
+}
+
+@font-face {
+	font-family: Roboto;
+	src: url('Roboto-Regular.ttf');
+}
+
+@font-face {
+	font-family: "Roboto Bold";
+	src: url('Roboto-Bold.ttf');
+}
+
+@font-face {
+	font-family: "Roboto Medium";
+	src: url('Roboto-Medium.ttf');
+}
+
+.root {
+	-fx-font-family: "Roboto";
+	-fx-background: white;
+	-fx-text-fill: -text-light;
+	-fx-font-size: 10pt;
+	-elevation-shadow-color: rgba(0, 0, 0, 0.3);
+	-elevation-z1: dropshadow(three-pass-box, -elevation-shadow-color, 2, 0, 0, 1);
+	-elevation-z2: dropshadow(three-pass-box, -elevation-shadow-color, 16, 0, 0, 7);
+	-text-dark: white;
+	-divider-dark: rgba(255, 255, 255, 0.12);
+	-text-disabled-dark: rgba(255, 255, 255, 0.74);
+	-text-hint-dark: rgba(255, 255, 255, 0.12);
+	-text-secondary-dark: rgba(255, 255, 255, 0.7);
+	-text-light: rgba(0, 0, 0, 0.87);
+	-divider-light: rgba(0, 0, 0, 0.12);
+	-text-disabled-light: rgba(0, 0, 0, 0.7);
+	-text-hint-light: rgba(0, 0, 0, 0.26);
+	-text-secondary-light: rgba(0, 0, 0, 0.54);
+	-dialog-content-text-color: rgba(0, 0, 0, 0.65);
+	-selection-background: rgba(0, 0, 0, 0.05);
+	-text-input-prompt-color: rgba(0, 0, 0, 0.3);
+	-text-disabled: -text-disabled-light;
+	-background-disabled: rgba(0, 0, 0, 0.12);
+	-background-fill: -text-light;
+	-flat-button-hover-background: rgba(153, 153, 153, 0.2);
+	-flat-button-pressed-background: rgba(153, 153, 153, 0.4);
+	-flat-button-disabled-fill: rgba(0, 0, 0, 0.26);
+	-toast-background: rgba(51, 51, 51, 0.7);
+}
+
+.view {
+	-fx-background-color: -fx-background;
+}
+
+.button, .toggle-button {
+	-fx-skin: "com.gluonhq.impl.charm.glisten.control.skin.GlistenButtonSkin";
+	-fx-font-weight: normal;
+	-fx-font-size: 1em;
+	-fx-background-radius: 0;
+	-fx-alignment: center;
+	-fx-effect: -elevation-z1;
+	-fx-background-color: -primary-swatch-500;
+	-fx-text-fill: ladder(-primary-swatch-500, -text-dark 49%, -text-light 50%);
+	-fx-min-width: 14.08mm;
+	-fx-min-height: 5.76mm;
+	-fx-padding: 1.92mm;
+}
+
+.date-picker-popup > * > .spinner > .button {
+	-fx-skin: "javafx.scene.control.skin.ButtonSkin";
+}
+
+.button:hover, .toggle-button:hover {
+	-fx-background-color: -primary-swatch-600;
+}
+
+.button:pressed, .toggle-button:pressed {
+	-fx-background-color: -primary-swatch-700;
+	-fx-effect: -elevation-z2;
+}
+
+.button:disabled, .toggle-button:disabled {
+	-fx-background-color: -background-disabled;
+	-fx-text-fill: ladder(-background-disabled, -text-disabled-light 49%, -text-disabled-dark 50%);
+	-fx-effect: null;
+}
+
+.button.flat, .toggle-button.flat {
+	-fx-background-color: transparent;
+	-fx-effect: null;
+	-fx-text-fill: inherit;
+}
+
+.button.flat:hover, .toggle-button.flat:hover {
+	-fx-background-color: -flat-button-hover-background;
+}
+
+.button.flat:pressed, .toggle-button.flat:pressed {
+	-fx-background-color: -flat-button-pressed-background;
+}
+
+.button.flat:disabled, .toggle-button.flat:disabled {
+	-fx-text-fill: -flat-button-disabled-fill;
+}
+
+.button.round, .toggle-button.round {
+	-fx-min-width: 8.96mm;
+	-fx-min-height: 8.96mm;
+	-fx-pref-width: 8.96mm;
+	-fx-pref-height: 8.96mm;
+	-fx-background-radius: 4.48mm;
+	-fx-background-insets: 0;
+	-fx-padding: 0;
+	-fx-text-fill: ladder(-primary-swatch-500, -text-dark 49%, -text-light 50%);
+}
+
+.button.round:pressed, .toggle-button.round:pressed {
+	-fx-effect: -elevation-z2;
+}
+
+.button.round:disabled, .toggle-button.round:disabled {
+	-fx-text-fill: -text-disabled;
+	-fx-background-color: -background-disabled;
+	-fx-effect: null;
+}
+
+.button.round.action, .toggle-button.round.action {
+	-fx-min-width: 12.16mm;
+	-fx-min-height: 12.16mm;
+	-fx-pref-width: 12.16mm;
+	-fx-pref-height: 12.16mm;
+	-fx-background-radius: 6.08mm;
+	-fx-background-insets: 0;
+	-fx-padding: 0;
+	-fx-text-fill: ladder(-primary-swatch-500, -text-dark 49%, -text-light 50%);
+	-fx-font-size: 2em;
+}
+
+.toggle-button.icon-toggle, .button.icon-toggle {
+	-background-base-color: white;
+	-fx-font-family: "Material Icons";
+	-fx-font-size: 5.76mm;
+	-fx-text-fill: inherit;
+	-fx-label-padding: 2 0 0 0;
+	-fx-min-width: 9.27854mm;
+	-fx-min-height: 9.27854mm;
+	-fx-pref-width: 9.27854mm;
+	-fx-pref-height: 9.27854mm;
+	-fx-background-radius: 4.63927mm;
+	-fx-background-insets: 0;
+	-fx-padding: 0;
+	-fx-text-fill: ladder(-primary-swatch-500, -text-dark 49%, -text-light 50%);
+	-fx-background-color: transparent;
+	-fx-effect: none;
+	-fx-padding: 0;
+}
+
+.toggle-button.icon-toggle:hover, .button.icon-toggle:hover {
+	-fx-background-color: derive(-background-base-color, -10%);
+}
+
+.toggle-button.icon-toggle:pressed, .button.icon-toggle:pressed {
+	-fx-background-color: derive(-background-base-color, -20%);
+}
+
+.toggle-button.icon-toggle:disabled, .button.icon-toggle:disabled {
+	-fx-text-fill: -text-disabled;
+}
+
+.icon-text {
+	-fx-font-family: "Material Icons";
+	-fx-font-size: 5.76mm;
+	-fx-text-fill: inherit;
+	-fx-label-padding: 2 0 0 0;
+}
+
+.toggle-button {
+	-fx-skin: "com.gluonhq.impl.charm.glisten.control.skin.GlistenToggleButtonSkin";
+}
+
+.toggle-button:selected {
+	-fx-background-color: -primary-swatch-700;
+}
+
+.toggle-button:selected:hover {
+	-fx-background-color: -primary-swatch-600;
+}
+
+.toggle-button.switch {
+	-fx-skin: "com.gluonhq.impl.charm.glisten.control.skin.GlistenSwitchSkin";
+	-fx-effect: null;
+	-fx-text-fill: null;
+	-fx-background-color: transparent;
+	-fx-pref-width: 10.96554mm;
+	-fx-pref-height: 6.74803mm;
+	-fx-min-width: 10.96554mm;
+	-fx-min-height: 6.74803mm;
+}
+
+.toggle-button.switch:pressed {
+	-fx-text-fill: transparent;
+}
+
+.toggle-button.switch:disabled {
+	-fx-background-color: transparent;
+}
+
+.toggle-button.switch > .track {
+	-fx-background-color: derive(#BDBDBD, -15%);
+	-fx-pref-width: 10.96554mm;
+	-fx-pref-height: 4.21752mm;
+	-fx-background-radius: 4.21752mm;
+	-fx-background-insets: 0;
+	-fx-padding: 0;
+}
+
+.toggle-button.switch > .thumb {
+	-fx-background-color: #BDBDBD;
+	-fx-effect: -elevation-z1;
+	-fx-min-width: 5.90452mm;
+	-fx-min-height: 5.90452mm;
+	-fx-pref-width: 5.90452mm;
+	-fx-pref-height: 5.90452mm;
+	-fx-background-radius: 2.95226mm;
+	-fx-background-insets: 0;
+	-fx-padding: 0;
+	-fx-text-fill: ladder(-primary-swatch-500, -text-dark 49%, -text-light 50%);
+}
+
+.toggle-button.switch:pressed > .thumb {
+	-fx-background-color: -primary-swatch-200;
+	-fx-effect: -elevation-z2;
+}
+
+.toggle-button.switch:selected > .track {
+	-fx-background-color: derive(-primary-swatch-200, 50%);
+}
+
+.toggle-button.switch:selected > .thumb {
+	-fx-background-color: -primary-swatch-500;
+}
+
+.toggle-button.switch:disabled > .track {
+	-fx-background-color: derive(#424242, 10%);
+}
+
+.toggle-button.switch:disabled > .thumb {
+	-fx-background-color: #424242;
+}
+
+.toggle-button.switch.light {
+	-fx-effect: null;
+}
+
+.toggle-button.switch.light > .track {
+	-fx-background-color: derive(#FAFAFA, -50%);
+}
+
+.toggle-button.switch.light > .thumb {
+	-fx-background-color: #FAFAFA;
+}
+
+.toggle-button.switch.light:selected > .track {
+	-fx-background-color: derive(-primary-swatch-500, 50%);
+}
+
+.toggle-button.switch.light:selected > .thumb {
+	-fx-background-color: -primary-swatch-500;
+}
+
+.toggle-button.switch.light:disabled > .track {
+	-fx-background-color: derive(#BDBDBD, 15%);
+}
+
+.toggle-button.switch.light:disabled > .thumb {
+	-fx-background-color: #BDBDBD;
+}
+
+.check-box {
+	-fx-text-fill: inherit;
+}
+
+.check-box > .box {
+	-fx-background-color: transparent;
+}
+
+.check-box > .box > .mark {
+	-fx-pref-width: 5.06102mm;
+	-fx-pref-height: 5.06102mm;
+	-fx-background-color: -background-fill;
+	-fx-shape: "M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z";
+}
+
+.check-box:selected > .box > .mark {
+	-fx-background-color: -primary-swatch-500;
+	-fx-shape: "M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z";
+}
+
+.check-box:disabled > .box > .mark {
+	-fx-background-color: -text-disabled;
+}
+
+.radio-button {
+	-fx-text-fill: inherit;
+}
+
+.radio-button > .radio {
+	-fx-background-color: transparent;
+}
+
+.radio-button > .radio > .dot {
+	-fx-pref-width: 5.48277mm;
+	-fx-pref-height: 5.48277mm;
+	-fx-background-color: -background-fill;
+	-fx-shape: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z";
+}
+
+.radio-button:disabled > .radio > .dot {
+	-fx-background-color: -text-disabled;
+}
+
+.radio-button:selected > .radio > .dot {
+	-fx-background-color: -primary-swatch-500;
+	-fx-shape: "M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z";
+}
+
+.text-input {
+	-fx-font-size: 1.2em;
+	-fx-padding: 1.28mm;
+	-fx-background-color: transparent;
+	-fx-highlight-fill: -primary-swatch-500;
+	-fx-highlight-text-fill: ladder(-primary-swatch-500, -text-dark 49%, -text-light 50%);
+	-fx-background-insets: 0;
+	-fx-focus-color: transparent;
+	-fx-background-radius: 0;
+	-fx-text-fill: inherit;
+	-fx-border-width: 0 0 1px 0, 0 0 1px 0;
+	-fx-border-insets: 0 0 -1px 0, 0 0 -1px 0;
+	-fx-border-color: transparent transparent -fx-prompt-text-fill transparent, transparent transparent transparent transparent;
+}
+
+.text-input:focused {
+	-fx-border-width: 0 0 2px 0, 0 0 0 0;
+	-fx-border-insets: 0 0 -2px 0, 0 0 0 0;
+	-fx-border-color: transparent transparent -primary-swatch-500 transparent, transparent transparent transparent transparent;
+}
+
+.text-input:disabled {
+	-fx-border-style: dashed;
+	-fx-opacity: 1;
+	-fx-text-input: -text-disabled;
+}
+
+.text-input.full-width {
+	-fx-border-color: transparent;
+}
+
+.scroll-bar:horizontal .track, .scroll-bar:vertical .track {
+	-fx-background-color: transparent;
+	-fx-border-color: transparent;
+	-fx-background-radius: 0em;
+	-fx-border-radius: 2em;
+}
+
+.scroll-bar:horizontal .increment-button, .scroll-bar:horizontal .decrement-button {
+	-fx-background-color: transparent;
+	-fx-background-radius: 0em;
+	-fx-padding: 0 0 10 0;
+}
+
+.scroll-bar:vertical .increment-button, .scroll-bar:vertical .decrement-button {
+	-fx-background-color: transparent;
+	-fx-background-radius: 0em;
+	-fx-padding: 0 10 0 0;
+}
+
+.scroll-bar .increment-arrow, .scroll-bar .decrement-arrow {
+	-fx-shape: " ";
+	-fx-padding: 0;
+}
+
+.scroll-bar:horizontal .thumb, .scroll-bar:vertical .thumb {
+	-fx-background-color: derive(black, 90%);
+	-fx-background-insets: 2, 0, 0;
+	-fx-background-radius: 2em;
+}
+
+.tool-bar {
+	-fx-background-insets: 0;
+	-fx-background-color: -primary-swatch-500;
+	-fx-font-size: 1.1em;
+	-fx-text-fill: ladder(-primary-swatch-500, -text-dark 49%, -text-light 50%);
+	-fx-effect: -elevation-z1;
+	-fx-spacing: 3mm;
+}
+
+.tool-bar .label {
+	-fx-text-fill: inherit;
+	-fx-font-size: 1.2em;
+}
+
+.tool-bar .button {
+	-fx-background-color: transparent;
+	-fx-text-fill: inherit;
+	-fx-font-family: "Material Icons";
+	-fx-font-size: 5.76mm;
+	-fx-text-fill: inherit;
+	-fx-label-padding: 2 0 0 0;
+	-fx-min-width: 9.2mm;
+	-fx-min-height: 9.2mm;
+	-fx-pref-width: 9.2mm;
+	-fx-pref-height: 9.2mm;
+	-fx-background-radius: 4.6mm;
+	-fx-background-insets: 0;
+	-fx-padding: 0;
+	-fx-text-fill: ladder(-primary-swatch-500, -text-dark 49%, -text-light 50%);
+	-fx-effect: null;
+}
+
+.tool-bar .button.icon-toggle {
+	-fx-font-family: "Material Icons";
+	-fx-font-size: 5.76mm;
+	-fx-text-fill: inherit;
+	-fx-label-padding: 2 0 0 0;
+	-fx-min-width: 9.27854mm;
+	-fx-min-height: 9.27854mm;
+	-fx-pref-width: 9.27854mm;
+	-fx-pref-height: 9.27854mm;
+	-fx-background-radius: 4.63927mm;
+	-fx-background-insets: 0;
+	-fx-padding: 0;
+	-fx-text-fill: ladder(-primary-swatch-500, -text-dark 49%, -text-light 50%);
+	-fx-background-color: transparent;
+	-fx-text-fill: inherit;
+	-fx-effect: none;
+}
+
+.tool-bar .button.icon-toggle:hover {
+	-fx-background-color: derive(-primary-swatch-500, -10%);
+}
+
+.tool-bar .button.icon-toggle:pressed {
+	-fx-background-color: derive(-primary-swatch-500, -20%);
+}
+
+.tool-bar .text-input {
+	-fx-border-color: transparent;
+	-fx-background: transparent;
+	-fx-text-fill: inherit;
+}
+
+.list-view {
+	-fx-background-insets: 0;
+	-fx-background-color: white;
+	-fx-text-fill: -text-light;
+	-fx-effect: -elevation-z1;
+	-fx-spacing: 3mm;
+	-fx-padding: 0;
+	-fx-border-width: 0;
+	-fx-effect: null;
+}
+
+.list-cell, .list-cell:odd {
+	-fx-background-color: white;
+	-fx-border-color: -divider-light;
+	-fx-border-width: 0 0 1 0;
+	-fx-text-fill: -text-light;
+	-fx-text-background-color: -text-light;
+}
+
+.list-cell:empty {
+	-fx-border-width: 0;
+	-fx-text-fill: -text-light;
+	-fx-text-background-color: -text-light;
+}
+
+.list-cell:filled:selected, .list-cell:filled:selected:focused {
+	-fx-background-color: -selection-background;
+	-fx-text-fill: -text-light;
+	-fx-text-background-color: -text-light;
+}
+
+.list-tile {
+	-fx-margin: 0mm 2.56mm 0mm 2.56mm;
+	-fx-text-fill: -text-light;
+	-fx-text-background-color: -text-light;
+	-fx-fill-height: true;
+	-fx-aligment: baseline-left;
+}
+
+.list-tile > .text-box {
+	-fx-spacing: 0px;
+	-fx-pref-width: 10px;
+	-fx-padding: 0 2mm 0 2mm;
+}
+
+.list-tile > .text-box > .primary-text {
+	-fx-text-fill: -text-light;
+	-fx-font-size: 1.1em;
+}
+
+.list-tile > .text-box > .secondary-text {
+	-fx-text-fill: -text-secondary-light;
+	-fx-font-size: 1em;
+}
+
+.list-tile > .text-box > .tertiary-text {
+	-fx-text-fill: -text-secondary-light;
+	-fx-font-size: 0.9em;
+}
+
+.list-tile > .primary-graphic {
+	-fx-pref-width: 8.96mm;
+	-fx-font-size: 1.9em;
+}
+
+.list-tile > .secondary-graphic {
+	-fx-padding: 0 2.56mm 0 2.56mm;
+}
+
+.list-tile.single-line-tile {
+	-fx-pref-height: 8.96mm;
+}
+
+.list-tile.dual-line-tile {
+	-fx-pref-height: 11.52mm;
+}
+
+.list-tile.triple-line-tile {
+	-fx-pref-height: 14.08mm;
+}
+
+.floating-header {
+	-fx-effect: dropshadow(three-pass-box, black, 5, 0, 0, 0);
+}
+
+.floating-header:snapped {
+	-fx-effect: null;
+}
+
+.charm-list-view.list-view {
+	-fx-padding: 0;
+}
+
+.list-cell.header-cell {
+	-fx-font-weight: bold;
+	-fx-background-color: white;
+	-fx-text-fill: -primary-swatch-500;
+	-fx-font-size: 1em;
+}
+
+.dialog {
+	-fx-text-fill: -text-light;
+	-fx-background-color: white;
+	-fx-effect: -elevation-z2;
+	-fx-padding: 4.8mm 0 0 0;
+}
+
+.dialog > .graphic-container {
+	-fx-padding: 0 4.8mm 4.8mm 4.8mm;
+}
+
+.dialog > .container {
+	-fx-spacing: 3.84mm;
+	-fx-padding: 0 4.8mm 4.8mm 4.8mm;
+}
+
+.dialog > .container > .dialog-title {
+	-fx-font-size: 1.5em;
+	-fx-font-family: "Roboto Medium";
+	-fx-text-fill: -text-light;
+}
+
+.dialog > .container > .dialog-content {
+	-fx-text-fill: -dialog-content-text-color;
+	-fx-font-size: 11pt;
+}
+
+.dialog > .dialog-button-bar {
+	-fx-padding: 2.56mm 2.56mm 2.56mm 4.8mm;
+	-fx-alignment: center-right;
+}
+
+.dialog > .dialog-button-bar .button {
+	-fx-text-fill: -primary-swatch-500;
+}
+
+.header-dialog-panel > .header {
+	-fx-background-color: -primary-swatch-500;
+	-fx-padding: 15 30 15 0;
+}
+
+.app-bar.dialog-fullscreen > .nav-area > .close-button {
+	-fx-pref-width: 24px;
+	-fx-pref-height: 24px;
+	-fx-min-width: 9.27854mm;
+	-fx-min-height: 9.27854mm;
+	-fx-pref-width: 9.27854mm;
+	-fx-pref-height: 9.27854mm;
+	-fx-background-radius: 4.63927mm;
+	-fx-background-insets: 0;
+	-fx-padding: 0;
+	-fx-text-fill: ladder(-primary-swatch-500, -text-dark 49%, -text-light 50%);
+	-fx-scale-shape: false;
+	-fx-shape: "M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41z";
+	-fx-background-color: -fx-icon-fill;
+}
+
+.alert > .graphic-container > .graphic {
+	-fx-pref-width: 65px;
+	-fx-pref-height: 65px;
+	-fx-scale-shape: false;
+}
+
+.alert.error > .graphic-container > .graphic {
+	-fx-shape: "M264.901,243.462l-8.401,8.401l-8.401-8.401l-4.599,4.599l8.401,8.401l-8.401,8.401l4.599,4.599l8.401-8.401l8.401,8.401l4.599-4.599l-8.401-8.401l8.401-8.401L264.901,243.462z M256.5,223.962c-17.956,0-32.5,14.544-32.5,32.5s14.544,32.5,32.5,32.5s32.5-14.544,32.5-32.5S274.456,223.962,256.5,223.962z M256.48,282.462c-14.333,0-26-11.668-26-26c0-14.333,11.667-26,26-26c14.332,0,26,11.667,26,26C282.48,270.794,270.812,282.462,256.48,282.462z";
+	-fx-background-color: #bf0310;
+}
+
+.alert.warning > .graphic-container > .graphic {
+	-fx-shape: "M224,288.962h65l-32.5-65L224,288.962z M259.455,278.699h-5.909v-6.842h5.909V278.699z M259.455,265.015h-5.909V251.33h5.909V265.015z";
+	-fx-background-color: #f7ec45;
+}
+
+.alert.information > .graphic-container > .graphic {
+	-fx-shape: "M253.25,272.712h6.5v-19.5h-6.5V272.712z M256.5,223.962c-17.956,0-32.5,14.544-32.5,32.5s14.544,32.5,32.5,32.5s32.5-14.544,32.5-32.5S274.456,223.962,256.5,223.962z M256.5,282.462c-14.333,0-26-11.668-26-26c0-14.333,11.667-26,26-26c14.332,0,26,11.667,26,26C282.5,270.795,270.832,282.462,256.5,282.462z M253.25,246.712h6.5v-6.5h-6.5V246.712z";
+	-fx-background-color: #3e66a9;
+}
+
+.alert.confirmation > .graphic-container > .graphic {
+	-fx-shape: "M253.25,275.962h6.5v-6.5h-6.5V275.962z M256.5,223.962c-17.94,0-32.5,14.56-32.5,32.5s14.56,32.5,32.5,32.5s32.5-14.56,32.5-32.5S274.44,223.962,256.5,223.962z M256.5,282.462c-14.333,0-26-11.668-26-26c0-14.333,11.667-26,26-26c14.332,0,26,11.667,26,26C282.5,270.794,270.832,282.462,256.5,282.462z M256.5,236.962c-7.182,0-13,5.817-13,13h6.5c0-3.575,2.925-6.5,6.5-6.5c3.575,0,6.5,2.925,6.5,6.5c0,6.5-9.75,5.688-9.75,16.25h6.5c0-7.313,9.75-8.125,9.75-16.25C269.5,242.779,263.682,236.962,256.5,236.962z";
+	-fx-background-color: #4a72b1;
+}
+
+.exception-dialog-content > BorderPane > .graphic-container > .graphic {
+	-fx-pref-width: 32px;
+	-fx-pref-height: 32px;
+	-fx-scale-shape: false;
+	-fx-shape: "M38.18,25L33,30.18L27.82,25L25,27.82L30.18,33L25,38.18L27.82,41L33,35.82L38.18,41L41,38.18L35.82,33L41,27.82L38.18,25z M33,13c-11.06,0-20,8.94-20,20s8.94,20,20,20s20-8.94,20-20S44.06,13,33,13z M33,49c-8.82,0-16-7.18-16-16s7.18-16,16-16s16,7.18,16,16S41.82,49,33,49z";
+	-fx-background-color: #bf0310;
+}
+
+.exception-dialog-content {
+	-fx-padding: 10 1 0 1;
+	-fx-spacing: 15;
+}
+
+.exception-dialog-content > BorderPane > .graphic-container {
+	-fx-padding: 20 20 20 20;
+}
+
+.exception-dialog-content > BorderPane > .message-container {
+	-fx-spacing: 10;
+	-fx-font-size: 12pt;
+}
+
+.exception-dialog-content > .stacktrace-text {
+	-fx-border-width: 0;
+}
+
+.menu, .menu:focused {
+	-fx-background-color: -fx-box-border, -fx-control-inner-background;
+	-fx-background-insets: 0, 1;
+	-fx-padding: 1;
+	-fx-effect: -elevation-z1;
+}
+
+.menu-item > .box > .mark {
+	-fx-background-color: -text-light;
+}
+
+.menu-item > .radio > .dot {
+	-fx-background-color: -text-light;
+}
+
+.menu-item {
+	-fx-alignment: center-left;
+	-fx-text-fill: -text-light;
+	-fx-min-width: 14.08mm;
+	-fx-min-height: 5.76mm;
+	-fx-padding: 1.92mm;
+}
+
+.menu-item:hover, .menu-item:focused {
+	-fx-background-color: -selection-background;
+}
+
+.menu-item:disabled {
+	-fx-text-fill: -text-disabled-light;
+}
+
+.menu-item:disabled > .box > .mark, .menu-item:disabled > .radio > .dot {
+	-fx-background-color: -text-disabled-light;
+}
+
+.popup-view {
+	-fx-popup-padding: 0.33em;
+}
+
+.popup-view > .root-node, .popup-view:focused > .root-node {
+	-fx-background-color: -fx-box-border, -fx-control-inner-background;
+	-fx-background-insets: 0, 1;
+	-fx-effect: -elevation-z1;
+}
+
+.tooltip {
+	-fx-opacity: 90%;
+	-fx-text-fill: white;
+	-fx-background-color: #616161;
+	-fx-effect: null;
+	-fx-border-color: transparent;
+	-fx-border-width: 0;
+	-fx-padding: 0.48mm 1.28mm 0.48mm 1.28mm;
+	-fx-background-insets: 2.24mm 0 0 0;
+	-fx-border-insets: 2.24mm 0 0 0;
+	-fx-font-size: 10px;
+	-fx-background-radius: 0.16mm;
+}
+
+.tab-pane {
+	-fx-tab-min-height: 7.68mm;
+	-fx-tab-max-height: 7.68mm;
+	-charm-tab-background: -fx-background;
+	-charm-tab-text: -primary-swatch-300;
+	-charm-tab-text-selected: -primary-swatch-500;
+	-charm-tab-divider: -divider-light;
+}
+
+.tab-pane.inverted {
+	-charm-tab-background: -primary-swatch-500;
+	-charm-tab-text: -primary-swatch-100;
+	-charm-tab-text-selected: ladder(-charm-tab-background, -text-dark 49%, -text-light 50%);
+	-charm-tab-divider: -primary-swatch-800;
+}
+
+.tab-pane > .tab-header-area > .tab-header-background {
+	-fx-background-insets: 0, 0, 0;
+}
+
+.tab-pane > .tab-header-area {
+	-fx-padding: 0;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab {
+	-fx-background-insets: 0, 0, 0;
+	-fx-background-radius: 0, 0, 0;
+	-fx-padding: 3.2mm, 1.92mm, 3.2mm, 1.92mm;
+	-fx-border-color: transparent, transparent;
+	-fx-border-width: 1, 2;
+	-fx-border-color: transparent transparent -charm-tab-divider transparent, transparent;
+	-fx-background-color: -charm-tab-background;
+}
+
+.tab-pane:focused > .tab-header-area > .headers-region > .tab:selected .focus-indicator {
+	-fx-border-width: 0;
+	-fx-border-insets: 0;
+	-fx-border-radius: 0;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab > .tab-container > .tab-label {
+	-fx-alignment: CENTER;
+	-fx-text-fill: -charm-tab-text;
+	-fx-padding: 0;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab:selected > .tab-container > .tab-label {
+	-fx-text-fill: -charm-tab-text-selected;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab:selected {
+	-fx-border-color: transparent, transparent transparent -charm-tab-text-selected transparent;
+}
+
+.tab-pane > .tab-header-area > .tab-header-background {
+	-fx-background-insets: 0;
+	-fx-background-color: -charm-tab-background;
+}
+
+.tab-pane > .tab-header-area > .tab-header-background {
+	-fx-border-width: 1;
+	-fx-border-color: transparent transparent -charm-tab-divider transparent;
+}
+
+.slider {
+	-charm-base-color: -primary-swatch-500;
+}
+
+.slider .thumb {
+	-fx-background-color: -charm-base-color;
+	-fx-background-insets: 1.54644mm;
+	-fx-background-radius: 2.10876mm;
+	-fx-padding: 3.16314mm;
+	-fx-effect: -elevation-z1;
+}
+
+.slider:pressed .thumb {
+	-fx-background-radius: 4.21752mm;
+	-fx-effect: -elevation-z2;
+}
+
+.slider:disabled {
+	-charm-base-color: -background-disabled;
+}
+
+.slider:disabled .thumb {
+	-fx-padding: 1.19496mm;
+}
+
+.slider .track {
+	-fx-background-color: -charm-base-color;
+	-fx-background-insets: 2.84682mm 0.63263mm 2.84682mm 1.05438mm;
+	-fx-background-radius: 1.05438mm;
+	-fx-padding: 3.16314mm 0.63263mm 3.16314mm 1.05438mm;
+}
+
+.slider:vertical .track {
+	-fx-background-insets: 0.63263mm 2.84682mm 1.05438mm 2.84682mm;
+	-fx-padding: 0.63263mm 3.16314mm 1.05438mm 3.16314mm;
+}
+
+.snackbar {
+	-fx-padding: 3.84mm;
+	-fx-background-color: #323232;
+}
+
+.snackbar .label {
+	-fx-text-fill: white;
+}
+
+.snackbar .button {
+	-fx-text-fill: -primary-swatch-500;
+}
+
+.avatar > .decoration {
+	-fx-fill: transparent;
+	-fx-stroke: white;
+	-fx-stroke-width: 3;
+}
+
+.card-pane > .charm-list-view > .list-view {
+	-fx-padding: 2mm;
+	-fx-background-color: #e3e3e3;
+}
+
+.list-cell.outer-cell {
+	-fx-padding: 1mm 0 1mm 0;
+	-fx-background-color: transparent;
+	-fx-border-width: 0;
+}
+
+.card {
+	-fx-background-color: white;
+	-fx-background-radius: 0.7mm;
+	-fx-effect: -elevation-z1;
+}
+
+.chip {
+	-fx-min-height: 32px;
+	-fx-pref-height: 32px;
+	-fx-background-color: #e0e0e0;
+	-fx-background-radius: 2em;
+}
+
+.chip {
+	-fx-padding: 0 12px 0 12px;
+	-fx-font-size: 1em;
+}
+
+.chip > .cross-container > .cross {
+	-fx-shape: "M18,3C9.71,3,3,9.71,3,18s6.71,15,15,15s15-6.71,15-15S26.29,3,18,3z M25.5,23.38l-2.12,2.12L18,20.12l-5.38,5.38l-2.12-2.12L15.88,18l-5.38-5.38l2.12-2.12L18,15.88l5.38-5.38l2.12,2.12L20.12,18C20.12,18,25.5,23.38,25.5,23.38z";
+	-fx-pref-width: 18px;
+	-fx-pref-height: 18px;
+	-fx-background-color: #a6a6a6;
+}
+
+.chip:hover > .cross-container > .cross {
+	-fx-background-color: white;
+}
+
+.chip > .label {
+	-fx-text-fill: -text-light;
+}
+
+.chip:deletable > .label {
+	-fx-padding: 0 4px 0 0;
+}
+
+.chip:deletable {
+	-fx-padding: 0 4px 0 12px;
+}
+
+.chip:has-graphic > .label {
+	-fx-padding: 0 0 0 8px;
+}
+
+.chip:has-graphic {
+	-fx-padding: 0 12px 0 0;
+}
+
+.chip:has-graphic:deletable > .label {
+	-fx-padding: 0 4px 0 8px;
+}
+
+.chip:has-graphic:deletable {
+	-fx-padding: 0 4px 0 0px;
+}
+
+.chip > .avatar {
+	-charm-radius: 16;
+}
+
+.chip > .avatar > .decoration {
+	-fx-stroke-width: 0;
+}
+
+.chip > .cross-container {
+	-fx-padding: 0 4px 0 0;
+}
+
+.chip:hover {
+	-fx-background-color: #757575;
+}
+
+.chip:hover > .label {
+	-fx-text-fill: white;
+}
+
+.grid-layout .grid-row .grid-span {
+	-fx-padding: 5;
+}
+
+.settings-pane .options-grid {
+	-fx-padding: 0;
+	-fx-text-fill: -text-light;
+	-fx-text-background-color: -text-light;
+	-fx-fill-height: true;
+	-fx-aligment: baseline-left;
+}
+
+.settings-pane .options-grid > .subheader {
+	-fx-pref-height: 8.96mm;
+	-fx-padding: 3.2mm 2.56mm 3.2mm 2.56mm;
+}
+
+.settings-pane .options-grid > .subheader > .label {
+	-fx-text-fill: -primary-swatch-500;
+}
+
+.settings-pane .options-grid > .separator {
+	-fx-pref-height: 1.28mm;
+	-fx-background-color: linear-gradient(from 0% 0% to 0% 100%, #b4b4b3 0%, #e1e1e0 75%, #d3d3d2 100%);
+}
+
+.settings-pane .options-grid > .option-row {
+	-fx-padding: 0 2.56mm 0 2.56mm;
+	-fx-spacing: 2.56mm;
+	-fx-pref-height: 14.08mm;
+	-fx-border-color: transparent transparent #d2d2d2 transparent;
+}
+
+.settings-pane .options-grid > .option-row > .primary-graphic {
+	-fx-min-width: 8.96mm;
+	-fx-pref-width: 8.96mm;
+	-fx-max-width: 8.96mm;
+}
+
+.settings-pane .options-grid > .option-row > .primary-graphic > .label {
+	-fx-text-fill: -primary-swatch-500;
+	-fx-font-size: 1.9em;
+}
+
+.settings-pane .options-grid > .option-row > .text-box {
+	-fx-spacing: 0.96mm;
+}
+
+.settings-pane .options-grid > .option-row > .text-box > .primary-text {
+	-fx-text-fill: -text-light;
+	-fx-font-size: 1.2em;
+}
+
+.settings-pane .options-grid > .option-row > .text-box > .secondary-text {
+	-fx-text-fill: -text-secondary-light;
+	-fx-font-size: 1em;
+}
+
+.settings-pane .options-grid > .option-row > .secondary-graphic {
+	-fx-pref-width: 42.56mm;
+}
+
+.settings-pane .options-grid > .option-row > .secondary-graphic > .editor, .settings-pane > .extended-pane > .extended-top > .editor {
+	-fx-max-width: 40mm;
+}
+
+.settings-pane .options-grid > .option-row > .secondary-graphic > .editor-large {
+	-fx-pref-width: 67.2mm;
+}
+
+.settings-pane > .extended-pane > .extended-top {
+	-fx-padding: 2.56mm 2.56mm 2.56mm 11.52mm;
+	-fx-background-color: -primary-swatch-400;
+	-fx-pref-height: 14.08mm;
+}
+
+.settings-pane > .extended-pane > .extended-top > .label {
+	-fx-text-fill: ladder(-primary-swatch-500, -text-dark 49%, -text-light 50%);
+	-fx-font-size: 1.2em;
+}
+
+.settings-pane > .extended-pane > .extended-center {
+	-fx-padding: 2.56mm;
+}
+
+.settings-pane > .extended-pane > .extended-center > * > .extended-text {
+	-fx-fill: -text-secondary-light;
+	-fx-font-size: 1em;
+}
+
+.navigation-drawer > * > .scroll-pane {
+	-fx-background-insets: 0, 1 0 0 0;
+}
+
+.navigation-drawer > * > .scroll-pane > .viewport > * > .container > .item:hover {
+	-fx-background-color: rgba(0, 0, 0, 0.03);
+}
+
+.navigation-drawer > * > .scroll-pane > .viewport > * > .container > .item:selected {
+	-fx-background-color: -selection-background;
+}
+
+.navigation-drawer > * > .scroll-pane > .viewport > * > .container > .item:selected > .item-content > .image-box > .label {
+	-fx-text-fill: #000000;
+}
+
+.navigation-drawer > * > .scroll-pane > .viewport > * > .container > .item:selected:hover {
+	-fx-background-color: -divider-light;
+}
+
+.navigation-drawer > * > .scroll-pane > .viewport > * > .container > .item > .item-content > .image-box {
+	-fx-padding: 0 0 0 16px;
+	-fx-pref-width: 56px;
+}
+
+.navigation-drawer > * > .scroll-pane > .viewport > * > .container > .item > .item-content > .image-box > .label {
+	-fx-text-fill: -text-secondary-light;
+}
+
+.navigation-drawer > * > .scroll-pane > .viewport > * > .container > .item > .item-content > .text-box {
+	-fx-padding: 0 16px 0 16px;
+	-fx-pref-height: 48px;
+}
+
+.navigation-drawer > * > .scroll-pane > .viewport > * > .container > .item > .item-content > .text-box > .label {
+	-fx-font-size: 14px;
+}
+
+.navigation-drawer > * > .scroll-pane > .viewport > * > .container > .footer > .footer-content > .image-box {
+	-fx-padding: 0 0 0 16px;
+	-fx-pref-width: 72px;
+	-fx-pref-height: 48px;
+}
+
+.navigation-drawer > * > .scroll-pane > .viewport > * > .container > .footer > .footer-content > .image-box > .label {
+	-fx-text-fill: -text-secondary-light;
+}
+
+.navigation-drawer > * > .scroll-pane > .viewport > * > .container > .footer > .footer-content > .text-box {
+	-fx-padding: 0 16px 0 0;
+}
+
+.navigation-drawer .scroll-bar {
+	-fx-translate-x: 0;
+}
+
+.navigation-drawer > * > .scroll-pane > .viewport > * > .container > .footer > .footer-content > .text-box > .label {
+	-fx-font-size: 14px;
+}
+
+.navigation-drawer.header {
+	-fx-background-color: inherit;
+}
+
+.navigation-drawer.header > .header-content {
+	-fx-padding: 24px 16px 8px 16px;
+	-fx-background-color: inherit;
+}
+
+.navigation-drawer.header > .header-content > .text-box > * > .title {
+	-fx-font-family: "Roboto Medium";
+	-fx-font-size: 14px;
+	-fx-text-fill: -text-light;
+}
+
+.navigation-drawer.header > .header-content > .text-box > * > .subtitle {
+	-fx-font-size: 14px;
+	-fx-text-fill: -text-light;
+}
+
+.navigation-drawer.header > .header-content .arrow-region {
+	-fx-pref-width: 24px;
+}
+
+.navigation-drawer.header > .header-content > .text-box > .arrow-region > * > .arrow {
+	-fx-background-color: black, grey;
+	-fx-background-insets: 1 0 -1 0, 0;
+	-fx-padding: 3 3.75 3 3.75;
+	-fx-shape: "M 0 0 h 7 l -3.5 4 z";
+}
+
+.time-picker, .time-picker.dialog > .container {
+	-fx-padding: 0;
+}
+
+.time-picker.dialog > .dialog-button-bar {
+	-fx-padding: 0 20 10 0;
+}
+
+.time-picker .header-dialog-panel .header .hours, .time-picker .header-dialog-panel .header .colon, .time-picker .header-dialog-panel .header .minutes {
+	-fx-font-size: 55px;
+	-fx-text-fill: ladder(-primary-swatch-500, -text-dark 49%, -text-light 50%);
+}
+
+.time-picker .header-dialog-panel .header .meridians {
+	-fx-padding: 0 0 0 5;
+}
+
+.time-picker .header-dialog-panel .header .am, .time-picker .header-dialog-panel .header .pm {
+	-fx-font-size: 18px;
+	-fx-text-fill: ladder(-primary-swatch-500, -text-dark 49%, -text-light 50%);
+}
+
+.time-picker .header-dialog-panel .header .hours:unselected, .time-picker .header-dialog-panel .header .minutes:unselected, .time-picker .header-dialog-panel .header .am:unselected, .time-picker .header-dialog-panel .header .pm:unselected {
+	-fx-text-fill: -primary-swatch-100;
+}
+
+.time-picker .header-dialog-panel .clock .clock-face .face {
+	-fx-background-color: #CCCCCC;
+}
+
+.time-picker .header-dialog-panel .clock .clipped.clock-face .face {
+	-fx-background-color: -primary-swatch-500;
+}
+
+.time-picker .header-dialog-panel .clock .clipped.clock-face .label {
+	-fx-text-fill: white;
+}
+
+.charm-date-picker, .charm-date-picker.dialog > .container {
+	-fx-padding: 0;
+}
+
+.charm-date-picker.dialog > .dialog-button-bar {
+	-fx-padding: 0 20 10 0;
+}
+
+.charm-date-picker .header-dialog-panel .header {
+	-fx-padding: 20 20 10 20;
+}
+
+.charm-date-picker .header-dialog-panel .header .year {
+	-fx-font-size: 1.1em;
+	-fx-text-fill: ladder(-primary-swatch-500, -text-dark 49%, -text-light 50%);
+}
+
+.charm-date-picker .header-dialog-panel .header .date {
+	-fx-font-size: 2.8em;
+	-fx-text-fill: ladder(-primary-swatch-500, -text-dark 49%, -text-light 50%);
+}
+
+.charm-date-picker .header-dialog-panel .header .year:unselected, .charm-date-picker .header-dialog-panel .header .date:unselected {
+	-fx-text-fill: -primary-swatch-100;
+}
+
+.charm-date-picker .header-dialog-panel .monthly-calendar {
+	-fx-effect: null;
+	-fx-padding: 2.56mm;
+}
+
+.charm-date-picker .header-dialog-panel .monthly-calendar > .monthly-calendar-pane > * > .day-name-cell, .charm-date-picker .header-dialog-panel .monthly-calendar > .monthly-calendar-pane > * > .week-number-cell {
+	-fx-font-size: 0.9em;
+	-fx-text-fill: #9e9e9e;
+}
+
+.charm-date-picker .header-dialog-panel .monthly-calendar > .monthly-calendar-pane > * > .day-cell.previous-month, .charm-date-picker .header-dialog-panel .monthly-calendar > .monthly-calendar-pane > * > .day-cell.previous-month.today, .charm-date-picker .header-dialog-panel .monthly-calendar > .monthly-calendar-pane > * > .day-cell.next-month, .charm-date-picker .header-dialog-panel .monthly-calendar > .monthly-calendar-pane > * > .day-cell.next-month.today {
+	-fx-font-size: 0.9em;
+	-fx-text-fill: transparent;
+}
+
+.charm-date-picker .header-dialog-panel .monthly-calendar > .monthly-calendar-pane > * > .day-cell {
+	-fx-text-fill: black;
+	-fx-font-size: 1em;
+	-fx-background-color: transparent;
+}
+
+.charm-date-picker .header-dialog-panel .monthly-calendar > .monthly-calendar-pane > .circle {
+	-fx-fill: -primary-swatch-500;
+	-fx-stroke: -primary-swatch-500;
+}
+
+.charm-date-picker .header-dialog-panel .monthly-calendar > .monthly-calendar-pane > * > .day-cell.picked {
+	-fx-text-fill: ladder(-primary-swatch-500, -text-dark 49%, -text-light 50%);
+	-fx-font-weight: bold;
+}
+
+.charm-date-picker .header-dialog-panel .monthly-calendar > .monthly-calendar-pane > * > .day-cell.today {
+	-fx-text-fill: -primary-swatch-500;
+}
+
+.charm-date-picker .header-dialog-panel .monthly-calendar > .monthly-calendar-pane > * > .day-cell.today.picked {
+	-fx-text-fill: ladder(-primary-swatch-500, -text-dark 49%, -text-light 50%);
+	-fx-font-weight: bold;
+}
+
+.charm-date-picker .header-dialog-panel .monthly-calendar > .monthly-calendar-pane > * > .year-month-label {
+	-fx-font-size: 1.1em;
+	-fx-alignment: center;
+	-fx-text-fill: #3e3e3e;
+}
+
+.charm-date-picker .header-dialog-panel .monthly-calendar > .navigation {
+	-fx-padding: 0;
+}
+
+.charm-date-picker .header-dialog-panel .monthly-calendar > .navigation > .button {
+	-fx-font-size: 1.3em;
+	-fx-alignment: center;
+	-fx-text-fill: #757575;
+}
+
+.charm-date-picker .header-dialog-panel .yearly-calendar .list-view, .charm-date-picker .header-dialog-panel .yearly-calendar .list-view:focused, .charm-date-picker .header-dialog-panel .yearly-calendar .list-cell, .charm-date-picker .header-dialog-panel .yearly-calendar .list-cell:filled:selected, .charm-date-picker .header-dialog-panel .yearly-calendar .list-cell:focused, .charm-date-picker .header-dialog-panel .yearly-calendar .list-cell:odd {
+	-fx-background-color: transparent;
+	-fx-border-color: transparent;
+	-fx-table-cell-border-color: transparent;
+	-fx-background: transparent;
+	-fx-padding: 0;
+	-fx-border-width: 0;
+}
+
+.charm-date-picker .header-dialog-panel .yearly-calendar .scroll-bar.calendar:vertical {
+	-fx-background-color: transparent;
+	-fx-background-radius: 0em;
+	-fx-padding: 0;
+}
+
+.charm-date-picker .header-dialog-panel .yearly-calendar .scroll-bar.calendar:vertical .track {
+	-fx-background-color: transparent;
+	-fx-background-insets: 0;
+	-fx-background-radius: 0em;
+	-fx-padding: 0;
+	-fx-border-radius: 0em;
+}
+
+.charm-date-picker .header-dialog-panel .yearly-calendar .list-cell > .year-cell {
+	-fx-pref-height: 11.52mm;
+}
+
+.charm-date-picker .header-dialog-panel .yearly-calendar .list-cell > .year-cell > .label {
+	-fx-text-fill: #212121;
+	-fx-font-size: 1.2em;
+}
+
+.charm-date-picker .header-dialog-panel .yearly-calendar .list-cell > .year-cell:year-selected {
+	-fx-pref-height: 12.8mm;
+}
+
+.charm-date-picker .header-dialog-panel .yearly-calendar .list-cell > .year-cell:year-selected > .label {
+	-fx-text-fill: -primary-swatch-500;
+	-fx-font-size: 1.6em;
+}
+
+.toggle-button-group > .toggle-button > .icon-text, .toggle-button-group > .toggle-button > .icon > .icon-text {
+	-fx-text-fill: #b4b4b4;
+}
+
+.toggle-button-group > .toggle-button:selected > .icon-text, .toggle-button-group > .toggle-button:selected > .icon > .icon-text {
+	-fx-text-fill: #636363;
+}
+
+.toggle-button-group > .toggle-button {
+	-fx-effect: null;
+}
+
+.toggle-button-group.no-selection > .toggle-button.center, .toggle-button-group.no-selection > .toggle-button.left, .toggle-button-group.no-selection > .toggle-button.right {
+	-fx-background-radius: 0;
+	-fx-background-color: transparent;
+	-fx-background-insets: 0;
+}
+
+.toggle-button-group > .toggle-button.center {
+	-fx-background-radius: 0;
+	-fx-background-color: linear-gradient(to bottom, rgba(190, 190, 190, 0.1), rgba(190, 190, 190, 0.1)), linear-gradient(to bottom, rgba(218, 218, 218, 0.5), rgba(190, 190, 190, 0.5)), linear-gradient(to bottom, #dadada, #bebebe), #fafafa;
+	-fx-background-insets: 0, 1 0 1 0, 1 0 2 0, 2 0 3 0;
+}
+
+.toggle-button-group > .toggle-button.center:selected {
+	-fx-background-radius: 0;
+	-fx-background-color: linear-gradient(to bottom, rgba(190, 190, 190, 0.1), rgba(190, 190, 190, 0.1)), linear-gradient(to bottom, rgba(218, 218, 218, 0.5), rgba(190, 190, 190, 0.5)), linear-gradient(to bottom, #dadada, #bebebe), #c8c8c8;
+	-fx-background-insets: 0, 1 0 1 0, 1 0 2 0, 2 0 3 0;
+}
+
+.toggle-button-group > .toggle-button.left {
+	-fx-background-radius: 2 0 0 2;
+	-fx-background-color: linear-gradient(to bottom, rgba(190, 190, 190, 0.1), rgba(190, 190, 190, 0.1)), linear-gradient(to bottom, rgba(218, 218, 218, 0.5), rgba(190, 190, 190, 0.5)), linear-gradient(to bottom, #dadada, #bebebe), #fafafa;
+	-fx-background-insets: 0, 1 0 1 1, 1 0 2 2, 2 0 3 3;
+}
+
+.toggle-button-group > .toggle-button.left:selected {
+	-fx-background-radius: 2 0 0 2;
+	-fx-background-color: linear-gradient(to bottom, rgba(190, 190, 190, 0.1), rgba(190, 190, 190, 0.1)), linear-gradient(to bottom, rgba(218, 218, 218, 0.5), rgba(190, 190, 190, 0.5)), linear-gradient(to bottom, #dadada, #bebebe), #c8c8c8;
+	-fx-background-insets: 0, 1 0 1 1, 1 0 2 2, 2 0 3 3;
+}
+
+.toggle-button-group > .toggle-button.right {
+	-fx-background-radius: 0 2 2 0;
+	-fx-background-color: linear-gradient(to bottom, rgba(190, 190, 190, 0.1), rgba(190, 190, 190, 0.1)), linear-gradient(to bottom, rgba(218, 218, 218, 0.5), rgba(190, 190, 190, 0.5)), linear-gradient(to bottom, #dadada, #bebebe), #fafafa;
+	-fx-background-insets: 0, 1 1 1 0, 1 1 2 0, 2 2 3 0;
+}
+
+.toggle-button-group > .toggle-button.right:selected {
+	-fx-background-radius: 0 2 2 0;
+	-fx-background-color: linear-gradient(to bottom, rgba(190, 190, 190, 0.1), rgba(190, 190, 190, 0.1)), linear-gradient(to bottom, rgba(218, 218, 218, 0.5), rgba(190, 190, 190, 0.5)), linear-gradient(to bottom, #dadada, #bebebe), #c8c8c8;
+	-fx-background-insets: 0, 1 1 1 0, 1 1 2 0, 2 2 3 0;
+}
+
+.dropdown-button > .container {
+	-fx-border-color: #dfdfdf;
+	-fx-border-width: 0 0 1 0;
+	-fx-spacing: 20;
+	-fx-padding: 0 0 8 0;
+}
+
+.dropdown-button > .container > .arrow {
+	-fx-shape: "M122.4,124.95l5.1,5.1l5.1-5.1H122.4z";
+	-fx-scale-shape: false;
+	-fx-pref-width: 16px;
+	-fx-pref-height: 16px;
+	-fx-background-color: #6c6c6c;
+}
+
+.app-bar {
+	-fx-background-color: -primary-swatch-500;
+	-fx-icon-fill: ladder(-primary-swatch-500, -text-dark 49%, -text-light 50%);
+	-fx-effect: dropshadow(three-pass-box, -elevation-shadow-color, 4, 0, 0, 1);
+	-fx-padding: 0 0.8mm 0 0.8mm;
+}
+
+.app-bar:progress-showing {
+	-fx-effect: null;
+}
+
+.app-bar:progress-showing > .progress-bar {
+	-fx-color: -primary-swatch-300;
+}
+
+.app-bar > .nav-area {
+	-fx-alignment: center-left;
+}
+
+.app-bar > .nav-area > .button {
+	-fx-font-family: "Material Icons";
+	-fx-font-size: 5.76mm;
+	-fx-text-fill: inherit;
+	-fx-label-padding: 2 0 0 0;
+	-fx-min-width: 9.27854mm;
+	-fx-min-height: 9.27854mm;
+	-fx-pref-width: 9.27854mm;
+	-fx-pref-height: 9.27854mm;
+	-fx-background-radius: 4.63927mm;
+	-fx-background-insets: 0;
+	-fx-padding: 0;
+	-fx-text-fill: ladder(-primary-swatch-500, -text-dark 49%, -text-light 50%);
+	-fx-background-color: transparent;
+	-fx-text-fill: -fx-icon-fill;
+	-fx-effect: none;
+}
+
+.app-bar > .title-box {
+	-fx-alignment: bottom-left;
+	-fx-padding: 4.48mm 0 4.48mm 4mm;
+}
+
+.app-bar > .title-box > .label {
+	-fx-font-family: "Roboto Medium";
+	-fx-text-fill: -fx-icon-fill;
+	-fx-font-size: 1.2em;
+}
+
+.app-bar > .action-items {
+	-fx-alignment: center-right;
+}
+
+.app-bar > .action-items > .button {
+	-fx-background-color: transparent;
+	-fx-effect: null;
+	-fx-text-fill: -fx-icon-fill;
+	-fx-label-padding: 2.24mm;
+}
+
+.app-bar > * > .button.icon-toggle {
+	-fx-font-family: "Material Icons";
+	-fx-font-size: 5.76mm;
+	-fx-text-fill: inherit;
+	-fx-label-padding: 2 0 0 0;
+	-fx-min-width: 9.27854mm;
+	-fx-min-height: 9.27854mm;
+	-fx-pref-width: 9.27854mm;
+	-fx-pref-height: 9.27854mm;
+	-fx-background-radius: 4.63927mm;
+	-fx-background-insets: 0;
+	-fx-padding: 0;
+	-fx-text-fill: ladder(-primary-swatch-500, -text-dark 49%, -text-light 50%);
+	-fx-background-color: transparent;
+	-fx-text-fill: -fx-icon-fill;
+	-fx-effect: none;
+}
+
+.app-bar > * > .button.icon-toggle:hover {
+	-fx-background-color: derive(-primary-swatch-500, -10%);
+}
+
+.app-bar > * > .button.icon-toggle:pressed {
+	-fx-background-color: derive(-primary-swatch-500, -20%);
+}
+
+.table-view {
+	-fx-background-color: white;
+}
+
+.table-row-cell {
+	-fx-background: white;
+}
+
+.table-row-cell:odd {
+	-fx-background: white;
+}
+
+.table-cell {
+	-fx-padding: 0.5em;
+	-fx-background-color: null;
+	-fx-border-color: transparent transparent transparent transparent;
+	-fx-text-fill: rgba(0, 0, 0, 0.87);
+	-fx-font-size: 13px;
+	-fx-font-family: "Roboto";
+}
+
+.table-row-cell {
+	-fx-background: white;
+	-fx-background-color: "#eaeaea", -fx-background;
+	-fx-background-insets: 0, 0 0 1 0;
+}
+
+.table-row-cell:hover {
+	-fx-background: #EEEEEE;
+	-fx-background-color: "#eaeaea", -fx-background;
+}
+
+.table-row-cell:selected {
+	-fx-background: #F5F5F5;
+	-fx-background-color: "#eaeaea", -fx-background;
+}
+
+.table-view .column-header-background, .tree-table-view > .column-header-background {
+	-fx-background-color: white;
+	-fx-background-insets: 0;
+}
+
+.table-view .column-header, .tree-table-view .column-header, .table-view .filler, .tree-table-view .filler, .table-view > .column-header-background > .show-hide-columns-button, .tree-table-view > .column-header-background > .show-hide-columns-button, .table-view:constrained-resize .filler, .tree-table-view:constrained-resize .filler {
+	-fx-background-color: "#eaeaea", white;
+	-fx-background-insets: 0, 0 0 1 0;
+	-fx-font-weight: normal;
+	-fx-size: 3em;
+	-fx-padding: 0 0 0 0.5em;
+}
+
+.table-view .column-header > .label {
+	-fx-text-fill: rgba(0, 0, 0, 0.54);
+	-fx-font-size: 12px;
+	-fx-alignment: center-left;
+	-fx-font-family: "Roboto Medium";
+}
+
+.text-input {
+	-fx-font-size: 1em;
+}
+
+.charm-text-field > .counter {
+	-fx-font-size: 0.75em;
+}
+
+.charm-text-field > .error {
+	-fx-font-size: 0.75em;
+	-fx-text-fill: #f44336;
+}
+
+.charm-text-field > .float {
+	-fx-text-fill: derive(-fx-control-inner-background, -30%);
+}
+
+.charm-text-field:focused > .float {
+	-fx-text-fill: -primary-swatch-500;
+}
+
+.charm-text-field > .text-field {
+	-fx-padding: 0.4em 0 0.4em 0;
+}
+
+.charm-text-field:hover > .text-field {
+	-fx-border-width: 0 0 2px 0, 0 0 0 0;
+	-fx-border-insets: 0 0 -2px 0, 0 0 0 0;
+	-fx-border-color: transparent transparent derive(black, 50%) transparent, transparent transparent transparent transparent;
+}
+
+.charm-text-field:focused > .text-field {
+	-fx-border-width: 0 0 2px 0, 0 0 0 0;
+	-fx-border-insets: 0 0 -2px 0, 0 0 0 0;
+	-fx-border-color: transparent transparent -primary-swatch-500 transparent, transparent transparent transparent transparent;
+}
+
+.charm-text-field:hover:focused > .text-field {
+	-fx-border-width: 0 0 2px 0, 0 0 0 0;
+	-fx-border-insets: 0 0 -2px 0, 0 0 0 0;
+	-fx-border-color: transparent transparent -primary-swatch-500 transparent, transparent transparent transparent transparent;
+}
+
+.charm-text-field:error > .text-field {
+	-fx-border-width: 0 0 2px 0, 0 0 0 0;
+	-fx-border-insets: 0 0 -2px 0, 0 0 0 0;
+	-fx-border-color: transparent transparent #f44336 transparent, transparent transparent transparent transparent;
+}
+
+.charm-text-field:error > .counter, .charm-text-field:error > .float {
+	-fx-text-fill: #f44336;
+}
+
+.charm-text-area {
+	-fx-border-width: 1px;
+	-fx-border-color: -fx-prompt-text-fill;
+	-fx-border-insets: -1px;
+	-fx-padding: 3px 0 0 0;
+}
+
+.charm-text-area:hover {
+	-fx-border-width: 2px;
+	-fx-border-insets: -2px;
+}
+
+.charm-text-area:focused {
+	-fx-border-width: 2px;
+	-fx-border-insets: -2px;
+	-fx-border-color: -primary-swatch-500;
+}
+
+.charm-text-area > .text-area {
+	-fx-border-width: 0;
+	-fx-border-color: transparent;
+}
+
+.charm-text-area > .float {
+	-fx-text-fill: -fx-prompt-text-fill;
+}
+
+.charm-text-area:focused > .float {
+	-fx-text-fill: -primary-swatch-500;
+}
+
+.charm-text-area .content {
+	-fx-background-color: transparent;
+}
+
+.auto-complete-text-field > .text-field {
+	-fx-padding: 0.4em 0 0.4em 0;
+}
+
+.auto-complete-popup {
+	-fx-max-height: 250px;
+}
+
+.auto-complete-popup > .root-node {
+	-fx-hbar-policy: never;
+}
+
+.auto-complete-popup > .root-node .container > .popup-content {
+	-fx-spacing: 25;
+	-fx-padding: 1em 0.5em 1em 0.5em;
+}
+
+.refresh-indicator > .circle {
+	-fx-fill: white;
+	-fx-effect: dropshadow(gaussian, lightgrey, 2, 0.5, 0.5, 1);
+}
+
+.bottom-nav {
+	-fx-background-color: -primary-swatch-500;
+	-fx-effect: dropshadow(three-pass-box, -elevation-shadow-color, 8, 0, 0, -4);
+}
+
+.bottom-nav > .bottom-nav-button {
+	-fx-opacity: 0.6;
+	-fx-text-fill: ladder(-primary-swatch-500, -text-dark 49%, -text-light 50%);
+	-fx-background-color: transparent;
+	-fx-border-color: transparent;
+	-fx-padding: 2.24mm 2.56mm 2.24mm 2.56mm;
+	-fx-content-display: top;
+}
+
+.bottom-nav:shifting > .bottom-nav-button {
+	-fx-content-display: graphic-only;
+}
+
+.bottom-nav > .bottom-nav-button:selected, .bottom-nav:shifting > .bottom-nav-button:selected {
+	-fx-opacity: 1;
+	-fx-content-display: top;
+}
+
+.bottom-nav > .bottom-nav-button:selected > .label.icon-text, .bottom-nav > .bottom-nav-button:selected > .text {
+	-fx-scale-x: 1.1;
+	-fx-scale-y: 1.1;
+}
+
+.bottom-nav:shifting > .bottom-nav-button:selected > .label.icon-text, .bottom-nav:shifting > .bottom-nav-button:selected > .text {
+	-fx-scale-x: 1;
+	-fx-scale-y: 1;
+}
+
+.fab.round.action.icon-text {
+	-fx-min-width: 14.4mm;
+	-fx-min-height: 14.4mm;
+	-fx-pref-width: 14.4mm;
+	-fx-pref-height: 14.4mm;
+	-fx-background-radius: 7.2mm;
+	-fx-background-insets: 0;
+	-fx-padding: 0;
+	-fx-text-fill: ladder(-primary-swatch-500, -text-dark 49%, -text-light 50%);
+}
+
+.fab.round.action.icon-text.mini {
+	-fx-min-width: 11.2mm;
+	-fx-min-height: 11.2mm;
+	-fx-pref-width: 11.2mm;
+	-fx-pref-height: 11.2mm;
+	-fx-background-radius: 5.6mm;
+	-fx-background-insets: 0;
+	-fx-padding: 0;
+	-fx-text-fill: ladder(-primary-swatch-500, -text-dark 49%, -text-light 50%);
+}
+
+.toast > .label {
+	-fx-text-fill: white;
+	-fx-background-color: -toast-background;
+	-fx-background-radius: 2em;
+	-fx-padding: 0.83333em 1.5em 0.83333em 1.5em;
+	-fx-padding: 0.83333em 1.5em 0.83333em 1.5em;
+}
+
+.expansion-panel > .expand-button-container > .expand-button {
+	-fx-text-fill: #adadad;
+	-fx-min-width: 32px;
+	-fx-min-height: 32px;
+	-fx-pref-width: 32px;
+	-fx-pref-height: 32px;
+	-fx-max-width: 32px;
+	-fx-max-height: 32px;
+}
+
+.expansion-panel > .expand-button-container {
+	-fx-padding: 6 6 0 0;
+}
+
+.collapsed-panel {
+	-fx-padding: 10px;
+	-fx-background-color: white;
+}
+
+.collapsed-panel .center-text {
+	-fx-text-fill: #828282;
+}
+
+.expanded-panel {
+	-fx-background-color: white;
+}
+
+.expanded-panel > .button-bar {
+	-fx-padding: 0 10px 5px 0;
+}
+
+.expanded-panel > .button-bar > .button.default-button {
+	-fx-text-fill: -primary-swatch-500;
+}
+
+.expanded-panel > .button-bar > .button {
+	-fx-text-fill: #757575;
+}
+
+.expansion-panel-container > .container {
+	-fx-background-radius: 0.7mm;
+	-fx-effect: -elevation-z1;
+}
+
+.expansion-panel-container {
+	-fx-padding: 10px;
+	-fx-background-color: #eeeeee;
+}
+
+.rating > .container {
+	-fx-spacing: 1em;
+}
+
+.rating > .container > .button {
+	-fx-background-color: -primary-swatch-500;
+	-fx-min-width: 2.37499em;
+	-fx-min-height: 2.5em;
+	-fx-pref-width: 2.37499em;
+	-fx-pref-height: 2.5em;
+	-fx-max-width: 2.37499em;
+	-fx-max-height: 2.5em;
+	-fx-effect: null;
+}
+
+.rating > .container > .button {
+	-fx-shape: "M22,9.24l-7.19-0.62L12,2L9.19,8.63L2,9.24l5.46,4.73L5.82,21L12,17.27L18.18,21l-1.63-7.03L22,9.24z M12,15.4l-3.76,2.27l1-4.28l-3.32-2.88l4.38-0.38L12,6.1l1.71,4.04l4.38,0.38l-3.32,2.88l1,4.28L12,15.4z";
+}
+
+.rating > .container > .button.strong {
+	-fx-shape: "M12,17.27L18.18,21l-1.64-7.03L22,9.24l-7.19-0.61L12,2L9.19,8.63L2,9.24l5.46,4.73L5.82,21L12,17.27z";
+}
+
+.progress-bar, .progress-indicator {
+	-fx-color: -primary-swatch-500;
+}

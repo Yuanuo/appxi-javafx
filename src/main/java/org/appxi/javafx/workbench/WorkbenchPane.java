@@ -1,16 +1,22 @@
 package org.appxi.javafx.workbench;
 
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBase;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.SplitPane;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane.TabClosingPolicy;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Tooltip;
+import javafx.scene.layout.BorderPane;
+import org.appxi.javafx.app.BaseApp;
 import org.appxi.javafx.control.TabPaneEx;
 import org.appxi.javafx.control.ToolBarEx;
 import org.appxi.javafx.helper.FxHelper;
@@ -23,21 +29,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class WorkbenchPane extends StackPane {
+public class WorkbenchPane extends BorderPane {
     private static final Object AK_FIRST_TIME = new Object();
     private static final Object AK_CLOSED = new Object();
 
     private final ToggleGroup sideToolsGroup = new ToggleGroup();
     protected final ToolBarEx sideTools;
     protected final SplitPane rootViews;
-    protected final StackPane sideViews;
+    protected final BorderPane sideViews;
     protected final TabPaneEx mainViews;
 
     private double lastRootViewsDividerPosition = 0.2;
 
-    public final WorkbenchApplication application;
+    public final BaseApp application;
 
-    public WorkbenchPane(WorkbenchApplication application) {
+    public WorkbenchPane(BaseApp application) {
         super();
         this.application = application;
         this.getStyleClass().add("workbench");
@@ -46,22 +52,20 @@ public class WorkbenchPane extends StackPane {
         sideTools.getStyleClass().add("side-tools");
 
         rootViews = new SplitPane();
-        rootViews.getStyleClass().add("root");
-        HBox.setHgrow(rootViews, Priority.ALWAYS);
+        rootViews.getStyleClass().add("root-views");
 
-        sideViews = new StackPane();
+        sideViews = new BorderPane();
         sideViews.getStyleClass().add("side-views");
+        SplitPane.setResizableWithParent(sideViews, false);
 
         mainViews = new TabPaneEx();
         mainViews.getStyleClass().add("main-views");
         mainViews.setTabClosingPolicy(TabClosingPolicy.ALL_TABS);
         rootViews.getItems().add(mainViews);
 
-        final HBox mainContainer = new HBox(sideTools, rootViews);
-        VBox.setVgrow(mainContainer, Priority.ALWAYS);
+        this.setLeft(sideTools);
+        this.setCenter(rootViews);
         //
-        this.getChildren().add(mainContainer);
-
         sideToolsGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
             final ToggleButton lastSideTool = (ToggleButton) oldValue;
             final ToggleButton currSideTool = (ToggleButton) newValue;
@@ -82,14 +86,23 @@ public class WorkbenchPane extends StackPane {
                 // 由未选中变成选中时需要确保sideViews已显示
                 if (null == lastSideTool) {
                     this.rootViews.getItems().add(0, this.sideViews);
-                    this.rootViews.setDividerPosition(0, lastRootViewsDividerPosition);
+                    Platform.runLater(() -> this.rootViews.setDividerPosition(0, lastRootViewsDividerPosition));
                 }
                 // 显示已选中的视图
-                this.sideViews.getChildren().setAll(currController.<Node>getViewport());
+                this.sideViews.setCenter(currController.getViewport());
                 // 并触发事件
                 currController.onViewportShowing(ensureFirstTime(currController));
             }
         });
+    }
+
+    public void initialize(List<WorkbenchViewController> views) {
+        final long st0 = System.currentTimeMillis();
+
+        views.forEach(this::addWorkbenchView);
+        views.forEach(WorkbenchViewController::initialize);
+
+        application.logger.warn("load views used time: " + (System.currentTimeMillis() - st0));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -142,7 +155,7 @@ public class WorkbenchPane extends StackPane {
         tooltip.textProperty().bind(controller.viewTooltip);
         tool.setTooltip(tooltip);
 
-        tool.graphicProperty().bind(controller.viewIcon);
+        tool.graphicProperty().bind(controller.viewGraphic);
 
         if (addToEnd) {
             this.mainViews.getTabs().add(tool);
@@ -162,14 +175,13 @@ public class WorkbenchPane extends StackPane {
         });
         tool.selectedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
-                final Runnable runnable = () -> {
+                FxHelper.runLater(() -> {
                     final boolean firstTime = ensureFirstTime(controller);
                     if (firstTime || tool.getContent() == null) // always lazy init
                         tool.setContent(controller.getViewport());
                     application.setPrimaryTitle(controller.appTitle.get());
                     controller.onViewportShowing(firstTime);
-                };
-                FxHelper.runLater(runnable);
+                });
             } else if (oldValue && controller.hasAttr(AK_FIRST_TIME) && !controller.hasAttr(AK_CLOSED)) {
                 controller.onViewportHiding();
             }
@@ -192,7 +204,7 @@ public class WorkbenchPane extends StackPane {
         tooltip.textProperty().bind(controller.viewTooltip);
         tool.setTooltip(tooltip);
 
-        tool.graphicProperty().bind(controller.viewIcon);
+        tool.graphicProperty().bind(controller.viewGraphic);
 
         if (controller.hasAttr(Pos.class))
             pos = controller.attr(Pos.class);
@@ -253,16 +265,12 @@ public class WorkbenchPane extends StackPane {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public void selectSideTool(String id) {
         final ObservableList<Node> items = this.sideTools.getAlignedItems();
-        if (items.isEmpty())
-            return;
+        if (items.isEmpty()) return;
 
         ButtonBase tool = null == id ? null : findSideTool(id);
-        if (null == tool)
-            tool = (ButtonBase) items.get(0);
-        if (null == tool)
-            return;
-        if (tool == sideToolsGroup.getSelectedToggle())
-            return;// already selected
+        if (null == tool && items.get(0) instanceof ButtonBase button) tool = button;
+        if (null == tool) return;
+        if (tool == sideToolsGroup.getSelectedToggle()) return; // already selected
         tool.fire();
     }
 

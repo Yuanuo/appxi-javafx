@@ -1,0 +1,16 @@
+.root {
+	-primary-swatch-50: #FFF8E1;
+	-primary-swatch-100: #FFECB3;
+	-primary-swatch-200: #FFE082;
+	-primary-swatch-300: #FFD54F;
+	-primary-swatch-400: #FFCA28;
+	-primary-swatch-500: #FFC107;
+	-primary-swatch-600: #FFB300;
+	-primary-swatch-700: #FFA000;
+	-primary-swatch-800: #FF8F00;
+	-primary-swatch-900: #FF6F00;
+	-alternate-swatch-100: #FFE57F;
+	-alternate-swatch-200: #FFD740;
+	-alternate-swatch-400: #FFC400;
+	-alternate-swatch-700: #FFAB00;
+}

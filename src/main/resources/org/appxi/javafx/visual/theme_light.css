@@ -1,0 +1,20 @@
+.root {
+	-fx-base: #dedede;
+	-fx-background: derive(-fx-base, 50%);
+	-fx-control-inner-background: derive(-fx-base, 20%);
+
+	-fx-dark-text-color: #131313;
+    -fx-mid-text-color: #333333;
+    -fx-light-text-color: #b3b3b3;
+
+	-fx-text-fill1: -text-light;
+	-text-disabled: -text-disabled-light;
+	-text-input-prompt-color: rgba(0, 0, 0, 0.3);
+
+	-background-disabled: rgba(0, 0, 0, 0.12);
+	-background-fill: -text-light;
+
+	-flat-button-hover-background: rgba(153, 153, 153, 0.2);
+	-flat-button-pressed-background: rgba(153, 153, 153, 0.4);
+	-flat-button-disabled-fill: rgba(0, 0, 0, 0.26);
+}

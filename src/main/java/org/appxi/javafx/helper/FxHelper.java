@@ -1,92 +1,22 @@
 package org.appxi.javafx.helper;
 
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
-import javafx.scene.control.*;
-import javafx.scene.effect.BoxBlur;
-import javafx.scene.effect.ColorAdjust;
-import javafx.scene.layout.Pane;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.Labeled;
+import javafx.scene.control.SelectionModel;
+import javafx.scene.control.TextField;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
-import javafx.stage.Screen;
-import javafx.stage.Window;
-import org.appxi.javafx.control.BlockingView;
-import org.appxi.javafx.desktop.DesktopApplication;
-import org.appxi.util.StringHelper;
+import org.appxi.javafx.control.ListViewEx;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 public abstract class FxHelper {
-    /**
-     * 用于标记当前App是否是用户安装后的运行状态
-     */
-    public static final boolean productionMode = null != System.getProperty("jpackage.app-path");
-    private static Path _appDir = null;
-    private static final Object appDirInit = new Object();
-
-    public static Path appDir() {
-        if (null != _appDir)
-            return _appDir;
-
-        synchronized (appDirInit) {
-            if (null != _appDir)
-                return _appDir;
-
-            String appDir = System.getenv("app-dir");
-            if (null == appDir)
-                appDir = System.getProperty("app-dir");
-            if (null == appDir)
-                appDir = System.getProperty("jpackage.app-dir");
-
-            if (null == appDir) {
-                appDir = System.getProperty("jpackage.app-path");
-                if (null != appDir) {
-                    String osName = System.getProperty("os.name").toLowerCase();
-                    Path appPath = Path.of(appDir).getParent();
-                    if (osName.contains("win")) {
-                        appDir = appPath.resolve("app").toString();
-                    } else if (osName.contains("mac")) {
-
-                    } else {
-                        appDir = appPath.resolve("lib").toString();
-                    }
-                }
-            }
-            if (null == appDir)
-                appDir = "";
-            _appDir = Path.of(appDir).toAbsolutePath();
-        }
-        return _appDir;
-    }
-
-    static class DisabledEffectsListener implements ChangeListener<Boolean> {
-        private final Node node;
-        private final ColorAdjust effects = new ColorAdjust();
-
-        public DisabledEffectsListener(Node node) {
-            this.node = node;
-            effects.setInput(new BoxBlur());
-            effects.setBrightness(-0.5);
-        }
-
-        @Override
-        public void changed(ObservableValue<? extends Boolean> o, Boolean ov, Boolean nv) {
-            node.setEffect(nv ? effects : null);
-        }
-    }
-
-    public static <T extends Node> T setDisabledEffects(T node) {
-        DisabledEffectsListener listener = (DisabledEffectsListener) node.getProperties().get(DisabledEffectsListener.class);
-        if (null == listener)
-            node.getProperties().put(DisabledEffectsListener.class, listener = new DisabledEffectsListener(node));
-        node.disabledProperty().removeListener(listener);
-        node.disabledProperty().addListener(listener);
-        return node;
+    private FxHelper() {
     }
 
     public static void runLater(Runnable runnable) {
@@ -95,84 +25,24 @@ public abstract class FxHelper {
         else Platform.runLater(runnable);
     }
 
-    public static void alertError(DesktopApplication application, Throwable throwable) {
-        Runnable runnable = () -> alertErrorEx(application, throwable).show();
-        if (Platform.isFxApplicationThread())
-            runnable.run();
-        else Platform.runLater(runnable);
+    public static void runThread(Runnable runnable) {
+        new Thread(() -> FxHelper.runLater(runnable)).start();
     }
 
-    public static Alert alertErrorEx(DesktopApplication application, Throwable throwable) {
-        // for debug only
-        throwable.printStackTrace();
-
-        List<String> lines = StringHelper.getThrowableAsLines(throwable);
-        if (lines.size() > 5)
-            lines = lines.subList(0, 5);
-        lines.add("...");
-
-        final Alert alert = new Alert(Alert.AlertType.ERROR, StringHelper.joinLines(lines));
-        alert.setResizable(true);
-        alert.setWidth(800);
-        alert.setHeight(600);
-        return FxHelper.withTheme(application, alert);
+    public static void runThread(long afterMillis, Runnable runnable) {
+        new Thread(() -> {
+            sleepSilently(afterMillis);
+            FxHelper.runLater(runnable);
+        }).start();
     }
 
-    public static <T extends Dialog<?>> T withTheme(DesktopApplication application, T dialog) {
-        final DialogPane dialogPane = dialog.getDialogPane();
-        // 必须要有至少一个按钮才能关闭此窗口
-        if (dialogPane.getButtonTypes().isEmpty())
-            dialogPane.getButtonTypes().add(ButtonType.OK);
-        dialogPane.getScene().getRoot().setStyle(application.getPrimaryScene().getRoot().getStyle());
-        if (dialogPane.getPrefWidth() < 1) dialogPane.setPrefWidth(640);
-        if (dialogPane.getPrefHeight() < 1) dialogPane.setPrefHeight(480);
-
-        dialog.setResizable(true);
-
-        if (null == dialog.getOwner())
-            dialog.initOwner(application.getPrimaryStage());
-        dialog.setOnShown(event -> {
-            if (dialog.getX() < 0) dialog.setX(0);
-            if (dialog.getY() < 0) dialog.setY(0);
-        });
-        return dialog;
-    }
-
-    public static Screen getWindowScreen(Window window) {
-        if (!Double.isNaN(window.getX()) && !Double.isNaN(window.getY())
-                && !Double.isNaN(window.getWidth()) && !Double.isNaN(window.getHeight())) {
-            return Screen.getScreensForRectangle(window.getX(), window.getY(), window.getWidth(), window.getHeight())
-                    .stream().findFirst().orElseGet(Screen::getPrimary);
+    public static void sleepSilently(long millis) {
+        if (millis <= 0) return;
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
-        return Screen.getPrimary();
-    }
-
-    /////////////////
-    public static void runBlocking(Pane pane, Runnable runnable) {
-        new Thread(() -> {
-            final BlockingView blockingView = new BlockingView();
-            try {
-                Platform.runLater(() -> pane.getChildren().add(blockingView));
-                runnable.run();
-            } finally {
-                Platform.runLater(() -> pane.getChildren().remove(blockingView));
-            }
-        }).start();
-    }
-
-    public static Runnable manualBlocking(Pane pane, Runnable runnable) {
-        final BlockingView blockingView = new BlockingView();
-        new Thread(() -> {
-            Platform.runLater(() -> pane.getChildren().add(blockingView));
-            runnable.run();
-        }).start();
-        return () -> Platform.runLater(() -> pane.getChildren().remove(blockingView));
-    }
-
-    public static Runnable manualBlocking(Pane pane) {
-        final BlockingView blockingView = new BlockingView();
-        Platform.runLater(() -> pane.getChildren().add(blockingView));
-        return () -> Platform.runLater(() -> pane.getChildren().remove(blockingView));
     }
 
     public static void highlight(Labeled labeled, Set<String> keywords) {
@@ -219,5 +89,36 @@ public abstract class FxHelper {
             labeled.setText(text);
             labeled.setContentDisplay(ContentDisplay.TEXT_ONLY);
         }
+    }
+
+    public static <T> void connectTextFieldAndListView(TextField input, ListViewEx<T> listView) {
+        input.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            switch (event.getCode()) {
+                case UP -> {
+                    SelectionModel<T> model = listView.getSelectionModel();
+                    int selIdx = model.getSelectedIndex() - 1;
+                    if (selIdx < 0)
+                        selIdx = listView.getItems().size() - 1;
+                    model.select(selIdx);
+                    listView.scrollToIfNotVisible(selIdx);
+                    event.consume();
+                }
+                case DOWN -> {
+                    SelectionModel<T> model = listView.getSelectionModel();
+                    int selIdx = model.getSelectedIndex() + 1;
+                    if (selIdx >= listView.getItems().size())
+                        selIdx = 0;
+                    model.select(selIdx);
+                    listView.scrollToIfNotVisible(selIdx);
+                    event.consume();
+                }
+                case ENTER -> {
+                    event.consume();
+                    T item = listView.getSelectionModel().getSelectedItem();
+                    if (null != item && null != listView.enterOrDoubleClickAction())
+                        listView.enterOrDoubleClickAction().accept(event, item);
+                }
+            }
+        });
     }
 }

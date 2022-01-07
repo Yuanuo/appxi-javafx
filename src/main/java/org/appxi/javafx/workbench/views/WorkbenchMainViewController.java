@@ -3,14 +3,14 @@ package org.appxi.javafx.workbench.views;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.layout.StackPane;
-import org.appxi.javafx.workbench.WorkbenchApplication;
+import org.appxi.javafx.workbench.WorkbenchPane;
 import org.appxi.javafx.workbench.WorkbenchViewController;
 
 public abstract class WorkbenchMainViewController extends WorkbenchViewController {
     private StackPane viewport;
 
-    public WorkbenchMainViewController(String viewId, WorkbenchApplication application) {
-        super(viewId, application);
+    public WorkbenchMainViewController(String viewId, WorkbenchPane workbench) {
+        super(viewId, workbench);
     }
 
     @Override

@@ -3,17 +3,17 @@ package org.appxi.javafx.workbench.views;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import org.appxi.javafx.workbench.WorkbenchApplication;
+import javafx.scene.layout.Priority;
+import org.appxi.javafx.control.HBoxEx;
+import org.appxi.javafx.workbench.WorkbenchPane;
 import org.appxi.javafx.workbench.WorkbenchViewController;
 
 public abstract class WorkbenchSideViewController extends WorkbenchViewController {
     protected BorderPane viewport;
-    protected VBox viewportVBox;
-    protected HBox headBar;
+    protected HBoxEx topBar;
 
-    public WorkbenchSideViewController(String viewId, WorkbenchApplication application) {
-        super(viewId, application);
+    public WorkbenchSideViewController(String viewId, WorkbenchPane workbench) {
+        super(viewId, workbench);
     }
 
     @Override
@@ -21,17 +21,17 @@ public abstract class WorkbenchSideViewController extends WorkbenchViewControlle
         if (null == this.viewport) {
             this.viewport = new BorderPane();
 
-            final Label titleBar = new Label();
-            titleBar.getStyleClass().add("title-bar");
-            titleBar.textProperty().bind(viewTitle);
+            final Label title = new Label();
+            title.getStyleClass().add("font-bold");
+            title.textProperty().bind(viewTitle);
+            HBox.setHgrow(title, Priority.ALWAYS);
 
-            this.headBar = new HBox(titleBar);
-            this.headBar.getStyleClass().addAll("flat-tool-bar");
-            this.viewport.setTop(headBar);
+            this.topBar = new HBoxEx();
+            this.topBar.getStyleClass().addAll("compact", "bob-line");
+            this.viewport.setTop(this.topBar);
 
-            this.viewportVBox = new VBox();
-            this.viewportVBox.getStyleClass().addAll("vbox", "side-vbox");
-            this.viewport.setCenter(this.viewportVBox);
+            this.topBar.addLeft(title);
+
             //
             onViewportInitOnce();
         }
