@@ -1,6 +1,7 @@
 package org.appxi.javafx.workbench;
 
 import javafx.application.Platform;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Orientation;
@@ -25,7 +26,6 @@ import org.appxi.javafx.workbench.views.WorkbenchSideToolController;
 import org.appxi.javafx.workbench.views.WorkbenchSideViewController;
 import org.appxi.util.ext.Attributes;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -37,7 +37,7 @@ public class WorkbenchPane extends BorderPane {
     protected final ToolBarEx sideTools;
     protected final SplitPane rootViews;
     protected final BorderPane sideViews;
-    protected final TabPaneEx mainViews;
+    public final TabPaneEx mainViews;
 
     private double lastRootViewsDividerPosition = 0.2;
 
@@ -53,6 +53,7 @@ public class WorkbenchPane extends BorderPane {
 
         rootViews = new SplitPane();
         rootViews.getStyleClass().add("root-views");
+        rootViews.setDividerPosition(0, 0.2);
 
         sideViews = new BorderPane();
         sideViews.getStyleClass().add("side-views");
@@ -150,6 +151,7 @@ public class WorkbenchPane extends BorderPane {
         tool.idProperty().bind(controller.viewId);
         tool.setUserData(controller);
         tool.textProperty().bind(controller.viewTitle);
+        ((SimpleObjectProperty<Tab>) controller.tab).set(tool);
 
         final Tooltip tooltip = new Tooltip();
         tooltip.textProperty().bind(controller.viewTooltip);
@@ -252,16 +254,6 @@ public class WorkbenchPane extends BorderPane {
         return null != tool ? (WorkbenchMainViewController) tool.getUserData() : null;
     }
 
-    public List<Tab> getMainViewsTabs() {
-        return List.copyOf(mainViews.getTabs());
-    }
-
-    public List<Node> getMainViewsNodes() {
-        final List<Node> result = new ArrayList<>();
-        mainViews.getTabs().forEach(tab -> result.add(tab.getContent()));
-        return result;
-    }
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public void selectSideTool(String id) {
         final ObservableList<Node> items = this.sideTools.getAlignedItems();
@@ -320,16 +312,14 @@ public class WorkbenchPane extends BorderPane {
         final Object sideTool = findSideTool(id);
         if (null == sideTool)
             return null;
-        if (sideTool instanceof ToggleButton) {
-            final ToggleButton btn = (ToggleButton) sideTool;
+        if (sideTool instanceof ToggleButton btn) {
             return (WorkbenchSideViewController) btn.getUserData();
         }
         return null;
     }
 
     public Tab findMainViewTab(String id) {
-        final FilteredList<Tab> list = this.mainViews.getTabs().filtered((v -> Objects.equals(v.getId(), id)));
-        return !list.isEmpty() ? list.get(0) : null;
+        return this.mainViews.findById(id);
     }
 
     public Node findMainViewNode(String id) {
@@ -340,14 +330,5 @@ public class WorkbenchPane extends BorderPane {
     public final WorkbenchMainViewController findMainViewController(String id) {
         final Tab tool = this.findMainViewTab(id);
         return null != tool ? (WorkbenchMainViewController) tool.getUserData() : null;
-    }
-
-    public final boolean removeMainView(Tab tab) {
-        return null != tab && this.mainViews.getTabs().remove(tab);
-    }
-
-    public final boolean removeMainView(WorkbenchMainViewController controller) {
-        Tab tab = findMainViewTab(controller.viewId.get());
-        return null != tab && this.mainViews.getTabs().remove(tab);
     }
 }
