@@ -1,7 +1,6 @@
 package org.appxi.javafx.app;
 
 import javafx.application.Platform;
-import javafx.application.Preloader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.layout.StackPane;
@@ -55,16 +54,17 @@ public abstract class BaseApp extends javafx.application.Application {
 
     public final long startTime = System.currentTimeMillis();
 
+    protected void handleUncaughtException(Thread thread, Throwable throwable) {
+        logger.error("<UNCAUGHT>", throwable);
+    }
+
     @Override
     public void init() throws Exception {
         // 1, init user prefs
 //        UserPrefs.prefs = new PreferencesInProperties(UserPrefs.confDir().resolve(".prefs"));
         UserPrefs.recents = new PreferencesInProperties(UserPrefs.confDir().resolve(".recents"));
         UserPrefs.favorites = new PreferencesInProperties(UserPrefs.confDir().resolve(".favorites"));
-//        Thread.setDefaultUncaughtExceptionHandler((t, err) -> FxHelper.alertError(this, err));
-        Thread.setDefaultUncaughtExceptionHandler((t, err) -> logger.error("Uncaught", err));
-
-//        notifyPreloader(new Preloader.ProgressNotification(0.111));
+        Thread.setDefaultUncaughtExceptionHandler(this::handleUncaughtException);
     }
 
     @Override

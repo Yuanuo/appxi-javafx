@@ -2,8 +2,11 @@ package org.appxi.javafx.app;
 
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import org.appxi.javafx.control.Notifications;
+import org.appxi.javafx.helper.FxHelper;
 import org.appxi.prefs.Preferences;
 import org.appxi.prefs.UserPrefs;
+import org.appxi.util.StringHelper;
 
 import java.nio.file.Path;
 
@@ -41,6 +44,26 @@ public abstract class DesktopApp extends BaseApp {
         stage.setHeight(prefs.getDouble("ui.window.height", 720));
 
         stage.setMaximized(prefs.getBoolean("ui.window.maximized", false));
+    }
+
+    @Override
+    protected void handleUncaughtException(Thread thread, Throwable throwable) {
+        super.handleUncaughtException(thread, throwable);
+        toastError(throwable.getMessage());
+    }
+
+    public void toast(String msg) {
+        FxHelper.runLater(() -> Notifications.of().description(null == msg ? "<EMPTY>" : StringHelper.trimChars(msg, 512))
+                .owner(getPrimaryStage())
+                .showInformation()
+        );
+    }
+
+    public void toastError(String msg) {
+        FxHelper.runLater(() -> Notifications.of().description(null == msg ? "<EMPTY>" : StringHelper.trimChars(msg, 512))
+                .owner(getPrimaryStage())
+                .showError()
+        );
     }
 
     public static final boolean productionMode = null != System.getProperty("jpackage.app-path");
