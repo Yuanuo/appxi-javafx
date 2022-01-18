@@ -72,6 +72,12 @@ public class WebPane extends BorderPane {
         this.setTop(this.toolbar);
     }
 
+    public void release() {
+        webView = null;
+        webEngine = null;
+        webPage = null;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public final WebView webView() {
