@@ -4,16 +4,20 @@ import javafx.event.Event;
 import javafx.event.EventType;
 
 public final class VisualEvent extends Event {
-    public static final EventType<VisualEvent> STYLE_CHANGED = new EventType<>(Event.ANY, "STYLE_CHANGED");
-    public static final EventType<VisualEvent> VISUAL_CHANGED = new EventType<>(STYLE_CHANGED, "VISUAL_CHANGED");
-    public static final EventType<VisualEvent> THEME_CHANGED = new EventType<>(STYLE_CHANGED, "THEME_CHANGED");
-    public static final EventType<VisualEvent> SWATCH_CHANGED = new EventType<>(STYLE_CHANGED, "SWATCH_CHANGED");
+    public static final EventType<VisualEvent> SET_STYLE = new EventType<>(Event.ANY, "SET_STYLE");
+    public static final EventType<VisualEvent> SET_VISUAL = new EventType<>(SET_STYLE, "SET_VISUAL");
+    public static final EventType<VisualEvent> SET_THEME = new EventType<>(SET_STYLE, "SET_THEME");
+    public static final EventType<VisualEvent> SET_SWATCH = new EventType<>(SET_STYLE, "SET_SWATCH");
 
-    public static final EventType<VisualEvent> APP_FONT_CHANGED = new EventType<>(Event.ANY, "APP_FONT_CHANGED");
+    public static final EventType<VisualEvent> SET_FONT = new EventType<>(Event.ANY, "SET_FONT");
+    public static final EventType<VisualEvent> SET_FONT_NAME = new EventType<>(SET_FONT, "SET_FONT_NAME");
+    public static final EventType<VisualEvent> SET_FONT_SIZE = new EventType<>(SET_FONT, "SET_FONT_SIZE");
 
-    public static final EventType<VisualEvent> WEB_ZOOM_CHANGED = new EventType<>(Event.ANY, "WEB_ZOOM_CHANGED");
+    public static final EventType<VisualEvent> SET_WEB_FONT = new EventType<>(Event.ANY, "SET_WEB_FONT");
+    public static final EventType<VisualEvent> SET_WEB_FONT_NAME = new EventType<>(SET_WEB_FONT, "SET_WEB_FONT_NAME");
+    public static final EventType<VisualEvent> SET_WEB_FONT_SIZE = new EventType<>(SET_WEB_FONT, "SET_WEB_FONT_SIZE");
 
-    public final Object data;
+    private final Object data;
 
     public VisualEvent(EventType<? extends Event> eventType, Object data) {
         super(eventType);

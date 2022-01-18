@@ -7,9 +7,12 @@ import javafx.beans.property.Property;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.text.Font;
 import org.appxi.javafx.event.EventBus;
 import org.appxi.javafx.settings.DefaultOption;
 import org.appxi.javafx.settings.Option;
@@ -52,15 +55,20 @@ public final class VisualProvider {
         return swatch != null ? swatch : Swatch.getDefault();
     }
 
-    public double webZoom() {
-        double zoomLevel = UserPrefs.prefs.getDouble("display.zoom", 1.6);
+    public double webFontSize() {
+        double zoomLevel = UserPrefs.prefs.getDouble("web.font.size", -1);
+        if (zoomLevel == -1) zoomLevel = UserPrefs.prefs.getDouble("display.zoom", -1);
         if (zoomLevel < 1.3 || zoomLevel > 3.0)
             zoomLevel = 1.6;
         return zoomLevel;
     }
 
+    public String webFontName() {
+        return UserPrefs.prefs.getString("web.font.name", "");
+    }
+
     public void initialize() {
-        this.applyFont(null, null);
+        this.applyFont();
         this.applyTheme(null);
         this.applySwatch(null);
         this.applyVisual(null);
@@ -71,7 +79,7 @@ public final class VisualProvider {
         return "visual-%s theme-%s swatch-%s".formatted(visual().name(), theme().name(), swatch().name()).toLowerCase();
     }
 
-    public void applyVisual(Visual visual) {
+    private void applyVisual(Visual visual) {
         if (null != this.visual && visual == this.visual) return;
         if (null == visual)
             try {
@@ -86,11 +94,9 @@ public final class VisualProvider {
         final ObservableList<String> styleClass = scene.getRoot().getStyleClass();
         styleClass.removeIf(s -> s.startsWith("visual-"));
         styleClass.add("visual-".concat(visual.name().toLowerCase(Locale.ROOT)));
-        //
-        eventBus.fireEvent(new VisualEvent(VisualEvent.VISUAL_CHANGED, visual));
     }
 
-    public void applyTheme(Theme theme) {
+    private void applyTheme(Theme theme) {
         if (null != this.theme && theme == this.theme) return;
         if (null == theme)
             try {
@@ -105,11 +111,9 @@ public final class VisualProvider {
         final ObservableList<String> styleClass = scene.getRoot().getStyleClass();
         styleClass.removeIf(s -> s.startsWith("theme-"));
         styleClass.add("theme-".concat(theme.name().toLowerCase(Locale.ROOT)));
-        //
-        eventBus.fireEvent(new VisualEvent(VisualEvent.THEME_CHANGED, theme));
     }
 
-    public void applySwatch(Swatch swatch) {
+    private void applySwatch(Swatch swatch) {
         if (null != this.swatch && swatch == this.swatch) return;
         if (null == swatch)
             try {
@@ -124,15 +128,12 @@ public final class VisualProvider {
         final ObservableList<String> styleClass = scene.getRoot().getStyleClass();
         styleClass.removeIf(s -> s.startsWith("swatch-"));
         styleClass.add("swatch-".concat(swatch.name().toLowerCase(Locale.ROOT)));
-        //
-        eventBus.fireEvent(new VisualEvent(VisualEvent.SWATCH_CHANGED, swatch));
     }
 
-    public void applyFont(String fontName, String fontSize) {
-        //
-        if (fontName == null) fontName = UserPrefs.prefs.getString("ui.font.name", null);
+    private void applyFont() {
+        String fontName = UserPrefs.prefs.getString("ui.font.name", null);
         if (fontName == null || fontName.isBlank()) {
-            final String osName = System.getProperty("os.name").toLowerCase();
+            final String osName = System.getProperty("os.name").toLowerCase(Locale.ROOT);
             if (osName.contains("windows")) {
                 fontName = "Microsoft YaHei";
             } else if (osName.contains("mac") || osName.contains("osx")) {
@@ -144,17 +145,12 @@ public final class VisualProvider {
             }
             UserPrefs.prefs.setProperty("ui.font.name", fontName);
         }
-
-        if (fontSize == null) fontSize = UserPrefs.prefs.getString("ui.font.size", null);
+        //
+        String fontSize = UserPrefs.prefs.getString("ui.font.size", null);
         if (null == fontSize || fontSize.isBlank()) {
             fontSize = "14";
             UserPrefs.prefs.setProperty("ui.font.size", fontSize);
         }
-//        double fontSizeInt = NumberHelper.toInt(fontSize, 14);
-//        if (fontSizeInt > 5) {
-//            fontSizeInt /= 12;
-//            fontSize = String.format("%.2f", fontSizeInt);
-//        }
 
         fontName = " -fx-font-family: \"".concat(fontName).concat("\";");
         fontSize = " -fx-font-size: ".concat(fontSize).concat("px;");
@@ -170,11 +166,42 @@ public final class VisualProvider {
         if (idx != -1)
             primaryScene.getStylesheets().add(idx, css);
         else primaryScene.getStylesheets().add(css);
-        //
-        eventBus.fireEvent(new VisualEvent(VisualEvent.APP_FONT_CHANGED, null));
     }
 
-    public Option<Number> settingOptionForFontSize() {
+    public Option<String> optionForFontName() {
+        return new DefaultOption<>("主界面字体", "", "UI",
+                UserPrefs.prefs.getString("ui.font.name", ""), true,
+                option -> new OptionEditorBase<String, ChoiceBox<String>>(option, new ChoiceBox<>()) {
+                    private StringProperty valueProperty;
+
+                    @Override
+                    public Property<String> valueProperty() {
+                        if (this.valueProperty != null) return this.valueProperty;
+                        this.valueProperty = new SimpleStringProperty();
+                        getEditor().getItems().setAll(Font.getFontNames());
+                        this.getEditor().getSelectionModel().selectedItemProperty().addListener((obs, ov, nv) -> {
+                            if (ov == null || Objects.equals(ov, nv)) return;
+                            this.valueProperty.set(nv);
+                            //
+                            UserPrefs.prefs.setProperty("ui.font.name", nv);
+                            applyFont();
+                            eventBus.fireEvent(new VisualEvent(VisualEvent.SET_FONT_NAME, nv));
+                        });
+                        this.valueProperty.addListener((obs, ov, nv) -> this.setValue(nv));
+                        return this.valueProperty;
+                    }
+
+                    @Override
+                    public void setValue(String value) {
+                        if (getEditor().getItems().isEmpty()) return;
+                        if (!getEditor().getItems().contains(value))
+                            value = "";
+                        getEditor().getSelectionModel().select(value);
+                    }
+                });
+    }
+
+    public Option<Number> optionForFontSize() {
         return new DefaultOption<>("主界面字号", "", "UI",
                 UserPrefs.prefs.getInt("ui.font.size", 14), true,
                 option -> new OptionEditorBase<Number, ChoiceBox<Number>>(option, new ChoiceBox<>()) {
@@ -192,7 +219,8 @@ public final class VisualProvider {
                                 this.valueProperty.set(nv.intValue());
                                 //
                                 UserPrefs.prefs.setProperty("ui.font.size", nv.intValue());
-                                applyFont(null, String.valueOf(nv.intValue()));
+                                applyFont();
+                                eventBus.fireEvent(new VisualEvent(VisualEvent.SET_FONT_SIZE, nv.intValue()));
                             });
                             this.valueProperty.addListener((obs, ov, nv) -> this.setValue(nv));
                         }
@@ -209,7 +237,7 @@ public final class VisualProvider {
                 });
     }
 
-    public Option<Theme> settingOptionForTheme() {
+    public Option<Theme> optionForTheme() {
         return new DefaultOption<>("颜色模式", "", "UI", theme(), true,
                 option -> new OptionEditorBase<Theme, ChoiceBox<Theme>>(option, new ChoiceBox<>()) {
                     private ObjectProperty<Theme> valueProperty;
@@ -224,6 +252,7 @@ public final class VisualProvider {
                                 this.valueProperty.set(nv);
                                 //
                                 applyTheme(nv);
+                                eventBus.fireEvent(new VisualEvent(VisualEvent.SET_THEME, theme));
                             });
                             this.valueProperty.addListener((obs, ov, nv) -> this.setValue(nv));
                         }
@@ -238,7 +267,7 @@ public final class VisualProvider {
                 });
     }
 
-    public Option<Swatch> settingOptionForSwatch() {
+    public Option<Swatch> optionForSwatch() {
         return new DefaultOption<>("颜色", "", "UI", swatch(), true,
                 option -> new OptionEditorBase<Swatch, ChoiceBox<Swatch>>(option, new ChoiceBox<>()) {
                     private ObjectProperty<Swatch> valueProperty;
@@ -253,6 +282,7 @@ public final class VisualProvider {
                                 this.valueProperty.set(nv);
                                 //
                                 applySwatch(nv);
+                                eventBus.fireEvent(new VisualEvent(VisualEvent.SET_SWATCH, swatch));
                             });
                             this.valueProperty.addListener((obs, ov, nv) -> this.setValue(nv));
                         }
@@ -267,9 +297,41 @@ public final class VisualProvider {
                 });
     }
 
-    public Option<Number> settingOptionForWebZoom() {
+    public Option<String> optionForWebFontName() {
         return new DefaultOption<>(
-                "阅读器字号", "阅读视图默认字号缩放级别", "VIEWER", webZoom(), true,
+                "阅读器字体", "阅读视图默认字体", "VIEWER", webFontName(), true,
+                option -> new OptionEditorBase<String, ChoiceBox<String>>(option, new ChoiceBox<>()) {
+                    private StringProperty valueProperty;
+
+                    @Override
+                    public Property<String> valueProperty() {
+                        if (this.valueProperty != null) return this.valueProperty;
+                        this.valueProperty = new SimpleStringProperty();
+                        getEditor().getItems().setAll(Font.getFontNames());
+                        this.getEditor().getSelectionModel().selectedItemProperty().addListener((obs, ov, nv) -> {
+                            if (ov == null || Objects.equals(ov, nv)) return;
+                            this.valueProperty.set(nv);
+                            //
+                            UserPrefs.prefs.setProperty("web.font.name", nv);
+                            eventBus.fireEvent(new VisualEvent(VisualEvent.SET_WEB_FONT_NAME, nv));
+                        });
+                        this.valueProperty.addListener((obs, ov, nv) -> this.setValue(nv));
+                        return this.valueProperty;
+                    }
+
+                    @Override
+                    public void setValue(String value) {
+                        if (getEditor().getItems().isEmpty()) return;
+                        if (!getEditor().getItems().contains(value))
+                            value = "";
+                        getEditor().getSelectionModel().select(value);
+                    }
+                });
+    }
+
+    public Option<Number> optionForWebFontSize() {
+        return new DefaultOption<>(
+                "阅读器字号", "阅读视图默认字号", "VIEWER", webFontSize(), true,
                 option -> new OptionEditorBase<Number, ChoiceBox<Number>>(option, new ChoiceBox<>()) {
                     private DoubleProperty valueProperty;
 
@@ -286,8 +348,8 @@ public final class VisualProvider {
                                 if (ov == null || Objects.equals(ov, nv)) return;
                                 this.valueProperty.set(nv.doubleValue());
                                 //
-                                UserPrefs.prefs.setProperty("display.zoom", nv.doubleValue());
-                                eventBus.fireEvent(new VisualEvent(VisualEvent.WEB_ZOOM_CHANGED, nv.doubleValue()));
+                                UserPrefs.prefs.setProperty("web.font.size", nv.doubleValue());
+                                eventBus.fireEvent(new VisualEvent(VisualEvent.SET_WEB_FONT_SIZE, nv.doubleValue()));
                             });
                             this.valueProperty.addListener((obs, ov, nv) -> this.setValue(nv));
                         }
