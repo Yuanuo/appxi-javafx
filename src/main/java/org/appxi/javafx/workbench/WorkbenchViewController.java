@@ -5,7 +5,6 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.Node;
-import org.appxi.javafx.app.BaseApp;
 import org.appxi.util.StringHelper;
 import org.appxi.util.ext.Attributes;
 
@@ -14,7 +13,7 @@ public abstract class WorkbenchViewController extends Attributes {
     public final StringProperty viewTooltip = new SimpleStringProperty();
     public final ObjectProperty<Node> viewGraphic = new SimpleObjectProperty<>();
 
-    public final BaseApp app;
+    public final WorkbenchApp app;
     public final WorkbenchPane workbench;
     public final SimpleStringProperty viewId;
 

@@ -17,7 +17,6 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
-import org.appxi.javafx.app.BaseApp;
 import org.appxi.javafx.control.TabPaneEx;
 import org.appxi.javafx.control.ToolBarEx;
 import org.appxi.javafx.helper.FxHelper;
@@ -41,9 +40,9 @@ public class WorkbenchPane extends BorderPane {
 
     private double lastRootViewsDividerPosition = 0.2;
 
-    public final BaseApp application;
+    public final WorkbenchApp application;
 
-    public WorkbenchPane(BaseApp application) {
+    public WorkbenchPane(WorkbenchApp application) {
         super();
         this.application = application;
         this.getStyleClass().add("workbench");
