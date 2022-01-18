@@ -13,7 +13,9 @@ import org.appxi.javafx.control.ListViewEx;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 
 public abstract class FxHelper {
     private FxHelper() {
@@ -120,5 +122,17 @@ public abstract class FxHelper {
                 }
             }
         });
+    }
+
+    public static Optional<Node> filterParent(Node node, String styleClass) {
+        return filterParent(node, n -> n.getStyleClass().contains(styleClass));
+    }
+
+    public static Optional<Node> filterParent(Node node, Predicate<Node> predicate) {
+        while (null != node) {
+            if (predicate.test(node)) return Optional.of(node);
+            node = node.getParent();
+        }
+        return Optional.empty();
     }
 }
