@@ -1,11 +1,25 @@
 package org.appxi.javafx.control;
 
 import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
+import javafx.event.Event;
 import javafx.event.EventHandler;
+import javafx.scene.Node;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import org.appxi.javafx.helper.FxHelper;
+import org.appxi.javafx.visual.MaterialIcon;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 public class TabPaneEx extends TabPane {
     private static final Object AK_HACKED = new Object();
@@ -48,5 +62,110 @@ public class TabPaneEx extends TabPane {
             this.getTabs().addListener(tabsChangeListener);
             tabsChangeListener.onChanged(null);
         });
+
+        this.addEventFilter(ContextMenuEvent.CONTEXT_MENU_REQUESTED, this::handleOnContextMenuRequested);
+    }
+
+    private void handleOnContextMenuRequested(ContextMenuEvent event) {
+        final ObservableList<Tab> tabs = getTabs();
+        if (tabs.isEmpty()) {
+            setContextMenu(null);
+            return;
+        }
+
+        final List<MenuItem> menuItems = new ArrayList<>(4);
+
+        Tab targetTab = null;
+        final Optional<Node> tabNode = FxHelper.filterParent(event.getPickResult().getIntersectedNode(), "tab");
+        if (tabNode.isPresent()) {
+            targetTab = findById(tabNode.get().getId());
+            //
+            final Tab clickedTab = targetTab;
+            final int clickedTabIdx = tabs.indexOf(targetTab);
+            //
+            final MenuItem close = new MenuItem("关闭");
+            close.setGraphic(MaterialIcon.CLOSE.graphic());
+            close.setOnAction(e -> closeTabs(List.of(clickedTab)));
+            menuItems.add(close);
+            //
+            final MenuItem closeAll = new MenuItem("关闭全部");
+            closeAll.setGraphic(MaterialIcon.CLOSE.graphic());
+            closeAll.setOnAction(e -> closeTabs(tabs));
+            menuItems.add(closeAll);
+            //
+            final MenuItem closeOthers = new MenuItem("关闭其他");
+            closeOthers.setGraphic(MaterialIcon.REMOVE.graphic());
+            closeOthers.setDisable(tabs.size() == 1);
+            closeOthers.setOnAction(e -> closeTabs(tabs.filtered(tab -> tab != clickedTab)));
+            menuItems.add(closeOthers);
+            //
+            final MenuItem closeAllToLeft = new MenuItem("关闭左侧");
+            closeAllToLeft.setGraphic(MaterialIcon.REMOVE.graphic());
+            closeAllToLeft.setDisable(clickedTabIdx == 0);
+            closeAllToLeft.setOnAction(e -> closeTabs(tabs.subList(0, clickedTabIdx)));
+            menuItems.add(closeAllToLeft);
+            //
+            final MenuItem closeAllToRight = new MenuItem("关闭右侧");
+            closeAllToRight.setGraphic(MaterialIcon.REMOVE.graphic());
+            closeAllToRight.setDisable(clickedTabIdx == tabs.size() - 1);
+            closeAllToRight.setOnAction(e -> closeTabs(tabs.subList(clickedTabIdx + 1, tabs.size())));
+            menuItems.add(closeAllToRight);
+        }
+
+        final List<MenuItem> extMenuItems = handleOnContextMenuRequested(targetTab);
+        if (null != extMenuItems && !extMenuItems.isEmpty()) {
+            // ---
+            menuItems.add(new SeparatorMenuItem());
+            //
+            menuItems.addAll(extMenuItems);
+        }
+
+        if (menuItems.isEmpty()) {
+            setContextMenu(null);
+            return;
+        }
+        setContextMenu(new ContextMenu(menuItems.toArray(new MenuItem[0])));
+    }
+
+    protected List<MenuItem> handleOnContextMenuRequested(Tab targetTab) {
+        return List.of();
+    }
+
+    public final Tab findById(String tabId) {
+        return this.getTabs().stream().filter(tab -> tabId.equals(tab.getId())).findFirst().orElse(null);
+    }
+
+    public final boolean canCloseTab(Tab tab) {
+        if (!tab.isClosable()) return false;
+        Event event = new Event(tab, tab, Tab.TAB_CLOSE_REQUEST_EVENT);
+        Event.fireEvent(tab, event);
+        return !event.isConsumed();
+    }
+
+    private void doCloseTab(Tab tab) {
+        // only switch to another tab if the selected tab is the one we're closing
+        int index = getTabs().indexOf(tab);
+        if (index != -1) getTabs().remove(index);
+        if (tab.getOnClosed() != null) Event.fireEvent(tab, new Event(Tab.CLOSED_EVENT));
+    }
+
+    public final void closeTabs(Tab... tabs) {
+        this.closeTabs(List.of(tabs));
+    }
+
+    public final void closeTabs(List<Tab> tabs) {
+        new ArrayList<>(tabs).stream().filter(this::canCloseTab).forEach(this::doCloseTab);
+    }
+
+    public final void closeTabs(Predicate<Tab> predicate) {
+        closeTabs(getTabs().filtered(predicate));
+    }
+
+    public final void removeTabs(Tab... tabs) {
+        getTabs().removeAll(tabs);
+    }
+
+    public final void removeTabs(Predicate<Tab> predicate) {
+        getTabs().removeAll(getTabs().filtered(predicate));
     }
 }
