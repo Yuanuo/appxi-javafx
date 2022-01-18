@@ -6,6 +6,7 @@ import javafx.scene.Node;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.InputEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -57,6 +58,8 @@ public class TreeViewEx<T> extends TreeView<T> {
         this.setOnKeyReleased(this::handleOnKeyReleased);
         this.setOnMousePressed(Event::consume);
         this.setOnMouseReleased(this::handleOnMouseReleased);
+
+        this.addEventFilter(ContextMenuEvent.CONTEXT_MENU_REQUESTED, event -> handleOnContextMenuRequested());
     }
 
     @Override
@@ -96,6 +99,27 @@ public class TreeViewEx<T> extends TreeView<T> {
         this.scrollTo(rowIndex);
     }
 
+    public int fetchNextInvisibleRow(TreeCell<T> cell) {
+        final TreeCell<T> firstCell = getSkinEx().getVirtualFlowEx().getFirstVisibleCell();
+        final TreeCell<T> lastCell = getSkinEx().getVirtualFlowEx().getLastVisibleCell();
+        if (null == firstCell || null == lastCell) return -1;
+
+        int nextRowIndex = -1;
+        final int cellIndex = cell.getIndex();
+        final int firstCellIndex = firstCell.getIndex();
+        if (cellIndex == firstCellIndex || cellIndex == firstCellIndex + 1) {
+            nextRowIndex = firstCellIndex - (firstCellIndex > 1 ? 2 : 1);
+            if (nextRowIndex < 0) return -1;
+        } else {
+            final int lastCellIndex = lastCell.getIndex();
+            if (cellIndex == lastCellIndex || cellIndex == lastCellIndex - 1) {
+                nextRowIndex = lastCellIndex + 1;
+                if (nextRowIndex >= getSkinEx().getVirtualFlowEx().getCellCount()) return -1;
+                nextRowIndex = firstCellIndex + 2;
+            }
+        }
+        return nextRowIndex;
+    }
 
     public TreeViewEx<T> setEnterOrDoubleClickAction(BiConsumer<InputEvent, TreeItem<T>> enterOrDoubleClickAction) {
         this.enterOrDoubleClickAction = enterOrDoubleClickAction;
@@ -171,5 +195,8 @@ public class TreeViewEx<T> extends TreeView<T> {
     protected void handleOnEnterOrDoubleClicked(InputEvent event, TreeItem<T> treeItem) {
         if (null != enterOrDoubleClickAction)
             enterOrDoubleClickAction.accept(event, treeItem);
+    }
+
+    protected void handleOnContextMenuRequested() {
     }
 }
