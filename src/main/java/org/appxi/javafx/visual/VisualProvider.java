@@ -178,7 +178,7 @@ public final class VisualProvider {
                     public Property<String> valueProperty() {
                         if (this.valueProperty != null) return this.valueProperty;
                         this.valueProperty = new SimpleStringProperty();
-                        getEditor().getItems().setAll(Font.getFontNames());
+                        getEditor().getItems().setAll(Font.getFamilies());
                         this.getEditor().getSelectionModel().selectedItemProperty().addListener((obs, ov, nv) -> {
                             if (ov == null || Objects.equals(ov, nv)) return;
                             this.valueProperty.set(nv);
@@ -307,7 +307,7 @@ public final class VisualProvider {
                     public Property<String> valueProperty() {
                         if (this.valueProperty != null) return this.valueProperty;
                         this.valueProperty = new SimpleStringProperty();
-                        getEditor().getItems().setAll(Font.getFontNames());
+                        getEditor().getItems().setAll(Font.getFamilies());
                         this.getEditor().getSelectionModel().selectedItemProperty().addListener((obs, ov, nv) -> {
                             if (ov == null || Objects.equals(ov, nv)) return;
                             this.valueProperty.set(nv);
