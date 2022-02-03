@@ -131,6 +131,11 @@ public final class VisualProvider {
     }
 
     private void applyFont() {
+        String fontSmooth = UserPrefs.prefs.getString("ui.font.smooth", "gray");
+        if (!"gray".equals(fontSmooth) && !"lcd".equals(fontSmooth)) {
+            fontSmooth = "gray";
+        }
+        //
         String fontName = UserPrefs.prefs.getString("ui.font.name", null);
         if (fontName == null || fontName.isBlank()) {
             final String osName = System.getProperty("os.name").toLowerCase(Locale.ROOT);
@@ -152,11 +157,12 @@ public final class VisualProvider {
             UserPrefs.prefs.setProperty("ui.font.size", fontSize);
         }
 
+        fontSmooth = "-fx-font-smoothing-type: ".concat(fontSmooth).concat(";");
         fontName = " -fx-font-family: \"".concat(fontName).concat("\";");
         fontSize = " -fx-font-size: ".concat(fontSize).concat("px;");
 
         Path file = UserPrefs.cacheDir().resolve("ui.temp.css");
-        FileHelper.writeString(".root, .root * { ".concat(fontName).concat(" }\n")
+        FileHelper.writeString(".root, .root * { ".concat(fontSmooth).concat(fontName).concat(" }\n")
                 .concat(".root { ").concat(fontSize).concat(" }\n")
                 .concat(".icon-toggle .text, .icon-text .text { -fx-font-family: \"Material Icons\"; }\n"), file);
         final String css = file.toUri().toString().replace("///", "/");
@@ -166,6 +172,39 @@ public final class VisualProvider {
         if (idx != -1)
             primaryScene.getStylesheets().add(idx, css);
         else primaryScene.getStylesheets().add(css);
+    }
+
+    public Option<String> optionForFontSmooth() {
+        return new DefaultOption<>("主界面字体平滑", "", "UI",
+                UserPrefs.prefs.getString("ui.font.smooth", ""), true,
+                option -> new OptionEditorBase<String, ChoiceBox<String>>(option, new ChoiceBox<>()) {
+                    private StringProperty valueProperty;
+
+                    @Override
+                    public Property<String> valueProperty() {
+                        if (this.valueProperty != null) return this.valueProperty;
+                        this.valueProperty = new SimpleStringProperty();
+                        getEditor().getItems().setAll("gray", "lcd");
+                        this.getEditor().getSelectionModel().selectedItemProperty().addListener((obs, ov, nv) -> {
+                            if (ov == null || Objects.equals(ov, nv)) return;
+                            this.valueProperty.set(nv);
+                            //
+                            UserPrefs.prefs.setProperty("ui.font.smooth", nv);
+                            applyFont();
+                            eventBus.fireEvent(new VisualEvent(VisualEvent.SET_FONT_SMOOTH, nv));
+                        });
+                        this.valueProperty.addListener((obs, ov, nv) -> this.setValue(nv));
+                        return this.valueProperty;
+                    }
+
+                    @Override
+                    public void setValue(String value) {
+                        if (getEditor().getItems().isEmpty()) return;
+                        if (!getEditor().getItems().contains(value))
+                            value = "gray";
+                        getEditor().getSelectionModel().select(value);
+                    }
+                });
     }
 
     public Option<String> optionForFontName() {

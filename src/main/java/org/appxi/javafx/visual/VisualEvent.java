@@ -12,10 +12,12 @@ public final class VisualEvent extends Event {
     public static final EventType<VisualEvent> SET_FONT = new EventType<>(Event.ANY, "SET_FONT");
     public static final EventType<VisualEvent> SET_FONT_NAME = new EventType<>(SET_FONT, "SET_FONT_NAME");
     public static final EventType<VisualEvent> SET_FONT_SIZE = new EventType<>(SET_FONT, "SET_FONT_SIZE");
+    public static final EventType<VisualEvent> SET_FONT_SMOOTH = new EventType<>(SET_FONT, "SET_FONT_SMOOTH");
 
     public static final EventType<VisualEvent> SET_WEB_FONT = new EventType<>(Event.ANY, "SET_WEB_FONT");
     public static final EventType<VisualEvent> SET_WEB_FONT_NAME = new EventType<>(SET_WEB_FONT, "SET_WEB_FONT_NAME");
     public static final EventType<VisualEvent> SET_WEB_FONT_SIZE = new EventType<>(SET_WEB_FONT, "SET_WEB_FONT_SIZE");
+    public static final EventType<VisualEvent> SET_WEB_FONT_SMOOTH = new EventType<>(SET_WEB_FONT, "SET_WEB_FONT_SMOOTH");
 
     private final Object data;
 

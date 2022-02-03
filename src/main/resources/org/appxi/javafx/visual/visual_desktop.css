@@ -3,10 +3,6 @@
 	src: url('MaterialIcons-Regular.ttf');
 }
 
-* {
-    -fx-font-smoothing-type: gray;
-}
-
 .root {
     -fx-accent: -primary-swatch-500;
 	/* -fx-font-family: "Roboto"; */
