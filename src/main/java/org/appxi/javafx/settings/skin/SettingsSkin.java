@@ -38,9 +38,6 @@ public class SettingsSkin extends SkinBase<SettingsPane> {
     private final ScrollPane scroller;
     private final ToolBar toolbar;
     private int level = 0;
-//    private static final Function<View, MobileTransition> VIEW_TRANSITION = (view) -> {
-//        return new FadeInDownBigTransition(view, false);
-//    };
 
     public SettingsSkin(SettingsPane control) {
         super(control);
@@ -111,11 +108,11 @@ public class SettingsSkin extends SkinBase<SettingsPane> {
 
         VBox grid = new VBox();
         grid.getStyleClass().add("options-grid");
-        Iterator var19 = filteredOptions.iterator();
+        Iterator<Option> var19 = filteredOptions.iterator();
 
         while (true) {
             while (var19.hasNext()) {
-                Option option = (Option) var19.next();
+                Option option = var19.next();
                 String category = option.getCategory() == null ? "" : option.getCategory();
                 List<OptionBase> list = categoryMap.get(category);
                 HBox hBox;
@@ -153,24 +150,27 @@ public class SettingsSkin extends SkinBase<SettingsPane> {
                         HBox.setHgrow(grLeft, Priority.NEVER);
                     }
 
-                    Label labelTitle;
                     if (hLayout) {
-                        labelTitle = new Label(option.getCaption());
-                        labelTitle.getStyleClass().add("primary-text");
-                        Label labelSubtitle = new Label();
-                        labelSubtitle.getStyleClass().add("secondary-text");
-                        labelSubtitle.setAlignment(Pos.TOP_LEFT);
-                        VBox.setVgrow(labelTitle, Priority.ALWAYS);
-                        VBox textBox = new VBox(labelTitle, labelSubtitle);
+                        Label title = new Label(option.getCaption());
+                        title.getStyleClass().add("primary-text");
+                        Label subtitle = new Label();
+                        subtitle.getStyleClass().add("secondary-text");
+                        subtitle.setAlignment(Pos.TOP_LEFT);
+                        VBox.setVgrow(title, Priority.ALWAYS);
+                        VBox textBox = new VBox(title, subtitle);
                         textBox.getStyleClass().setAll("text-box");
                         textBox.setAlignment(Pos.CENTER_LEFT);
                         HBox.setHgrow(textBox, Priority.ALWAYS);
                         rowOption.getChildren().add(textBox);
-                        if (!option.getExtendedDescription().isPresent()) {
-                            labelSubtitle.setText(option.getDescription());
-                            Tooltip.install(textBox, new Tooltip(option.getDescription()));
+                        if (option.getExtendedDescription().isEmpty()) {
+                            if (null != option.getDescription()) {
+                                subtitle.setText(option.getDescription());
+                                Tooltip.install(textBox, new Tooltip(option.getDescription()));
+                            } else {
+                                textBox.getChildren().remove(subtitle);
+                            }
                         } else {
-                            labelSubtitle.textProperty().bind(Bindings.createStringBinding(() -> {
+                            subtitle.textProperty().bind(Bindings.createStringBinding(() -> {
                                 if (option.getStringConverter().isPresent()) {
                                     StringConverter<Object> converter = (StringConverter) option.getStringConverter().get();
                                     return converter.toString(option.valueProperty().getValue());
@@ -181,42 +181,22 @@ public class SettingsSkin extends SkinBase<SettingsPane> {
                             Tooltip.install(textBox, new Tooltip("Click to find a more extensive description about " + option.getCaption()));
                         }
 
-                        String viewName;
                         if (editor != null) {
-                            if (!option.getExtendedDescription().isPresent()) {
+                            if (option.getExtendedDescription().isEmpty()) {
                                 HBox grRight = new HBox(editor);
                                 grRight.setAlignment(Pos.CENTER);
                                 HBox.setHgrow(grRight, Priority.NEVER);
                                 grRight.getStyleClass().add("secondary-graphic");
                                 rowOption.getChildren().add(grRight);
-                            } else {
-                                viewName = "Extended_View_" + option.getCaption() + "_" + this.level + "_" + rowOption.getChildren().size();
-//                                AppManager.getInstance().addViewFactory(viewName, () -> {
-//                                    View view = this.getExtendedView(option);
-////                                    view.setShowTransitionFactory(VIEW_TRANSITION);
-//                                    return view;
-//                                });
-                                rowOption.setOnMouseClicked((e) -> {
-//                                    AppManager.getInstance().switchView(viewName);
-                                });
                             }
                         } else if (!option.getChildren().isEmpty()) {
-                            viewName = "Group_View_" + option.getCaption() + "_" + this.level + "_" + rowOption.getChildren().size();
-//                            AppManager.getInstance().addViewFactory(viewName, () -> {
-//                                View view = this.getGroupView(option.getCaption(), this.buildSettingsContainer(option.getChildren()));
-////                                view.setShowTransitionFactory(VIEW_TRANSITION);
-//                                return view;
-//                            });
-                            rowOption.setOnMouseClicked((e) -> {
-//                                AppManager.getInstance().switchView(viewName);
-                            });
                         } else {
                             System.out.println("Error, no rendering options for: " + option.getCaption());
                         }
                     } else {
-                        labelTitle = new Label(option.getCaption());
-                        labelTitle.getStyleClass().add("primary-text");
-                        VBox grRight = new VBox(labelTitle, editor);
+                        Label title = new Label(option.getCaption());
+                        title.getStyleClass().add("primary-text");
+                        VBox grRight = new VBox(title, editor);
                         grRight.setAlignment(Pos.CENTER_LEFT);
                         HBox.setHgrow(grRight, Priority.ALWAYS);
                         grRight.getStyleClass().addAll("text-box", "secondary-graphic");
