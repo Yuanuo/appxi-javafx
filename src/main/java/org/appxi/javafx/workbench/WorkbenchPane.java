@@ -1,7 +1,6 @@
 package org.appxi.javafx.workbench;
 
 import javafx.application.Platform;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Orientation;
@@ -29,8 +28,9 @@ import java.util.List;
 import java.util.Objects;
 
 public class WorkbenchPane extends BorderPane {
-    private static final Object AK_FIRST_TIME = new Object();
-    private static final Object AK_CLOSED = new Object();
+    private static final Object AK_DEFAULT = new Object();
+    private static final Object AK_VISITED = new Object();
+    private static final Object AK_CLOSING = new Object();
 
     private final ToggleGroup sideToolsGroup = new ToggleGroup();
     protected final ToolBarEx sideTools;
@@ -66,32 +66,57 @@ public class WorkbenchPane extends BorderPane {
         this.setLeft(sideTools);
         this.setCenter(rootViews);
         //
-        sideToolsGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
-            final ToggleButton lastSideTool = (ToggleButton) oldValue;
-            final ToggleButton currSideTool = (ToggleButton) newValue;
-
+        sideToolsGroup.selectedToggleProperty().addListener((observable, oldToggle, newToggle) -> {
             // 如果sideViews在显示时再次点击已选中的按钮则隐藏sideViews
-            if (null == currSideTool) {
+            if (null == newToggle) {
                 // 由选中变成未选中时需要确保sideViews已隐藏
                 lastRootViewsDividerPosition = rootViews.getDividerPositions()[0];
                 this.rootViews.getItems().remove(this.sideViews);
             }
             // 正常切换sideViews显示时会触发的操作
-            if (null != lastSideTool) {
-                final WorkbenchSideViewController lastController = (WorkbenchSideViewController) lastSideTool.getUserData();
-                lastController.onViewportHiding();
+            if (null != oldToggle && oldToggle.getUserData() instanceof WorkbenchSideViewController controller) {
+                controller.onViewportHiding();
             }
-            if (null != currSideTool) {
-                final WorkbenchViewController currController = (WorkbenchViewController) currSideTool.getUserData();
+            if (null != newToggle && newToggle.getUserData() instanceof WorkbenchViewController controller) {
                 // 由未选中变成选中时需要确保sideViews已显示
-                if (null == lastSideTool) {
+                if (null == oldToggle) {
                     this.rootViews.getItems().add(0, this.sideViews);
                     Platform.runLater(() -> this.rootViews.setDividerPosition(0, lastRootViewsDividerPosition));
                 }
                 // 显示已选中的视图
-                this.sideViews.setCenter(currController.getViewport());
+                this.sideViews.setCenter(controller.getViewport());
                 // 并触发事件
-                currController.onViewportShowing(ensureFirstTime(currController));
+                controller.onViewportShowing(ensureFirstTime(controller));
+            }
+        });
+        //
+        mainViews.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
+            // update app title
+            if (application.title.isBound())
+                application.title.unbind();
+            if (null == newTab) {
+                application.title.set(null);
+            } else if (newTab.getUserData() instanceof WorkbenchMainViewController controller) {
+                application.title.bind(controller.appTitle);
+            } else {
+                application.title.set(newTab.getText());
+            }
+
+            // update old tab
+            if (null != oldTab && oldTab.getUserData() instanceof WorkbenchMainViewController controller) {
+                if (controller.hasAttr(AK_VISITED) && !controller.hasAttr(AK_CLOSING))
+                    controller.onViewportHiding();
+            }
+
+            // update new tab
+            if (null != newTab && newTab.getUserData() instanceof WorkbenchMainViewController controller) {
+                if (controller.hasAttr(AK_DEFAULT)) {
+                    controller.removeAttr(AK_DEFAULT);
+                } else {
+                    if (newTab.getContent() == null) // always lazy init
+                        newTab.setContent(controller.getViewport());
+                    controller.onViewportShowing(ensureFirstTime(controller));
+                }
             }
         });
     }
@@ -147,65 +172,42 @@ public class WorkbenchPane extends BorderPane {
 
     public void addWorkbenchViewAsMainView(WorkbenchMainViewController controller, boolean addToEnd) {
         final Tab tool = new Tab();
-        tool.idProperty().bind(controller.viewId);
+        tool.idProperty().bind(controller.id);
         tool.setUserData(controller);
-        tool.textProperty().bind(controller.viewTitle);
-        ((SimpleObjectProperty<Tab>) controller.tab).set(tool);
+        tool.textProperty().bind(controller.title);
 
         final Tooltip tooltip = new Tooltip();
-        tooltip.textProperty().bind(controller.viewTooltip);
+        tooltip.textProperty().bind(controller.tooltip);
         tool.setTooltip(tooltip);
 
-        tool.graphicProperty().bind(controller.viewGraphic);
+        tool.graphicProperty().bind(controller.graphic);
 
-        if (addToEnd) {
-            this.mainViews.getTabs().add(tool);
-        } else {
-            final int addIdx = this.mainViews.getSelectionModel().getSelectedIndex() + 1;
-            this.mainViews.getTabs().add(addIdx, tool);
-        }
-        // 先添加到tabs后再绑定事件，避免添加时触发第一次加载事件
         tool.setOnCloseRequest(event -> {
-            // 只有已经触发过第一次加载事件的视图才处理此操作
-            if (controller.hasAttr(AK_FIRST_TIME)) {
-                controller.attr(AK_CLOSED, true);
-                if (tool.isSelected())
-                    application.setPrimaryTitle(null);
-                controller.onViewportClosing(tool.isSelected());
+            if (event.getTarget() instanceof Tab t && t.getUserData() instanceof WorkbenchMainViewController c && c.hasAttr(AK_VISITED)) {
+                c.onViewportClosing(event, t.isSelected());
+                if (!event.isConsumed())
+                    c.attr(AK_CLOSING, true);
             }
         });
-        tool.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                FxHelper.runLater(() -> {
-                    final boolean firstTime = ensureFirstTime(controller);
-                    if (firstTime || tool.getContent() == null) // always lazy init
-                        tool.setContent(controller.getViewport());
-                    application.setPrimaryTitle(controller.appTitle.get());
-                    controller.onViewportShowing(firstTime);
-                });
-            } else if (oldValue && controller.hasAttr(AK_FIRST_TIME) && !controller.hasAttr(AK_CLOSED)) {
-                controller.onViewportHiding();
-            }
-        });
-        controller.appTitle.addListener((o, ov, nv) -> {
-            if (tool.isSelected()) {
-                application.setPrimaryTitle(nv);
-            }
-        });
+        if (this.mainViews.getTabs().isEmpty())
+            controller.attr(AK_DEFAULT, true);
+
+        final int addToIdx = addToEnd ? this.mainViews.getTabs().size() : this.mainViews.getSelectionModel().getSelectedIndex() + 1;
+        this.mainViews.getTabs().add(addToIdx, tool);
     }
 
     private void addSideTool(ButtonBase tool, WorkbenchViewController controller, Pos pos) {
-        tool.idProperty().bind(controller.viewId);
+        tool.idProperty().bind(controller.id);
         tool.setUserData(controller);
         tool.setContentDisplay(ContentDisplay.TOP);
         // FIXME 是否通过配置允许显示文字标签？
 //        tool.textProperty().bind(controller.viewTitle);
 
         final Tooltip tooltip = new Tooltip();
-        tooltip.textProperty().bind(controller.viewTooltip);
+        tooltip.textProperty().bind(controller.tooltip);
         tool.setTooltip(tooltip);
 
-        tool.graphicProperty().bind(controller.viewGraphic);
+        tool.graphicProperty().bind(controller.graphic);
 
         if (controller.hasAttr(Pos.class))
             pos = controller.attr(Pos.class);
@@ -213,9 +215,9 @@ public class WorkbenchPane extends BorderPane {
     }
 
     private boolean ensureFirstTime(Attributes attrs) {
-        if (attrs.hasAttr(AK_FIRST_TIME))
+        if (attrs.hasAttr(AK_VISITED))
             return false;
-        attrs.attr(AK_FIRST_TIME, true);
+        attrs.attr(AK_VISITED, true);
         return true;
     }
 
@@ -258,7 +260,7 @@ public class WorkbenchPane extends BorderPane {
         final ObservableList<Node> items = this.sideTools.getAlignedItems();
         if (items.isEmpty()) return;
 
-        ButtonBase tool = null == id ? null : findSideTool(id);
+        ButtonBase tool = null == id ? null : findSideToolHandler(id);
         if (null == tool && items.get(0) instanceof ButtonBase button) tool = button;
         if (null == tool) return;
         if (tool == sideToolsGroup.getSelectedToggle()) return; // already selected
@@ -266,68 +268,41 @@ public class WorkbenchPane extends BorderPane {
     }
 
     public void selectMainView(String id) {
-        this.selectMainView(findMainViewTab(id));
-    }
-
-    public void selectMainView(Tab tab) {
-        if (null == tab)
-            return;
-        if (tab.isSelected()) {
-            final WorkbenchMainViewController controller = (WorkbenchMainViewController) tab.getUserData();
-            if (!controller.hasAttr(AK_FIRST_TIME) || tab.getContent() == null) {
-                FxHelper.runLater(() -> {
-                    final boolean firstTime = ensureFirstTime(controller);
-                    if (firstTime || tab.getContent() == null) // always lazy init
-                        tab.setContent(controller.getViewport());
-                    application.setPrimaryTitle(controller.appTitle.get());
-                    controller.onViewportShowing(firstTime);
-                });
-            }
-            return;
+        Tab tab = null == id ? this.mainViews.getSelectionModel().getSelectedItem() : findMainViewHandler(id);
+        if (null == tab) return;
+        if (tab.getUserData() instanceof WorkbenchMainViewController controller) {
+            if (controller.hasAttr(AK_DEFAULT)) controller.removeAttr(AK_DEFAULT);
+            if (tab.isSelected() && (!controller.hasAttr(AK_VISITED) || tab.getContent() == null))
+                this.mainViews.getSelectionModel().clearSelection();
         }
         this.mainViews.getSelectionModel().select(tab);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public boolean existsSideView(String id) {
-        return null != findSideTool(id);
+        return null != findSideToolHandler(id);
     }
 
     public boolean existsMainView(String id) {
-        return null != findMainViewTab(id);
+        return null != findMainViewHandler(id);
     }
 
-    public ButtonBase findSideTool(String id) {
+    public ButtonBase findSideToolHandler(String id) {
         final FilteredList<Node> list = this.sideTools.getAlignedItems().filtered(v -> Objects.equals(v.getId(), id));
         return !list.isEmpty() ? (ButtonBase) list.get(0) : null;
     }
 
-    public Node findSideView(String id) {
-        final WorkbenchViewController controller = this.findSideViewController(id);
-        return null != controller ? controller.getViewport() : null;
-    }
-
     public final WorkbenchSideViewController findSideViewController(String id) {
-        final Object sideTool = findSideTool(id);
-        if (null == sideTool)
-            return null;
-        if (sideTool instanceof ToggleButton btn) {
-            return (WorkbenchSideViewController) btn.getUserData();
-        }
-        return null;
+        final ButtonBase tool = findSideToolHandler(id);
+        return null != tool && tool.getUserData() instanceof WorkbenchSideViewController controller ? controller : null;
     }
 
-    public Tab findMainViewTab(String id) {
+    public Tab findMainViewHandler(String id) {
         return this.mainViews.findById(id);
     }
 
-    public Node findMainViewNode(String id) {
-        final Tab tool = findMainViewTab(id);
-        return null != tool ? tool.getContent() : null;
-    }
-
     public final WorkbenchMainViewController findMainViewController(String id) {
-        final Tab tool = this.findMainViewTab(id);
-        return null != tool ? (WorkbenchMainViewController) tool.getUserData() : null;
+        final Tab tool = this.findMainViewHandler(id);
+        return null != tool && tool.getUserData() instanceof WorkbenchMainViewController controller ? controller : null;
     }
 }

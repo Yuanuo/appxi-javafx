@@ -9,18 +9,18 @@ import org.appxi.util.StringHelper;
 import org.appxi.util.ext.Attributes;
 
 public abstract class WorkbenchViewController extends Attributes {
-    public final StringProperty viewTitle = new SimpleStringProperty();
-    public final StringProperty viewTooltip = new SimpleStringProperty();
-    public final ObjectProperty<Node> viewGraphic = new SimpleObjectProperty<>();
+    public final StringProperty id = new SimpleStringProperty();
+    public final StringProperty title = new SimpleStringProperty();
+    public final StringProperty tooltip = new SimpleStringProperty();
+    public final ObjectProperty<Node> graphic = new SimpleObjectProperty<>();
 
     public final WorkbenchApp app;
     public final WorkbenchPane workbench;
-    public final SimpleStringProperty viewId;
 
     public WorkbenchViewController(String viewId, WorkbenchPane workbench) {
         this.app = workbench.application;
         this.workbench = workbench;
-        this.viewId = new SimpleStringProperty(this, "viewId", viewId);
+        this.id.set(viewId);
     }
 
     public abstract <T> T getViewport();
@@ -32,8 +32,8 @@ public abstract class WorkbenchViewController extends Attributes {
     }
 
     protected void setTitles(String title, String tooltip) {
-        viewTitle.set(null == title ? null : StringHelper.trimChars(title, 20));
-        viewTooltip.set(tooltip);
+        this.title.set(null == title ? null : StringHelper.trimChars(title, 20));
+        this.tooltip.set(tooltip);
     }
 
     public abstract void onViewportShowing(boolean firstTime);

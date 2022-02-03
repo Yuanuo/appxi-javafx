@@ -23,7 +23,7 @@ public abstract class WorkbenchSideViewController extends WorkbenchViewControlle
 
             final Label title = new Label();
             title.getStyleClass().add("font-bold");
-            title.textProperty().bind(viewTitle);
+            title.textProperty().bind(this.title);
             HBox.setHgrow(title, Priority.ALWAYS);
 
             this.topBar = new HBoxEx();

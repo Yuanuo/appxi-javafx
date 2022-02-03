@@ -1,6 +1,9 @@
 package org.appxi.javafx.app;
 
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.layout.StackPane;
@@ -22,6 +25,7 @@ public abstract class BaseApp extends javafx.application.Application {
     public final Logger logger = LoggerFactory.getLogger(BaseApp.class);
     public final EventBus eventBus = new EventBus();
     public final VisualProvider visualProvider = new VisualProvider(this.eventBus, this::getPrimaryScene);
+    public final StringProperty title = new SimpleStringProperty();
 
     private Stage primaryStage;
     private Scene primaryScene;
@@ -38,12 +42,6 @@ public abstract class BaseApp extends javafx.application.Application {
 
     public final StackPane getPrimaryGlass() {
         return primaryGlass;
-    }
-
-    public final void setPrimaryTitle(String title) {
-        if (null == title) title = getAppName();
-        else title = title.concat(" - ").concat(getAppName());
-        this.primaryStage.setTitle(title);
     }
 
 
@@ -78,7 +76,10 @@ public abstract class BaseApp extends javafx.application.Application {
         primaryStage.setScene(this.primaryScene);
 
         CompletableFuture.runAsync(() -> {
-            this.setPrimaryTitle(null);
+            this.primaryStage.titleProperty().bind(Bindings.createStringBinding(() -> {
+                final String title = this.title.get();
+                return null == title || title.isBlank() ? getAppName() : title.concat("   -   ").concat(getAppName());
+            }, this.title));
 
             final List<Image> icons = new ArrayList<>();
             for (URL iconRes : getAppIcons()) {
