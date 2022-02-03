@@ -49,7 +49,7 @@ public abstract class DesktopApp extends BaseApp {
     @Override
     protected void handleUncaughtException(Thread thread, Throwable throwable) {
         super.handleUncaughtException(thread, throwable);
-        toastError(throwable.getMessage());
+        toastError(throwable.getClass().getName().concat(": ").concat(throwable.getMessage()));
     }
 
     public void toast(String msg) {
