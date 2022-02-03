@@ -12,6 +12,8 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ColorPicker;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import org.appxi.javafx.event.EventBus;
 import org.appxi.javafx.settings.DefaultOption;
@@ -67,6 +69,20 @@ public final class VisualProvider {
         return UserPrefs.prefs.getString("web.font.name", "");
     }
 
+    public String webPageColor() {
+        return switch (theme()) {
+            case LIGHT -> UserPrefs.prefs.getString("web.page.color.light", "#f5f5f5");
+            case DARK -> UserPrefs.prefs.getString("web.page.color.dark", "#3b3b3b");
+        };
+    }
+
+    public String webTextColor() {
+        return switch (theme()) {
+            case LIGHT -> UserPrefs.prefs.getString("web.text.color.light", "#333");
+            case DARK -> UserPrefs.prefs.getString("web.text.color.dark", "#bbb");
+        };
+    }
+
     public void initialize() {
         this.applyFont();
         this.applyTheme(null);
@@ -76,7 +92,7 @@ public final class VisualProvider {
 
     @Override
     public String toString() {
-        return "visual-%s theme-%s swatch-%s".formatted(visual().name(), theme().name(), swatch().name()).toLowerCase();
+        return "visual-%s theme-%s swatch-%s".formatted(visual().name(), theme().name(), swatch().name()).toLowerCase(Locale.ROOT);
     }
 
     private void applyVisual(Visual visual) {
@@ -175,7 +191,7 @@ public final class VisualProvider {
     }
 
     public Option<String> optionForFontSmooth() {
-        return new DefaultOption<>("主界面字体平滑", "", "UI",
+        return new DefaultOption<>("主界面字体平滑", null, "UI",
                 UserPrefs.prefs.getString("ui.font.smooth", ""), true,
                 option -> new OptionEditorBase<String, ChoiceBox<String>>(option, new ChoiceBox<>()) {
                     private StringProperty valueProperty;
@@ -191,7 +207,6 @@ public final class VisualProvider {
                             //
                             UserPrefs.prefs.setProperty("ui.font.smooth", nv);
                             applyFont();
-                            eventBus.fireEvent(new VisualEvent(VisualEvent.SET_FONT_SMOOTH, nv));
                         });
                         this.valueProperty.addListener((obs, ov, nv) -> this.setValue(nv));
                         return this.valueProperty;
@@ -208,7 +223,7 @@ public final class VisualProvider {
     }
 
     public Option<String> optionForFontName() {
-        return new DefaultOption<>("主界面字体", "", "UI",
+        return new DefaultOption<>("主界面字体", null, "UI",
                 UserPrefs.prefs.getString("ui.font.name", ""), true,
                 option -> new OptionEditorBase<String, ChoiceBox<String>>(option, new ChoiceBox<>()) {
                     private StringProperty valueProperty;
@@ -224,7 +239,6 @@ public final class VisualProvider {
                             //
                             UserPrefs.prefs.setProperty("ui.font.name", nv);
                             applyFont();
-                            eventBus.fireEvent(new VisualEvent(VisualEvent.SET_FONT_NAME, nv));
                         });
                         this.valueProperty.addListener((obs, ov, nv) -> this.setValue(nv));
                         return this.valueProperty;
@@ -241,7 +255,7 @@ public final class VisualProvider {
     }
 
     public Option<Number> optionForFontSize() {
-        return new DefaultOption<>("主界面字号", "", "UI",
+        return new DefaultOption<>("主界面字号", null, "UI",
                 UserPrefs.prefs.getInt("ui.font.size", 14), true,
                 option -> new OptionEditorBase<Number, ChoiceBox<Number>>(option, new ChoiceBox<>()) {
                     private IntegerProperty valueProperty;
@@ -259,7 +273,6 @@ public final class VisualProvider {
                                 //
                                 UserPrefs.prefs.setProperty("ui.font.size", nv.intValue());
                                 applyFont();
-                                eventBus.fireEvent(new VisualEvent(VisualEvent.SET_FONT_SIZE, nv.intValue()));
                             });
                             this.valueProperty.addListener((obs, ov, nv) -> this.setValue(nv));
                         }
@@ -277,7 +290,7 @@ public final class VisualProvider {
     }
 
     public Option<Theme> optionForTheme() {
-        return new DefaultOption<>("颜色模式", "", "UI", theme(), true,
+        return new DefaultOption<>("颜色模式", null, "UI", theme(), true,
                 option -> new OptionEditorBase<Theme, ChoiceBox<Theme>>(option, new ChoiceBox<>()) {
                     private ObjectProperty<Theme> valueProperty;
 
@@ -307,7 +320,7 @@ public final class VisualProvider {
     }
 
     public Option<Swatch> optionForSwatch() {
-        return new DefaultOption<>("颜色", "", "UI", swatch(), true,
+        return new DefaultOption<>("颜色", null, "UI", swatch(), true,
                 option -> new OptionEditorBase<Swatch, ChoiceBox<Swatch>>(option, new ChoiceBox<>()) {
                     private ObjectProperty<Swatch> valueProperty;
 
@@ -338,7 +351,7 @@ public final class VisualProvider {
 
     public Option<String> optionForWebFontName() {
         return new DefaultOption<>(
-                "阅读器字体", "阅读视图默认字体", "VIEWER", webFontName(), true,
+                "阅读器字体", null, "VIEWER", webFontName(), true,
                 option -> new OptionEditorBase<String, ChoiceBox<String>>(option, new ChoiceBox<>()) {
                     private StringProperty valueProperty;
 
@@ -370,7 +383,7 @@ public final class VisualProvider {
 
     public Option<Number> optionForWebFontSize() {
         return new DefaultOption<>(
-                "阅读器字号", "阅读视图默认字号", "VIEWER", webFontSize(), true,
+                "阅读器字号", null, "VIEWER", webFontSize(), true,
                 option -> new OptionEditorBase<Number, ChoiceBox<Number>>(option, new ChoiceBox<>()) {
                     private DoubleProperty valueProperty;
 
@@ -401,6 +414,58 @@ public final class VisualProvider {
                         if (!getEditor().getItems().contains(value))
                             value = 1.6;
                         getEditor().getSelectionModel().select(value);
+                    }
+                });
+    }
+
+    public Option<Color> optionForWebPageColor() {
+        return new DefaultOption<>(
+                "阅读器背景颜色", null, "VIEWER", Color.web(webPageColor()), true,
+                option -> new OptionEditorBase<>(option, new ColorPicker()) {
+                    {
+                        getEditor().valueProperty().addListener((obs, ov, nv) -> {
+                            if (ov == null || Objects.equals(ov, nv)) return;
+                            //
+                            UserPrefs.prefs.setProperty("web.page.color.".concat(theme().name().toLowerCase(Locale.ROOT)),
+                                    "#".concat(nv.toString().substring(2)));
+                            eventBus.fireEvent(new VisualEvent(VisualEvent.SET_WEB_PAGE_COLOR, nv));
+                        });
+                    }
+
+                    @Override
+                    public Property<Color> valueProperty() {
+                        return getEditor().valueProperty();
+                    }
+
+                    @Override
+                    public void setValue(Color value) {
+                        getEditor().setValue(value);
+                    }
+                });
+    }
+
+    public Option<Color> optionForWebTextColor() {
+        return new DefaultOption<>(
+                "阅读器文字颜色", null, "VIEWER", Color.web(webTextColor()), true,
+                option -> new OptionEditorBase<>(option, new ColorPicker()) {
+                    {
+                        getEditor().valueProperty().addListener((obs, ov, nv) -> {
+                            if (ov == null || Objects.equals(ov, nv)) return;
+                            //
+                            UserPrefs.prefs.setProperty("web.text.color.".concat(theme().name().toLowerCase(Locale.ROOT)),
+                                    "#".concat(nv.toString().substring(2)));
+                            eventBus.fireEvent(new VisualEvent(VisualEvent.SET_WEB_TEXT_COLOR, nv));
+                        });
+                    }
+
+                    @Override
+                    public Property<Color> valueProperty() {
+                        return getEditor().valueProperty();
+                    }
+
+                    @Override
+                    public void setValue(Color value) {
+                        getEditor().setValue(value);
                     }
                 });
     }
