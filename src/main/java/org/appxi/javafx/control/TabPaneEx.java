@@ -18,6 +18,7 @@ import org.appxi.javafx.visual.MaterialIcon;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -132,7 +133,7 @@ public class TabPaneEx extends TabPane {
     }
 
     public final Tab findById(String tabId) {
-        return this.getTabs().stream().filter(tab -> tabId.equals(tab.getId())).findFirst().orElse(null);
+        return this.getTabs().stream().filter(tab -> Objects.equals(tabId, tab.getId())).findFirst().orElse(null);
     }
 
     public final boolean canCloseTab(Tab tab) {
