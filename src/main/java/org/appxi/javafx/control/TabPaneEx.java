@@ -77,14 +77,14 @@ public class TabPaneEx extends TabPane {
         final List<MenuItem> menuItems = new ArrayList<>(4);
 
         Tab targetTab = null;
-        final Optional<Node> tabNode = FxHelper.filterParent(event.getPickResult().getIntersectedNode(), "tab");
-        if (tabNode.isPresent() && getTabClosingPolicy() != TabClosingPolicy.UNAVAILABLE) {
-            targetTab = findById(tabNode.get().getId());
-            if (null == targetTab || targetTab.getTabPane() != this) {
-                setContextMenu(null);
-                return;
-            }
-            //
+        final Optional<Node> tabSkin = FxHelper.filterParent(event.getPickResult().getIntersectedNode(), "tab");
+        if (tabSkin.isPresent())
+            targetTab = (Tab) tabSkin.get().getProperties().get(Tab.class);
+        if (null == targetTab || targetTab.getTabPane() != this) {
+            setContextMenu(null);
+            return;
+        }
+        if (getTabClosingPolicy() != TabClosingPolicy.UNAVAILABLE) {
             final Tab clickedTab = targetTab;
             final int clickedTabIdx = tabs.indexOf(targetTab);
             //
