@@ -9,7 +9,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>17</maven.compiler.release>
-        <javafx.version>18-ea+9</javafx.version>
+        <javafx.version>19-ea+2</javafx.version>
     </properties>
 
     <dependencies>
@@ -33,6 +33,7 @@
                 <version>3.8.1</version>
                 <configuration>
                     <compilerArgs>
+                        <arg>--add-exports=javafx.web/com.sun.javafx.webkit=appxi.javafx</arg>
                         <arg>--add-exports=javafx.web/com.sun.webkit=appxi.javafx</arg>
                         <arg>--add-exports=javafx.web/com.sun.webkit.event=appxi.javafx</arg>
                     </compilerArgs>

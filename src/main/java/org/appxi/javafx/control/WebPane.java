@@ -32,6 +32,8 @@ import org.appxi.javafx.helper.FxHelper;
 import org.appxi.javafx.visual.MaterialIcon;
 import org.appxi.util.StringHelper;
 import org.appxi.util.ext.LookupExpression;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -45,10 +47,15 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class WebPane extends BorderPane {
+    private static final Logger logger = LoggerFactory.getLogger(WebPane.class);
+
     public static void preloadLibrary() {
         try {
             com.sun.webkit.WebPage.getWorkerThreadCount();
-        } catch (Throwable ignore) {
+            com.sun.javafx.webkit.WebConsoleListener.setDefaultListener((webView, message, lineNumber, sourceId) ->
+                    logger.warn(StringHelper.concat(message, "[at ", lineNumber, "]")));
+        } catch (Throwable e) {
+            logger.error("load library for WebView Failed", e);
         }
     }
 
