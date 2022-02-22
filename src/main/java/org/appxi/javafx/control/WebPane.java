@@ -62,8 +62,6 @@ public class WebPane extends BorderPane {
     private final EventHandler<MouseEvent> handleContextMenuVisible = this::handleContextMenuVisible;
     private final EventHandler<Event> handleContextMenuHidden = this::handleContextMenuHidden;
 
-    public final ToolBarEx toolbar;
-
     private WebView webView;
     private WebEngine webEngine;
     private WebPage webPage;
@@ -73,10 +71,31 @@ public class WebPane extends BorderPane {
     public WebPane() {
         super();
         this.getStyleClass().add("web-pane");
+    }
 
-        this.toolbar = new ToolBarEx();
-        this.toolbar.getStyleClass().addAll("compact", "bob-line");
-        this.setTop(this.toolbar);
+    public final ToolBarEx getTopAsBar() {
+        Node topNode = this.getTop();
+
+        if (topNode instanceof ToolBarEx topBar) return topBar;
+
+        ToolBarEx topBar = new ToolBarEx();
+        topBar.getStyleClass().addAll("compact", "bob-line");
+        this.setTop(topBar);
+        return topBar;
+    }
+
+    public final HBoxEx getTopAsBox() {
+        Node topNode = this.getTop();
+
+        if (topNode instanceof HBoxEx topBox) return topBox;
+
+        HBoxEx topBox = new HBoxEx();
+        topBox.setAlignment(Pos.CENTER_LEFT);
+        topBox.setSpacing(8);
+        topBox.setStyle("-fx-padding: .5em;");
+        topBox.getStyleClass().addAll("bob-line");
+        this.setTop(topBox);
+        return topBox;
     }
 
     public void release() {
