@@ -19,11 +19,11 @@ public class HBoxEx extends HBox {
 
         this.spaceFill1 = new Pane();
         this.spaceFill1.getStyleClass().add("space-fill");
-        HBox.setHgrow(spaceFill1, Priority.ALWAYS);
+        HBox.setHgrow(spaceFill1, Priority.SOMETIMES);
 
         this.spaceFill2 = new Pane();
         this.spaceFill2.getStyleClass().add("space-fill");
-        HBox.setHgrow(spaceFill2, Priority.ALWAYS);
+        HBox.setHgrow(spaceFill2, Priority.SOMETIMES);
 
         this.getChildren().setAll(spaceFill1, spaceFill2);
     }
