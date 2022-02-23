@@ -71,14 +71,14 @@ public final class VisualProvider {
 
     public String webPageColor() {
         return switch (theme()) {
-            case LIGHT -> UserPrefs.prefs.getString("web.page.color.light", "#f5f5f5");
+            case LIGHT -> UserPrefs.prefs.getString("web.page.color.light", "#f1e5c9");
             case DARK -> UserPrefs.prefs.getString("web.page.color.dark", "#3b3b3b");
         };
     }
 
     public String webTextColor() {
         return switch (theme()) {
-            case LIGHT -> UserPrefs.prefs.getString("web.text.color.light", "#333");
+            case LIGHT -> UserPrefs.prefs.getString("web.text.color.light", "#0e1a36");
             case DARK -> UserPrefs.prefs.getString("web.text.color.dark", "#bbb");
         };
     }
