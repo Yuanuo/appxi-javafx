@@ -3,7 +3,6 @@ package org.appxi.javafx.visual;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.Property;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -11,14 +10,12 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
-import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.ColorPicker;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import org.appxi.javafx.event.EventBus;
 import org.appxi.javafx.settings.DefaultOption;
+import org.appxi.javafx.settings.DefaultOptions;
 import org.appxi.javafx.settings.Option;
-import org.appxi.javafx.settings.OptionEditorBase;
 import org.appxi.prefs.UserPrefs;
 import org.appxi.util.FileHelper;
 
@@ -191,283 +188,109 @@ public final class VisualProvider {
     }
 
     public Option<String> optionForFontSmooth() {
-        return new DefaultOption<>("主界面字体平滑", null, "UI",
-                UserPrefs.prefs.getString("ui.font.smooth", ""), true,
-                option -> new OptionEditorBase<String, ChoiceBox<String>>(option, new ChoiceBox<>()) {
-                    private StringProperty valueProperty;
-
-                    @Override
-                    public Property<String> valueProperty() {
-                        if (this.valueProperty != null) return this.valueProperty;
-                        this.valueProperty = new SimpleStringProperty();
-                        getEditor().getItems().setAll("gray", "lcd");
-                        this.getEditor().getSelectionModel().selectedItemProperty().addListener((obs, ov, nv) -> {
-                            if (ov == null || Objects.equals(ov, nv)) return;
-                            this.valueProperty.set(nv);
-                            //
-                            UserPrefs.prefs.setProperty("ui.font.smooth", nv);
-                            applyFont();
-                        });
-                        this.valueProperty.addListener((obs, ov, nv) -> this.setValue(nv));
-                        return this.valueProperty;
-                    }
-
-                    @Override
-                    public void setValue(String value) {
-                        if (getEditor().getItems().isEmpty()) return;
-                        if (!getEditor().getItems().contains(value))
-                            value = "gray";
-                        getEditor().getSelectionModel().select(value);
-                    }
-                });
+        final StringProperty valueProperty = new SimpleStringProperty(UserPrefs.prefs.getString("ui.font.smooth", "gray"));
+        valueProperty.addListener((o, ov, nv) -> {
+            if (null == ov || Objects.equals(ov, nv)) return;
+            UserPrefs.prefs.setProperty("ui.font.smooth", nv);
+            applyFont();
+        });
+        return new DefaultOptions<String>("主界面字体平滑", null, "UI", true)
+                .setValues("gray", "lcd")
+                .setValueProperty(valueProperty);
     }
 
     public Option<String> optionForFontName() {
-        return new DefaultOption<>("主界面字体", null, "UI",
-                UserPrefs.prefs.getString("ui.font.name", ""), true,
-                option -> new OptionEditorBase<String, ChoiceBox<String>>(option, new ChoiceBox<>()) {
-                    private StringProperty valueProperty;
-
-                    @Override
-                    public Property<String> valueProperty() {
-                        if (this.valueProperty != null) return this.valueProperty;
-                        this.valueProperty = new SimpleStringProperty();
-                        getEditor().getItems().setAll(Font.getFamilies());
-                        this.getEditor().getSelectionModel().selectedItemProperty().addListener((obs, ov, nv) -> {
-                            if (ov == null || Objects.equals(ov, nv)) return;
-                            this.valueProperty.set(nv);
-                            //
-                            UserPrefs.prefs.setProperty("ui.font.name", nv);
-                            applyFont();
-                        });
-                        this.valueProperty.addListener((obs, ov, nv) -> this.setValue(nv));
-                        return this.valueProperty;
-                    }
-
-                    @Override
-                    public void setValue(String value) {
-                        if (getEditor().getItems().isEmpty()) return;
-                        if (!getEditor().getItems().contains(value))
-                            value = "";
-                        getEditor().getSelectionModel().select(value);
-                    }
-                });
+        final StringProperty valueProperty = new SimpleStringProperty(UserPrefs.prefs.getString("ui.font.name", ""));
+        valueProperty.addListener((o, ov, nv) -> {
+            if (null == ov || Objects.equals(ov, nv)) return;
+            UserPrefs.prefs.setProperty("ui.font.name", nv);
+            applyFont();
+        });
+        return new DefaultOptions<String>("主界面字体", null, "UI", true)
+                .setValues(Font.getFamilies())
+                .setValueProperty(valueProperty);
     }
 
     public Option<Number> optionForFontSize() {
-        return new DefaultOption<>("主界面字号", null, "UI",
-                UserPrefs.prefs.getInt("ui.font.size", 14), true,
-                option -> new OptionEditorBase<Number, ChoiceBox<Number>>(option, new ChoiceBox<>()) {
-                    private IntegerProperty valueProperty;
-
-                    @Override
-                    public Property<Number> valueProperty() {
-                        if (this.valueProperty == null) {
-                            this.valueProperty = new SimpleIntegerProperty();
-                            this.getEditor().getItems().setAll(
-                                    IntStream.iterate(12, v -> v <= 30, v -> v + 2).boxed().collect(Collectors.toList())
-                            );
-                            this.getEditor().getSelectionModel().selectedItemProperty().addListener((obs, ov, nv) -> {
-                                if (ov == null || Objects.equals(ov, nv)) return;
-                                this.valueProperty.set(nv.intValue());
-                                //
-                                UserPrefs.prefs.setProperty("ui.font.size", nv.intValue());
-                                applyFont();
-                            });
-                            this.valueProperty.addListener((obs, ov, nv) -> this.setValue(nv));
-                        }
-                        return this.valueProperty;
-                    }
-
-                    @Override
-                    public void setValue(Number value) {
-                        if (getEditor().getItems().isEmpty()) return;
-                        if (!getEditor().getItems().contains(value.intValue()))
-                            value = 14;
-                        getEditor().getSelectionModel().select(value);
-                    }
-                });
+        final IntegerProperty valueProperty = new SimpleIntegerProperty(UserPrefs.prefs.getInt("ui.font.size", 14));
+        valueProperty.addListener((o, ov, nv) -> {
+            if (null == ov || Objects.equals(ov, nv)) return;
+            UserPrefs.prefs.setProperty("ui.font.size", nv.intValue());
+            applyFont();
+        });
+        return new DefaultOptions<Number>("主界面字号", null, "UI", true)
+                .setValues(IntStream.iterate(12, v -> v <= 30, v -> v + 2).boxed().collect(Collectors.toList()))
+                .setValueProperty(valueProperty);
     }
 
     public Option<Theme> optionForTheme() {
-        return new DefaultOption<>("颜色模式", null, "UI", theme(), true,
-                option -> new OptionEditorBase<Theme, ChoiceBox<Theme>>(option, new ChoiceBox<>()) {
-                    private ObjectProperty<Theme> valueProperty;
-
-                    @Override
-                    public Property<Theme> valueProperty() {
-                        if (this.valueProperty == null) {
-                            this.valueProperty = new SimpleObjectProperty<>();
-                            this.getEditor().getItems().setAll(Theme.values());
-                            this.getEditor().getSelectionModel().selectedItemProperty().addListener((obs, ov, nv) -> {
-                                if (ov == null || Objects.equals(ov, nv)) return;
-                                this.valueProperty.set(nv);
-                                //
-                                applyTheme(nv);
-                                eventBus.fireEvent(new VisualEvent(VisualEvent.SET_THEME, theme));
-                            });
-                            this.valueProperty.addListener((obs, ov, nv) -> this.setValue(nv));
-                        }
-                        return this.valueProperty;
-                    }
-
-                    @Override
-                    public void setValue(Theme value) {
-                        if (getEditor().getItems().isEmpty()) return;
-                        getEditor().setValue(value);
-                    }
-                });
+        final ObjectProperty<Theme> valueProperty = new SimpleObjectProperty<>(theme());
+        valueProperty.addListener((o, ov, nv) -> {
+            if (null == ov || Objects.equals(ov, nv)) return;
+            applyTheme(nv);
+            eventBus.fireEvent(new VisualEvent(VisualEvent.SET_THEME, theme));
+        });
+        return new DefaultOption<Theme>("颜色模式", null, "UI", true)
+                .setValueProperty(valueProperty);
     }
 
     public Option<Swatch> optionForSwatch() {
-        return new DefaultOption<>("颜色", null, "UI", swatch(), true,
-                option -> new OptionEditorBase<Swatch, ChoiceBox<Swatch>>(option, new ChoiceBox<>()) {
-                    private ObjectProperty<Swatch> valueProperty;
-
-                    @Override
-                    public Property<Swatch> valueProperty() {
-                        if (this.valueProperty == null) {
-                            this.valueProperty = new SimpleObjectProperty<>();
-                            this.getEditor().getItems().setAll(Swatch.values());
-                            this.getEditor().getSelectionModel().selectedItemProperty().addListener((obs, ov, nv) -> {
-                                if (ov == null || Objects.equals(ov, nv)) return;
-                                this.valueProperty.set(nv);
-                                //
-                                applySwatch(nv);
-                                eventBus.fireEvent(new VisualEvent(VisualEvent.SET_SWATCH, swatch));
-                            });
-                            this.valueProperty.addListener((obs, ov, nv) -> this.setValue(nv));
-                        }
-                        return this.valueProperty;
-                    }
-
-                    @Override
-                    public void setValue(Swatch value) {
-                        if (getEditor().getItems().isEmpty()) return;
-                        getEditor().setValue(value);
-                    }
-                });
+        final ObjectProperty<Swatch> valueProperty = new SimpleObjectProperty<>(swatch());
+        valueProperty.addListener((o, ov, nv) -> {
+            if (null == ov || Objects.equals(ov, nv)) return;
+            applySwatch(nv);
+            eventBus.fireEvent(new VisualEvent(VisualEvent.SET_SWATCH, swatch));
+        });
+        return new DefaultOption<Swatch>("颜色", null, "UI", true)
+                .setValueProperty(valueProperty);
     }
 
     public Option<String> optionForWebFontName() {
-        return new DefaultOption<>(
-                "阅读器字体", null, "VIEWER", webFontName(), true,
-                option -> new OptionEditorBase<String, ChoiceBox<String>>(option, new ChoiceBox<>()) {
-                    private StringProperty valueProperty;
-
-                    @Override
-                    public Property<String> valueProperty() {
-                        if (this.valueProperty != null) return this.valueProperty;
-                        this.valueProperty = new SimpleStringProperty();
-                        getEditor().getItems().setAll(Font.getFamilies());
-                        this.getEditor().getSelectionModel().selectedItemProperty().addListener((obs, ov, nv) -> {
-                            if (ov == null || Objects.equals(ov, nv)) return;
-                            this.valueProperty.set(nv);
-                            //
-                            UserPrefs.prefs.setProperty("web.font.name", nv);
-                            eventBus.fireEvent(new VisualEvent(VisualEvent.SET_WEB_FONT_NAME, nv));
-                        });
-                        this.valueProperty.addListener((obs, ov, nv) -> this.setValue(nv));
-                        return this.valueProperty;
-                    }
-
-                    @Override
-                    public void setValue(String value) {
-                        if (getEditor().getItems().isEmpty()) return;
-                        if (!getEditor().getItems().contains(value))
-                            value = "";
-                        getEditor().getSelectionModel().select(value);
-                    }
-                });
+        final StringProperty valueProperty = new SimpleStringProperty(webFontName());
+        valueProperty.addListener((o, ov, nv) -> {
+            if (null == ov || Objects.equals(ov, nv)) return;
+            UserPrefs.prefs.setProperty("web.font.name", nv);
+            eventBus.fireEvent(new VisualEvent(VisualEvent.SET_WEB_FONT_NAME, nv));
+        });
+        return new DefaultOptions<String>("阅读器字体", null, "VIEWER", true)
+                .setValues(Font.getFamilies())
+                .setValueProperty(valueProperty);
     }
 
     public Option<Number> optionForWebFontSize() {
-        return new DefaultOption<>(
-                "阅读器字号", null, "VIEWER", webFontSize(), true,
-                option -> new OptionEditorBase<Number, ChoiceBox<Number>>(option, new ChoiceBox<>()) {
-                    private DoubleProperty valueProperty;
-
-                    @Override
-                    public Property<Number> valueProperty() {
-                        if (this.valueProperty == null) {
-                            this.valueProperty = new SimpleDoubleProperty();
-                            this.getEditor().getItems().setAll(
-                                    DoubleStream.iterate(1.3, v -> v <= 3.0,
-                                                    v -> new BigDecimal(v + .1).setScale(1, RoundingMode.HALF_UP).doubleValue())
-                                            .boxed().collect(Collectors.toList())
-                            );
-                            this.getEditor().getSelectionModel().selectedItemProperty().addListener((obs, ov, nv) -> {
-                                if (ov == null || Objects.equals(ov, nv)) return;
-                                this.valueProperty.set(nv.doubleValue());
-                                //
-                                UserPrefs.prefs.setProperty("web.font.size", nv.doubleValue());
-                                eventBus.fireEvent(new VisualEvent(VisualEvent.SET_WEB_FONT_SIZE, nv.doubleValue()));
-                            });
-                            this.valueProperty.addListener((obs, ov, nv) -> this.setValue(nv));
-                        }
-                        return this.valueProperty;
-                    }
-
-                    @Override
-                    public void setValue(Number value) {
-                        if (getEditor().getItems().isEmpty()) return;
-                        if (!getEditor().getItems().contains(value))
-                            value = 1.6;
-                        getEditor().getSelectionModel().select(value);
-                    }
-                });
+        final DoubleProperty valueProperty = new SimpleDoubleProperty(webFontSize());
+        valueProperty.addListener((o, ov, nv) -> {
+            if (null == ov || Objects.equals(ov, nv)) return;
+            UserPrefs.prefs.setProperty("web.font.size", nv.doubleValue());
+            eventBus.fireEvent(new VisualEvent(VisualEvent.SET_WEB_FONT_SIZE, nv.doubleValue()));
+        });
+        return new DefaultOptions<Number>("阅读器字号", null, "VIEWER", true)
+                .setValues(DoubleStream.iterate(1.3, v -> v <= 3.0,
+                                v -> new BigDecimal(v + .1).setScale(1, RoundingMode.HALF_UP).doubleValue())
+                        .boxed().collect(Collectors.toList()))
+                .setValueProperty(valueProperty);
     }
 
     public Option<Color> optionForWebPageColor() {
-        return new DefaultOption<>(
-                "阅读器背景颜色", null, "VIEWER", Color.web(webPageColor()), true,
-                option -> new OptionEditorBase<>(option, new ColorPicker()) {
-                    {
-                        getEditor().valueProperty().addListener((obs, ov, nv) -> {
-                            if (ov == null || Objects.equals(ov, nv)) return;
-                            //
-                            UserPrefs.prefs.setProperty("web.page.color.".concat(theme().name().toLowerCase(Locale.ROOT)),
-                                    "#".concat(nv.toString().substring(2)));
-                            eventBus.fireEvent(new VisualEvent(VisualEvent.SET_WEB_PAGE_COLOR, nv));
-                        });
-                    }
-
-                    @Override
-                    public Property<Color> valueProperty() {
-                        return getEditor().valueProperty();
-                    }
-
-                    @Override
-                    public void setValue(Color value) {
-                        getEditor().setValue(value);
-                    }
-                });
+        final ObjectProperty<Color> valueProperty = new SimpleObjectProperty<>(Color.web(webPageColor()));
+        valueProperty.addListener((o, ov, nv) -> {
+            if (null == ov || Objects.equals(ov, nv)) return;
+            UserPrefs.prefs.setProperty("web.page.color.".concat(theme().name().toLowerCase(Locale.ROOT)), "#".concat(nv.toString().substring(2)));
+            eventBus.fireEvent(new VisualEvent(VisualEvent.SET_WEB_PAGE_COLOR, nv));
+        });
+        return new DefaultOption<Color>("阅读器背景颜色", null, "VIEWER", true)
+                .setValueProperty(valueProperty);
     }
 
     public Option<Color> optionForWebTextColor() {
-        return new DefaultOption<>(
-                "阅读器文字颜色", null, "VIEWER", Color.web(webTextColor()), true,
-                option -> new OptionEditorBase<>(option, new ColorPicker()) {
-                    {
-                        getEditor().valueProperty().addListener((obs, ov, nv) -> {
-                            if (ov == null || Objects.equals(ov, nv)) return;
-                            //
-                            UserPrefs.prefs.setProperty("web.text.color.".concat(theme().name().toLowerCase(Locale.ROOT)),
-                                    "#".concat(nv.toString().substring(2)));
-                            eventBus.fireEvent(new VisualEvent(VisualEvent.SET_WEB_TEXT_COLOR, nv));
-                        });
-                    }
-
-                    @Override
-                    public Property<Color> valueProperty() {
-                        return getEditor().valueProperty();
-                    }
-
-                    @Override
-                    public void setValue(Color value) {
-                        getEditor().setValue(value);
-                    }
-                });
+        final ObjectProperty<Color> valueProperty = new SimpleObjectProperty<>(Color.web(webTextColor()));
+        valueProperty.addListener((o, ov, nv) -> {
+            if (null == ov || Objects.equals(ov, nv)) return;
+            UserPrefs.prefs.setProperty("web.text.color.".concat(theme().name().toLowerCase(Locale.ROOT)), "#".concat(nv.toString().substring(2)));
+            eventBus.fireEvent(new VisualEvent(VisualEvent.SET_WEB_TEXT_COLOR, nv));
+        });
+        return new DefaultOption<Color>("阅读器文字颜色", null, "VIEWER", true)
+                .setValueProperty(valueProperty);
     }
 
 }

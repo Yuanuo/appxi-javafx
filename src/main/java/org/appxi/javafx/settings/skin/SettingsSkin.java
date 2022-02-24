@@ -189,7 +189,6 @@ public class SettingsSkin extends SkinBase<SettingsPane> {
                                 grRight.getStyleClass().add("secondary-graphic");
                                 rowOption.getChildren().add(grRight);
                             }
-                        } else if (!option.getChildren().isEmpty()) {
                         } else {
                             System.out.println("Error, no rendering options for: " + option.getCaption());
                         }

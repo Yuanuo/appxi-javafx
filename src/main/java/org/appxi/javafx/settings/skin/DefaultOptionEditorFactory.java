@@ -6,8 +6,8 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ColorPicker;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
@@ -16,6 +16,7 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.util.Callback;
+import org.appxi.javafx.settings.DefaultOptions;
 import org.appxi.javafx.settings.Option;
 import org.appxi.javafx.settings.OptionEditor;
 import org.appxi.javafx.settings.OptionEditorBase;
@@ -37,38 +38,43 @@ public class DefaultOptionEditorFactory<T> implements Callback<Option<T>, Option
     public DefaultOptionEditorFactory() {
     }
 
+    /**
+     * @noinspection rawtypes, unchecked
+     */
     public OptionEditor<T> call(Option<T> option) {
         if (option.valueProperty().getValue() == null) {
             return null;
+        } else if (option instanceof DefaultOptions options) {
+            return createChoiceBoxEditor(option, options.getValues());
         } else {
             Class<?> type = option.valueProperty().getValue().getClass();
             if (option.editorFactoryProperty().isPresent()) {
                 return (OptionEditor) ((Function) option.editorFactoryProperty().get()).apply(option);
             } else if (type == String.class) {
-                return (OptionEditor<T>) createTextEditor(option);
+                return (OptionEditor<T>) createTextEditor((Option<String>) option);
             } else if (isNumber(type)) {
-                return (OptionEditor<T>) createNumberEditor(option);
+                return (OptionEditor<T>) createNumberEditor((Option<Number>) option);
             } else if (type != Boolean.TYPE && type != Boolean.class) {
                 if (type == LocalDate.class) {
-                    return (OptionEditor<T>) createDateEditor(option);
+                    return (OptionEditor<T>) createDateEditor((Option<LocalDate>) option);
                 } else if (type != Color.class && type != Paint.class) {
                     if (type != null && type.isEnum()) {
-                        return (OptionEditor<T>) createComboBoxEditor(option, Arrays.asList(type.getEnumConstants()));
+                        return createChoiceBoxEditor((Option) option, Arrays.asList(type.getEnumConstants()));
                     } else {
                         System.err.println("type " + type + ": No editor found for " + option.getCaption());
                         return null;
                     }
                 } else {
-                    return (OptionEditor<T>) createColorEditor(option);
+                    return (OptionEditor<T>) createColorEditor((Option<Color>) option);
                 }
             } else {
-                return (OptionEditor<T>) createSwitchEditor(option);
+                return (OptionEditor<T>) createSwitchEditor((Option<Boolean>) option);
             }
         }
     }
 
-    public static OptionEditor<String> createTextEditor(Option option) {
-        return new OptionEditorBase<String, TextField>(option, new TextField()) {
+    public static OptionEditor<String> createTextEditor(Option<String> option) {
+        return new OptionEditorBase<>(option, new TextField()) {
             {
                 DefaultOptionEditorFactory.enableAutoSelectAll(this.getEditor());
             }
@@ -83,11 +89,11 @@ public class DefaultOptionEditorFactory<T> implements Callback<Option<T>, Option
         };
     }
 
-    public static OptionEditor<Number> createNumberEditor(final Option option) {
-        return new OptionEditorBase<Number, TextField>(option, new TextField()) {
+    public static OptionEditor<Number> createNumberEditor(final Option<Number> option) {
+        return new OptionEditorBase<>(option, new TextField()) {
             private ObjectProperty<Number> innerValueProperty;
-            private Class<? extends Number> cls = (Class<? extends Number>) option.valueProperty().getValue().getClass();
-            private DecimalFormat format;
+            private final Class<? extends Number> cls = option.valueProperty().getValue().getClass();
+            private final DecimalFormat format;
             private boolean editing = false;
 
             {
@@ -144,7 +150,7 @@ public class DefaultOptionEditorFactory<T> implements Callback<Option<T>, Option
 
             public ObjectProperty<Number> valueProperty() {
                 if (this.innerValueProperty == null) {
-                    this.innerValueProperty = new SimpleObjectProperty();
+                    this.innerValueProperty = new SimpleObjectProperty<>();
                     this.innerValueProperty.addListener((obs, ov, nv) -> {
                         if (nv != null && this.format != null && !this.editing) {
                             this.setValue(nv);
@@ -166,8 +172,8 @@ public class DefaultOptionEditorFactory<T> implements Callback<Option<T>, Option
         };
     }
 
-    public static OptionEditor<Boolean> createSwitchEditor(Option option) {
-        return new OptionEditorBase<Boolean, ToggleButton>(option, new ToggleButton()) {
+    public static OptionEditor<Boolean> createSwitchEditor(Option<Boolean> option) {
+        return new OptionEditorBase<>(option, new ToggleButton()) {
             {
                 this.getEditor().getStyleClass().add("switch");
             }
@@ -182,24 +188,19 @@ public class DefaultOptionEditorFactory<T> implements Callback<Option<T>, Option
         };
     }
 
-    public static <T> OptionEditor<T> createComboBoxEditor(Option option, final Collection<T> items) {
-        return new OptionEditorBase<T, ComboBox<T>>(option, new ComboBox<>()) {
+    public static <T> OptionEditor<T> createChoiceBoxEditor(Option<T> option, final Collection<T> items) {
+        return new OptionEditorBase<T, ChoiceBox<T>>(option, new ChoiceBox<>()) {
             private ObjectProperty<T> selectedItemProperty;
 
             {
                 this.getEditor().setItems(FXCollections.observableArrayList(items));
-                this.getEditor().setEditable(false);
             }
 
             public ObjectProperty<T> valueProperty() {
                 if (this.selectedItemProperty == null) {
                     this.selectedItemProperty = new SimpleObjectProperty<>();
-                    this.getEditor().getSelectionModel().selectedItemProperty().addListener((obs, ov, nv) -> {
-                        this.selectedItemProperty.set((T) nv);
-                    });
-                    this.selectedItemProperty.addListener((obs, ov, nv) -> {
-                        this.setValue(nv);
-                    });
+                    this.getEditor().getSelectionModel().selectedItemProperty().addListener((obs, ov, nv) -> this.selectedItemProperty.set(nv));
+                    this.selectedItemProperty.addListener((obs, ov, nv) -> this.setValue(nv));
                 }
 
                 return this.selectedItemProperty;
@@ -211,8 +212,8 @@ public class DefaultOptionEditorFactory<T> implements Callback<Option<T>, Option
         };
     }
 
-    public static OptionEditor<Color> createColorEditor(Option option) {
-        return new OptionEditorBase<Color, ColorPicker>(option, new ColorPicker()) {
+    public static OptionEditor<Color> createColorEditor(Option<Color> option) {
+        return new OptionEditorBase<>(option, new ColorPicker()) {
             public ObjectProperty<Color> valueProperty() {
                 return this.getEditor().valueProperty();
             }
@@ -223,8 +224,8 @@ public class DefaultOptionEditorFactory<T> implements Callback<Option<T>, Option
         };
     }
 
-    public static OptionEditor<LocalDate> createDateEditor(Option option) {
-        return new OptionEditorBase<LocalDate, DatePicker>(option, new DatePicker()) {
+    public static OptionEditor<LocalDate> createDateEditor(Option<LocalDate> option) {
+        return new OptionEditorBase<>(option, new DatePicker()) {
             public ObjectProperty<LocalDate> valueProperty() {
                 return this.getEditor().valueProperty();
             }
@@ -247,12 +248,8 @@ public class DefaultOptionEditorFactory<T> implements Callback<Option<T>, Option
         if (type == null) {
             return false;
         } else {
-            Class[] var1 = numericTypes;
-            int var2 = var1.length;
-
-            for (int var3 = 0; var3 < var2; ++var3) {
-                Class<?> cls = var1[var3];
-                if (type == cls) {
+            for (int i = 0; i < numericTypes.length; ++i) {
+                if (type == ((Class<?>[]) numericTypes)[i]) {
                     return true;
                 }
             }

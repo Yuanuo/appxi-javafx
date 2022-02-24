@@ -4,8 +4,6 @@ import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.util.StringConverter;
@@ -22,7 +20,6 @@ public abstract class OptionBase<T> implements Option<T> {
     protected boolean isEditable;
     protected Function<Option<T>, OptionEditor<T>> editorFactory;
     protected String extendedDescription;
-    protected ObservableList<Option> children;
     protected StringConverter<T> stringConverter;
     protected Orientation layout;
     private final StringProperty id;
@@ -60,7 +57,6 @@ public abstract class OptionBase<T> implements Option<T> {
         this.value = value;
         this.isEditable = isEditable;
         this.editorFactory = editorFactory;
-        this.children = FXCollections.observableArrayList();
         this.layout = Orientation.HORIZONTAL;
     }
 
@@ -98,11 +94,7 @@ public abstract class OptionBase<T> implements Option<T> {
         return this.isEditable;
     }
 
-    public ObservableList<Option> getChildren() {
-        return this.children;
-    }
-
-    public void setStringConverter(StringConverter value) {
+    public void setStringConverter(StringConverter<T> value) {
         this.stringConverter = value;
     }
 
@@ -111,7 +103,7 @@ public abstract class OptionBase<T> implements Option<T> {
     }
 
     public static <T> Property<T> valueProperty(T value) {
-        return new ReadOnlyObjectWrapper(value);
+        return new ReadOnlyObjectWrapper<>(value);
     }
 
     public Orientation getLayout() {

@@ -1,7 +1,6 @@
 package org.appxi.javafx.settings;
 
 import javafx.beans.property.Property;
-import javafx.collections.ObservableList;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.util.StringConverter;
@@ -27,8 +26,6 @@ public interface Option<T> {
     boolean isEditable();
 
     Optional<Function<Option<T>, OptionEditor<T>>> editorFactoryProperty();
-
-    ObservableList<Option> getChildren();
 
     Optional<StringConverter<T>> getStringConverter();
 
