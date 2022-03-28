@@ -13,32 +13,40 @@ import java.util.Map;
 import java.util.Random;
 
 public enum Swatch {
-    BLUE,
-    CYAN,
-    DEEP_ORANGE,
-    DEEP_PURPLE,
-    GREEN,
-    INDIGO,
-    LIGHT_BLUE,
-    PINK,
-    PURPLE,
-    RED,
-    TEAL,
-    LIGHT_GREEN,
-    LIME,
-    YELLOW,
-    AMBER,
-    ORANGE,
-    BROWN,
-    GREY,
-    BLUE_GREY;
+    BLUE("蓝色"),
+    CYAN("青色"),
+    DEEP_ORANGE("深橙色"),
+    DEEP_PURPLE("深紫色"),
+    GREEN("绿色"),
+    INDIGO("靛青色"),
+    LIGHT_BLUE("浅蓝色"),
+    PINK("粉色"),
+    PURPLE("紫色"),
+    RED("红色"),
+    TEAL("青色"),
+    LIGHT_GREEN("浅绿色"),
+    LIME("酸橙色"),
+    YELLOW("黄色"),
+    AMBER("琥珀色"),
+    ORANGE("橘色"),
+    BROWN("棕色"),
+    GREY("灰色"),
+    BLUE_GREY("蓝灰色");
 
     private static final Random RANDOM = new Random();
     private static final String PREFIX = "swatch_";
     private final String stylesheetName = StylesheetTools.buildResourceName(PREFIX, this.name());
     private Map<String, Color> colors = null;
 
-    Swatch() {
+    public final String title;
+
+    Swatch(String title) {
+        this.title = title;
+    }
+
+    @Override
+    public String toString() {
+        return this.title;
     }
 
     public void assignTo(Scene scene) {
