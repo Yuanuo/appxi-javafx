@@ -8,6 +8,7 @@ module appxi.javafx {
 
     exports org.appxi.javafx.app;
     exports org.appxi.javafx.control;
+    exports org.appxi.javafx.control.skin;
     exports org.appxi.javafx.event;
     exports org.appxi.javafx.helper;
     exports org.appxi.javafx.settings;

@@ -208,7 +208,7 @@
 }
 
 .toggle-button.switch {
-	/* -fx-skin: "com.gluonhq.impl.charm.glisten.control.skin.GlistenSwitchSkin"; */
+	-fx-skin: "org.appxi.javafx.control.skin.ToggleSwitchSkin";
 	-fx-effect: null;
 	-fx-text-fill: null;
 	-fx-background-color: transparent;
