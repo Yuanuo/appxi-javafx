@@ -18,12 +18,16 @@ import org.appxi.javafx.settings.DefaultOptions;
 import org.appxi.javafx.settings.Option;
 import org.appxi.prefs.UserPrefs;
 import org.appxi.util.FileHelper;
+import org.appxi.util.ext.RawVal;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
@@ -199,15 +203,21 @@ public final class VisualProvider {
                 .setValueProperty(valueProperty);
     }
 
-    public Option<String> optionForFontName() {
-        final StringProperty valueProperty = new SimpleStringProperty(UserPrefs.prefs.getString("ui.font.name", ""));
+    public Option<RawVal<String>> optionForFontName() {
+        final List<RawVal<String>> fontFamilies = getFontFamilies();
+
+        final ObjectProperty<RawVal<String>> valueProperty = new SimpleObjectProperty<>();
+        final String usedVal = UserPrefs.prefs.getString("ui.font.name", "");
+        fontFamilies.stream().filter(v -> usedVal.equalsIgnoreCase(v.value())).findFirst().ifPresent(valueProperty::set);
+        if (null == valueProperty.get()) valueProperty.set(new RawVal<>(usedVal, usedVal));
+
         valueProperty.addListener((o, ov, nv) -> {
             if (null == ov || Objects.equals(ov, nv)) return;
-            UserPrefs.prefs.setProperty("ui.font.name", nv);
+            UserPrefs.prefs.setProperty("ui.font.name", nv.value());
             applyFont();
         });
-        return new DefaultOptions<String>("主界面字体", null, "UI", true)
-                .setValues(Font.getFamilies())
+        return new DefaultOptions<RawVal<String>>("主界面字体", null, "UI", true)
+                .setValues(fontFamilies)
                 .setValueProperty(valueProperty);
     }
 
@@ -245,15 +255,21 @@ public final class VisualProvider {
                 .setValueProperty(valueProperty);
     }
 
-    public Option<String> optionForWebFontName() {
-        final StringProperty valueProperty = new SimpleStringProperty(webFontName());
+    public Option<RawVal<String>> optionForWebFontName() {
+        final List<RawVal<String>> fontFamilies = getFontFamilies();
+
+        final ObjectProperty<RawVal<String>> valueProperty = new SimpleObjectProperty<>();
+        final String usedVal = webFontName();
+        fontFamilies.stream().filter(v -> usedVal.equalsIgnoreCase(v.value())).findFirst().ifPresent(valueProperty::set);
+        if (null == valueProperty.get()) valueProperty.set(new RawVal<>(usedVal, usedVal));
+
         valueProperty.addListener((o, ov, nv) -> {
             if (null == ov || Objects.equals(ov, nv)) return;
-            UserPrefs.prefs.setProperty("web.font.name", nv);
-            eventBus.fireEvent(new VisualEvent(VisualEvent.SET_WEB_FONT_NAME, nv));
+            UserPrefs.prefs.setProperty("web.font.name", nv.value());
+            eventBus.fireEvent(new VisualEvent(VisualEvent.SET_WEB_FONT_NAME, nv.value()));
         });
-        return new DefaultOptions<String>("阅读器字体", null, "VIEWER", true)
-                .setValues(Font.getFamilies())
+        return new DefaultOptions<RawVal<String>>("阅读器字体", null, "VIEWER", true)
+                .setValues(fontFamilies)
                 .setValueProperty(valueProperty);
     }
 
@@ -293,4 +309,18 @@ public final class VisualProvider {
                 .setValueProperty(valueProperty);
     }
 
+    static List<RawVal<String>> getFontFamilies() {
+        final List<RawVal<String>> result = new ArrayList<>(64);
+
+        try {
+            Font.getFamilies().forEach(family ->
+                    Optional.ofNullable(com.sun.javafx.font.PrismFontFactory.getFontFactory().getFontResource(family, null, false))
+                            .map(com.sun.javafx.font.FontResource::getLocaleFamilyName)
+                            .ifPresent(name -> result.add(new RawVal<>(family, family.equals(name) ? family : family + " (" + name + ")"))));
+        } catch (Throwable e) {
+            Font.getFamilies().forEach(family -> result.add(new RawVal<>(family, family)));
+        }
+
+        return result;
+    }
 }
