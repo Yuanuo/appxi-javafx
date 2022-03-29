@@ -27,7 +27,6 @@ import org.appxi.javafx.settings.SettingsPane;
 import org.appxi.javafx.visual.MaterialIcon;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -37,7 +36,6 @@ public class SettingsSkin extends SkinBase<SettingsPane> {
     private final BorderPane content;
     private final ScrollPane scroller;
     private final ToolBar toolbar;
-    private int level = 0;
 
     public SettingsSkin(SettingsPane control) {
         super(control);
@@ -80,26 +78,20 @@ public class SettingsSkin extends SkinBase<SettingsPane> {
     private VBox buildSettingsContainer(ObservableList<Option> options) {
         String search = this.getSkinnable().getTitleFilter().toLowerCase(Locale.ROOT);
         FilteredList<Option> filteredOptions = new FilteredList<>(options);
-        filteredOptions.setPredicate((optionx) -> {
-            return search.isEmpty() || optionx.getCaption() != null && optionx.getCaption().toLowerCase(Locale.ROOT).contains(search) || optionx.getDescription() != null && optionx.getDescription().toLowerCase(Locale.ROOT).contains(search);
-        });
+        filteredOptions.setPredicate(v -> search.isEmpty()
+                || v.getCaption() != null && v.getCaption().toLowerCase(Locale.ROOT).contains(search)
+                || v.getDescription() != null && v.getDescription().toLowerCase(Locale.ROOT).contains(search));
         boolean graphic = false;
         Map<String, List<OptionBase>> categoryMap = new TreeMap<>();
 
         for (Option o : filteredOptions) {
-            if (o instanceof OptionBase) {
+            if (o instanceof OptionBase optionBase) {
                 String category = o.getCategory();
                 if (category == null) {
-                    category = "";
+                    category = "General";
                 }
 
-                List<OptionBase> list = categoryMap.get(category);
-                if (list == null) {
-                    list = new ArrayList();
-                    categoryMap.put(category, list);
-                }
-
-                list.add((OptionBase) o);
+                categoryMap.computeIfAbsent(category, k -> new ArrayList<>()).add(optionBase);
                 if (!graphic && o.getGraphic().isPresent()) {
                     graphic = true;
                 }
@@ -108,107 +100,98 @@ public class SettingsSkin extends SkinBase<SettingsPane> {
 
         VBox grid = new VBox();
         grid.getStyleClass().add("options-grid");
-        Iterator<Option> var19 = filteredOptions.iterator();
 
-        while (true) {
-            while (var19.hasNext()) {
-                Option option = var19.next();
-                String category = option.getCategory() == null ? "" : option.getCategory();
-                List<OptionBase> list = categoryMap.get(category);
-                HBox hBox;
-                if (list.size() > 0 && list.get(0).equals(option) && !category.isEmpty()) {
-                    hBox = new HBox(new Label(category));
-                    hBox.getStyleClass().add("subheader");
-                    hBox.setAlignment(Pos.CENTER_LEFT);
-                    grid.getChildren().add(hBox);
+        for (String category : categoryMap.keySet()) {
+            HBox categoryBox = new HBox(new Label(category));
+            categoryBox.getStyleClass().add("subheader");
+            categoryBox.setAlignment(Pos.CENTER_LEFT);
+            grid.getChildren().add(categoryBox);
+
+            for (Option option : categoryMap.get(category)) {
+                if (option.getCaption().equals("Separator")) {
+                    HBox separatorBox = new HBox();
+                    separatorBox.getStyleClass().add("separator");
+                    grid.getChildren().add(separatorBox);
+                    continue;
+                }
+                boolean hLayout = true;
+                Node editor = this.getEditor(option);
+                if (editor != null) {
+                    if (!(editor instanceof Slider) && !Orientation.VERTICAL.equals(option.getLayout())) {
+                        editor.getStyleClass().add("editor");
+                    } else {
+                        hLayout = false;
+                        editor.getStyleClass().add("editor-large");
+                    }
                 }
 
-                if (option.getCaption().equals("Separator")) {
-                    hBox = new HBox();
-                    hBox.getStyleClass().add("separator");
-                    grid.getChildren().add(hBox);
-                } else {
-                    boolean hLayout = true;
-                    Node editor = this.getEditor(option);
-                    if (editor != null) {
-                        if (!(editor instanceof Slider) && !Orientation.VERTICAL.equals(option.getLayout())) {
-                            editor.getStyleClass().add("editor");
-                        } else {
-                            hLayout = false;
-                            editor.getStyleClass().add("editor-large");
-                        }
-                    }
+                HBox rowOption = new HBox();
+                rowOption.getStyleClass().add("option-row");
+                if (option.getGraphic().isPresent()) {
+                    HBox grLeft = new HBox();
+                    grLeft.setAlignment(Pos.CENTER_LEFT);
+                    grLeft.getStyleClass().add("primary-graphic");
+                    grLeft.getChildren().add((Node) option.getGraphic().get());
+                    rowOption.getChildren().add(grLeft);
+                    HBox.setHgrow(grLeft, Priority.NEVER);
+                }
 
-                    HBox rowOption = new HBox();
-                    rowOption.getStyleClass().add("option-row");
-                    if (option.getGraphic().isPresent()) {
-                        HBox grLeft = new HBox();
-                        grLeft.setAlignment(Pos.CENTER_LEFT);
-                        grLeft.getStyleClass().add("primary-graphic");
-                        grLeft.getChildren().add((Node) option.getGraphic().get());
-                        rowOption.getChildren().add(grLeft);
-                        HBox.setHgrow(grLeft, Priority.NEVER);
-                    }
-
-                    if (hLayout) {
-                        Label title = new Label(option.getCaption());
-                        title.getStyleClass().add("primary-text");
-                        Label subtitle = new Label();
-                        subtitle.getStyleClass().add("secondary-text");
-                        subtitle.setAlignment(Pos.TOP_LEFT);
-                        VBox.setVgrow(title, Priority.ALWAYS);
-                        VBox textBox = new VBox(title, subtitle);
-                        textBox.getStyleClass().setAll("text-box");
-                        textBox.setAlignment(Pos.CENTER_LEFT);
-                        HBox.setHgrow(textBox, Priority.ALWAYS);
-                        rowOption.getChildren().add(textBox);
-                        if (option.getExtendedDescription().isEmpty()) {
-                            if (null != option.getDescription()) {
-                                subtitle.setText(option.getDescription());
-                                Tooltip.install(textBox, new Tooltip(option.getDescription()));
-                            } else {
-                                textBox.getChildren().remove(subtitle);
-                            }
+                if (hLayout) {
+                    Label title = new Label(option.getCaption());
+                    title.getStyleClass().add("primary-text");
+                    Label subtitle = new Label();
+                    subtitle.getStyleClass().add("secondary-text");
+                    subtitle.setAlignment(Pos.TOP_LEFT);
+                    VBox.setVgrow(title, Priority.ALWAYS);
+                    VBox textBox = new VBox(title, subtitle);
+                    textBox.getStyleClass().setAll("text-box");
+                    textBox.setAlignment(Pos.CENTER_LEFT);
+                    HBox.setHgrow(textBox, Priority.ALWAYS);
+                    rowOption.getChildren().add(textBox);
+                    if (option.getExtendedDescription().isEmpty()) {
+                        if (null != option.getDescription()) {
+                            subtitle.setText(option.getDescription());
+                            Tooltip.install(textBox, new Tooltip(option.getDescription()));
                         } else {
-                            subtitle.textProperty().bind(Bindings.createStringBinding(() -> {
-                                if (option.getStringConverter().isPresent()) {
-                                    StringConverter<Object> converter = (StringConverter) option.getStringConverter().get();
-                                    return converter.toString(option.valueProperty().getValue());
-                                } else {
-                                    return option.valueProperty().getValue().toString();
-                                }
-                            }, option.valueProperty()));
-                            Tooltip.install(textBox, new Tooltip("Click to find a more extensive description about " + option.getCaption()));
-                        }
-
-                        if (editor != null) {
-                            if (option.getExtendedDescription().isEmpty()) {
-                                HBox grRight = new HBox(editor);
-                                grRight.setAlignment(Pos.CENTER);
-                                HBox.setHgrow(grRight, Priority.NEVER);
-                                grRight.getStyleClass().add("secondary-graphic");
-                                rowOption.getChildren().add(grRight);
-                            }
-                        } else {
-                            System.out.println("Error, no rendering options for: " + option.getCaption());
+                            textBox.getChildren().remove(subtitle);
                         }
                     } else {
-                        Label title = new Label(option.getCaption());
-                        title.getStyleClass().add("primary-text");
-                        VBox grRight = new VBox(title, editor);
-                        grRight.setAlignment(Pos.CENTER_LEFT);
-                        HBox.setHgrow(grRight, Priority.ALWAYS);
-                        grRight.getStyleClass().addAll("text-box", "secondary-graphic");
-                        rowOption.getChildren().add(grRight);
+                        subtitle.textProperty().bind(Bindings.createStringBinding(() -> {
+                            if (option.getStringConverter().isPresent()) {
+                                StringConverter<Object> converter = (StringConverter) option.getStringConverter().get();
+                                return converter.toString(option.valueProperty().getValue());
+                            } else {
+                                return option.valueProperty().getValue().toString();
+                            }
+                        }, option.valueProperty()));
+                        Tooltip.install(textBox, new Tooltip("Click to find a more extensive description about " + option.getCaption()));
                     }
 
-                    grid.getChildren().add(rowOption);
+                    if (editor != null) {
+                        if (option.getExtendedDescription().isEmpty()) {
+                            HBox grRight = new HBox(editor);
+                            grRight.setAlignment(Pos.CENTER);
+                            HBox.setHgrow(grRight, Priority.NEVER);
+                            grRight.getStyleClass().add("secondary-graphic");
+                            rowOption.getChildren().add(grRight);
+                        }
+                    } else {
+                        System.out.println("Error, no rendering options for: " + option.getCaption());
+                    }
+                } else {
+                    Label title = new Label(option.getCaption());
+                    title.getStyleClass().add("primary-text");
+                    VBox grRight = new VBox(title, editor);
+                    grRight.setAlignment(Pos.CENTER_LEFT);
+                    HBox.setHgrow(grRight, Priority.ALWAYS);
+                    grRight.getStyleClass().addAll("text-box", "secondary-graphic");
+                    rowOption.getChildren().add(grRight);
                 }
-            }
 
-            ++this.level;
-            return grid;
+                grid.getChildren().add(rowOption);
+            }
         }
+        return grid;
     }
 
     private Node getEditor(Option option) {
@@ -244,83 +227,4 @@ public class SettingsSkin extends SkinBase<SettingsPane> {
             return null;
         }
     }
-
-//    private View getGroupView(final String caption, VBox vBox) {
-//        BorderPane pane = new BorderPane();
-//        pane.getStyleClass().add("settings-pane");
-//        final Button btnBack = MaterialIcon.ARROW_BACK.button((e) -> {
-//            AppManager.getInstance().switchToPreviousView();
-//        });
-//        final Button btnSearch = MaterialIcon.SEARCH.button();
-//        pane.setCenter(vBox);
-//        View view = new View(pane) {
-//            protected void updateAppBar(AppBar appBar) {
-//                appBar.setNavIcon(btnBack);
-//                appBar.setTitleText(caption);
-//                appBar.getActionItems().add(btnSearch);
-//            }
-//        };
-//        return view;
-//    }
-
-//    private View getExtendedView(final Option option) {
-//        BorderPane pane = new BorderPane();
-//        pane.getStyleClass().add("settings-pane");
-//        final Button btnBack = MaterialIcon.ARROW_BACK.button((e) -> {
-//            AppManager.getInstance().switchToPreviousView();
-//        });
-//        final Button btnSearch = MaterialIcon.SEARCH.button();
-//        HBox top = new HBox();
-//        top.setAlignment(Pos.CENTER);
-//        top.getStyleClass().add("extended-top");
-//        Node editor = this.getEditor(option);
-//        editor.getStyleClass().add("editor");
-//        Label label = new Label();
-//        label.textProperty().bind(Bindings.createStringBinding(() -> {
-//            if (option.getStringConverter().isPresent()) {
-//                StringConverter<Object> converter = (StringConverter) option.getStringConverter().get();
-//                return converter.toString(option.valueProperty().getValue());
-//            } else {
-//                return option.valueProperty().getValue().toString();
-//            }
-//        }, option.valueProperty()));
-//        Region spacer2 = new Region();
-//        HBox.setHgrow(spacer2, Priority.ALWAYS);
-//        top.getChildren().addAll(label, spacer2, editor);
-//        BorderPane paneContent = new BorderPane();
-//        paneContent.getStyleClass().add("extended-pane");
-//        paneContent.setTop(top);
-//        Text text = new Text();
-//        if (option.getExtendedDescription().isPresent()) {
-//            text.setText((String) option.getExtendedDescription().get());
-//        }
-//
-//        text.getStyleClass().add("extended-text");
-//        TextFlow textFlow = new TextFlow(text) {
-//            protected void layoutChildren() {
-//                super.layoutChildren();
-//                double maxChildHeight = 0.0D;
-//
-//                Node child;
-//                for (Iterator var3 = this.getManagedChildren().iterator(); var3.hasNext(); maxChildHeight = Math.max(maxChildHeight, child.getLayoutBounds().getHeight())) {
-//                    child = (Node) var3.next();
-//                }
-//
-//                this.setMaxHeight(maxChildHeight + this.getInsets().getTop() + this.getInsets().getBottom());
-//            }
-//        };
-//        HBox hBox = new HBox(textFlow);
-//        hBox.setAlignment(Pos.CENTER);
-//        hBox.getStyleClass().add("extended-center");
-//        paneContent.setCenter(hBox);
-//        pane.setCenter(paneContent);
-//        View view = new View(pane) {
-//            protected void updateAppBar(AppBar appBar) {
-//                appBar.setNavIcon(btnBack);
-//                appBar.setTitleText(option.getCaption());
-//                appBar.getActionItems().add(btnSearch);
-//            }
-//        };
-//        return view;
-//    }
 }

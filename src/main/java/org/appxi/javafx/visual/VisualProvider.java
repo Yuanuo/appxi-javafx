@@ -16,6 +16,7 @@ import org.appxi.javafx.event.EventBus;
 import org.appxi.javafx.settings.DefaultOption;
 import org.appxi.javafx.settings.DefaultOptions;
 import org.appxi.javafx.settings.Option;
+import org.appxi.javafx.settings.SettingsList;
 import org.appxi.prefs.UserPrefs;
 import org.appxi.util.FileHelper;
 import org.appxi.util.ext.RawVal;
@@ -44,6 +45,16 @@ public final class VisualProvider {
     public VisualProvider(EventBus eventBus, Supplier<Scene> primarySceneSupplier) {
         this.eventBus = eventBus;
         this.primarySceneSupplier = primarySceneSupplier;
+        //
+        SettingsList.add(this::optionForFontSmooth);
+        SettingsList.add(this::optionForFontName);
+        SettingsList.add(this::optionForFontSize);
+        SettingsList.add(this::optionForTheme);
+        SettingsList.add(this::optionForSwatch);
+        SettingsList.add(this::optionForWebFontName);
+        SettingsList.add(this::optionForWebFontSize);
+        SettingsList.add(this::optionForWebPageColor);
+        SettingsList.add(this::optionForWebTextColor);
     }
 
     public Visual visual() {
@@ -191,7 +202,7 @@ public final class VisualProvider {
         else primaryScene.getStylesheets().add(css);
     }
 
-    public Option<String> optionForFontSmooth() {
+    private Option<String> optionForFontSmooth() {
         final StringProperty valueProperty = new SimpleStringProperty(UserPrefs.prefs.getString("ui.font.smooth", "gray"));
         valueProperty.addListener((o, ov, nv) -> {
             if (null == ov || Objects.equals(ov, nv)) return;
@@ -203,7 +214,7 @@ public final class VisualProvider {
                 .setValueProperty(valueProperty);
     }
 
-    public Option<RawVal<String>> optionForFontName() {
+    private Option<RawVal<String>> optionForFontName() {
         final List<RawVal<String>> fontFamilies = getFontFamilies();
 
         final ObjectProperty<RawVal<String>> valueProperty = new SimpleObjectProperty<>();
@@ -221,7 +232,7 @@ public final class VisualProvider {
                 .setValueProperty(valueProperty);
     }
 
-    public Option<Number> optionForFontSize() {
+    private Option<Number> optionForFontSize() {
         final IntegerProperty valueProperty = new SimpleIntegerProperty(UserPrefs.prefs.getInt("ui.font.size", 14));
         valueProperty.addListener((o, ov, nv) -> {
             if (null == ov || Objects.equals(ov, nv)) return;
@@ -233,18 +244,18 @@ public final class VisualProvider {
                 .setValueProperty(valueProperty);
     }
 
-    public Option<Theme> optionForTheme() {
+    private Option<Theme> optionForTheme() {
         final ObjectProperty<Theme> valueProperty = new SimpleObjectProperty<>(theme());
         valueProperty.addListener((o, ov, nv) -> {
             if (null == ov || Objects.equals(ov, nv)) return;
             applyTheme(nv);
             eventBus.fireEvent(new VisualEvent(VisualEvent.SET_THEME, theme));
         });
-        return new DefaultOption<Theme>("颜色模式", null, "UI", true)
+        return new DefaultOption<Theme>("明暗模式", null, "UI", true)
                 .setValueProperty(valueProperty);
     }
 
-    public Option<Swatch> optionForSwatch() {
+    private Option<Swatch> optionForSwatch() {
         final ObjectProperty<Swatch> valueProperty = new SimpleObjectProperty<>(swatch());
         valueProperty.addListener((o, ov, nv) -> {
             if (null == ov || Objects.equals(ov, nv)) return;
@@ -255,7 +266,7 @@ public final class VisualProvider {
                 .setValueProperty(valueProperty);
     }
 
-    public Option<RawVal<String>> optionForWebFontName() {
+    private Option<RawVal<String>> optionForWebFontName() {
         final List<RawVal<String>> fontFamilies = getFontFamilies();
 
         final ObjectProperty<RawVal<String>> valueProperty = new SimpleObjectProperty<>();
@@ -273,7 +284,7 @@ public final class VisualProvider {
                 .setValueProperty(valueProperty);
     }
 
-    public Option<Number> optionForWebFontSize() {
+    private Option<Number> optionForWebFontSize() {
         final DoubleProperty valueProperty = new SimpleDoubleProperty(webFontSize());
         valueProperty.addListener((o, ov, nv) -> {
             if (null == ov || Objects.equals(ov, nv)) return;
@@ -287,7 +298,7 @@ public final class VisualProvider {
                 .setValueProperty(valueProperty);
     }
 
-    public Option<Color> optionForWebPageColor() {
+    private Option<Color> optionForWebPageColor() {
         final ObjectProperty<Color> valueProperty = new SimpleObjectProperty<>(Color.web(webPageColor()));
         valueProperty.addListener((o, ov, nv) -> {
             if (null == ov || Objects.equals(ov, nv)) return;
@@ -298,7 +309,7 @@ public final class VisualProvider {
                 .setValueProperty(valueProperty);
     }
 
-    public Option<Color> optionForWebTextColor() {
+    private Option<Color> optionForWebTextColor() {
         final ObjectProperty<Color> valueProperty = new SimpleObjectProperty<>(Color.web(webTextColor()));
         valueProperty.addListener((o, ov, nv) -> {
             if (null == ov || Objects.equals(ov, nv)) return;
@@ -309,7 +320,7 @@ public final class VisualProvider {
                 .setValueProperty(valueProperty);
     }
 
-    static List<RawVal<String>> getFontFamilies() {
+    private static List<RawVal<String>> getFontFamilies() {
         final List<RawVal<String>> result = new ArrayList<>(64);
 
         try {
