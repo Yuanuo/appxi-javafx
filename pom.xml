@@ -36,6 +36,7 @@
                         <arg>--add-exports=javafx.web/com.sun.javafx.webkit=appxi.javafx</arg>
                         <arg>--add-exports=javafx.web/com.sun.webkit=appxi.javafx</arg>
                         <arg>--add-exports=javafx.web/com.sun.webkit.event=appxi.javafx</arg>
+                        <arg>--add-exports=javafx.graphics/com.sun.javafx.font=appxi.javafx</arg>
                     </compilerArgs>
                 </configuration>
             </plugin>
