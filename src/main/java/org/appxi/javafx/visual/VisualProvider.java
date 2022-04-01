@@ -11,8 +11,8 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import org.appxi.javafx.event.EventBus;
+import org.appxi.javafx.helper.FontFaceHelper;
 import org.appxi.javafx.settings.DefaultOption;
 import org.appxi.javafx.settings.DefaultOptions;
 import org.appxi.javafx.settings.Option;
@@ -24,11 +24,9 @@ import org.appxi.util.ext.RawVal;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
@@ -215,7 +213,7 @@ public final class VisualProvider {
     }
 
     private Option<RawVal<String>> optionForFontName() {
-        final List<RawVal<String>> fontFamilies = getFontFamilies();
+        final List<RawVal<String>> fontFamilies = FontFaceHelper.getFontFamilies();
 
         final ObjectProperty<RawVal<String>> valueProperty = new SimpleObjectProperty<>();
         final String usedVal = UserPrefs.prefs.getString("ui.font.name", "");
@@ -267,7 +265,7 @@ public final class VisualProvider {
     }
 
     private Option<RawVal<String>> optionForWebFontName() {
-        final List<RawVal<String>> fontFamilies = getFontFamilies();
+        final List<RawVal<String>> fontFamilies = FontFaceHelper.getFontFamilies();
 
         final ObjectProperty<RawVal<String>> valueProperty = new SimpleObjectProperty<>();
         final String usedVal = webFontName();
@@ -318,20 +316,5 @@ public final class VisualProvider {
         });
         return new DefaultOption<Color>("阅读器文字颜色", null, "VIEWER", true)
                 .setValueProperty(valueProperty);
-    }
-
-    private static List<RawVal<String>> getFontFamilies() {
-        final List<RawVal<String>> result = new ArrayList<>(64);
-
-        try {
-            Font.getFamilies().forEach(family ->
-                    Optional.ofNullable(com.sun.javafx.font.PrismFontFactory.getFontFactory().getFontResource(family, null, false))
-                            .map(com.sun.javafx.font.FontResource::getLocaleFamilyName)
-                            .ifPresent(name -> result.add(new RawVal<>(family, family.equals(name) ? family : family + " (" + name + ")"))));
-        } catch (Throwable e) {
-            Font.getFamilies().forEach(family -> result.add(new RawVal<>(family, family)));
-        }
-
-        return result;
     }
 }

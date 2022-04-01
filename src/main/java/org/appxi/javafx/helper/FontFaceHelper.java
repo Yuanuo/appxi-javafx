@@ -1,13 +1,94 @@
 package org.appxi.javafx.helper;
 
+import com.sun.javafx.font.FontResource;
+import com.sun.javafx.font.PrismFontFactory;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import org.appxi.util.StringHelper;
+import org.appxi.util.ext.RawVal;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Field;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
 public final class FontFaceHelper {
+    private static final Logger logger = LoggerFactory.getLogger(FontFaceHelper.class);
+
+    /**
+     * @noinspection unchecked
+     */
+    public static void fixing() {
+        final HashSet<String> filterExists = new HashSet<>();
+        try {
+            for (String family : Font.getFamilies()) {
+                FontResource fr = PrismFontFactory.getFontFactory().getFontResource(family, null, false);
+                if (null != fr) {
+                    filterExists.add(StringHelper.join("/", fr.getFamilyName(), fr.getLocaleFamilyName(), fr.getFullName(), fr.getLocaleFullName()));
+                }
+            }
+        } catch (Throwable e) {
+            logger.error("unknown", e);
+
+            filterExists.addAll(Font.getFamilies());
+        }
+
+        try {
+            PrismFontFactory factory = PrismFontFactory.getFontFactory();
+            Field fileNameToFontResourceMapFld = PrismFontFactory.class.getDeclaredField("fileNameToFontResourceMap");
+            fileNameToFontResourceMapFld.setAccessible(true);
+            //
+            Field allFamilyNamesFld = PrismFontFactory.class.getDeclaredField("allFamilyNames");
+            allFamilyNamesFld.setAccessible(true);
+            List<String> allFamilyNames = (List<String>) allFamilyNamesFld.get(factory);
+
+            //
+            for (Object obj : ((Map<?, ?>) fileNameToFontResourceMapFld.get(factory)).values()) {
+                if (obj instanceof FontResource fr) {
+                    String id = StringHelper.join("/", fr.getFamilyName(), fr.getLocaleFamilyName(), fr.getFullName(), fr.getLocaleFullName());
+                    if (filterExists.contains(id)) continue;
+                    filterExists.add(id);
+                    //
+                    logger.warn("fixing font " + id);
+                    if (null != Font.loadFont(Path.of(fr.getFileName()).toUri().toString(), Font.getDefault().getSize()))
+                        allFamilyNames.add(fr.getFamilyName());
+                }
+            }
+            Collections.sort(allFamilyNames);
+        } catch (Throwable e) {
+            logger.error("unknown", e);
+        }
+    }
+
+    public static List<RawVal<String>> getFontFamilies() {
+        final List<RawVal<String>> result = new ArrayList<>(64);
+
+        final HashSet<String> filterExists = new HashSet<>();
+        try {
+            for (String family : Font.getFamilies()) {
+                FontResource fr = PrismFontFactory.getFontFactory().getFontResource(family, null, false);
+                if (null != fr) {
+                    String id = StringHelper.join("/", fr.getFamilyName(), fr.getLocaleFamilyName(), fr.getFullName(), fr.getLocaleFullName());
+                    if (filterExists.contains(id)) continue;
+                    filterExists.add(id);
+                    //
+                    String engName = fr.getFullName();
+                    String locName = fr.getLocaleFullName();
+                    result.add(new RawVal<>(family, engName.equals(locName) ? engName : engName + " (" + locName + ")"));
+                }
+            }
+        } catch (Throwable e) {
+            Font.getFamilies().forEach(family -> result.add(new RawVal<>(family, family)));
+        }
+        return result;
+    }
+
     private static final Map<Integer, FontFace> CACHE = new HashMap<>(4096);
 
     static {
