@@ -1723,6 +1723,19 @@
     -fx-blend-mode: screen;
 }
 
+.accordion .title {
+	-fx-background-color: -fx-background;
+}
+.accordion .title,
+.accordion .content {
+	-fx-background-radius: 0;
+	-fx-border-width: 1 0 1 0;
+	-fx-border-color: ladder(-fx-background, -divider-dark 49%, -divider-light 50%);
+}
+.accordion .first-titled-pane .title {
+	-fx-border-width: 0 0 1 0;
+}
+
 /* ****************************************************************************************************************** */
 /* ****************************************************************************************************************** */
 
@@ -1782,6 +1795,10 @@
     -fx-alignment: center-left;
 	-fx-padding: .25em;
 }
+.aligned-box > .title {
+	-fx-padding: .5em .1em;
+}
+
 .dialog-layer {
     -fx-border-width: 1;
 	-fx-border-color: ladder(-fx-background, -divider-dark 49%, -divider-light 50%);
