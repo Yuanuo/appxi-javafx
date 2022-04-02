@@ -73,7 +73,7 @@ public final class FontFaceHelper {
         try {
             for (String family : Font.getFamilies()) {
                 FontResource fr = PrismFontFactory.getFontFactory().getFontResource(family, null, false);
-                if (null != fr) {
+                if (null != fr && family.equalsIgnoreCase(fr.getFamilyName())) {
                     String id = StringHelper.join("/", fr.getFamilyName(), fr.getLocaleFamilyName(), fr.getFullName(), fr.getLocaleFullName());
                     if (filterExists.contains(id)) continue;
                     filterExists.add(id);
@@ -81,6 +81,11 @@ public final class FontFaceHelper {
                     String engName = fr.getFullName();
                     String locName = fr.getLocaleFullName();
                     result.add(new RawVal<>(family, engName.equals(locName) ? engName : engName + " (" + locName + ")"));
+                } else {
+                    if (filterExists.contains(family)) continue;
+                    filterExists.add(family);
+                    //
+                    result.add(new RawVal<>(family, family));
                 }
             }
         } catch (Throwable e) {
