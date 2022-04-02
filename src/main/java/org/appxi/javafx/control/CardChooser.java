@@ -103,7 +103,7 @@ public final class CardChooser {
         final List<CardView> cardViews = this.cards.stream().map(CardView::new).toList();
         cardViews.forEach(cardView -> {
             if (this.buttonStyle)
-                cardView.getStyleClass().add("button");
+                cardView.getStyleClass().addAll("button", "flat");
             if (!cardView.hasActions()) {
                 cardView.setOnMouseReleased(evt -> {
                     if (isPicked(evt.getPickResult().getIntersectedNode(), cardView)) {
