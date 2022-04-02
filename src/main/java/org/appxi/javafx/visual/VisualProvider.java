@@ -3,6 +3,7 @@ package org.appxi.javafx.visual;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.Property;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -10,12 +11,16 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Tooltip;
 import javafx.scene.paint.Color;
+import org.appxi.javafx.control.CardChooser;
 import org.appxi.javafx.event.EventBus;
 import org.appxi.javafx.helper.FontFaceHelper;
 import org.appxi.javafx.settings.DefaultOption;
 import org.appxi.javafx.settings.DefaultOptions;
 import org.appxi.javafx.settings.Option;
+import org.appxi.javafx.settings.OptionEditorBase;
 import org.appxi.javafx.settings.SettingsList;
 import org.appxi.prefs.UserPrefs;
 import org.appxi.util.FileHelper;
@@ -24,7 +29,6 @@ import org.appxi.util.ext.RawVal;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -213,21 +217,35 @@ public final class VisualProvider {
     }
 
     private Option<RawVal<String>> optionForFontName() {
-        final List<RawVal<String>> fontFamilies = FontFaceHelper.getFontFamilies();
-
-        final ObjectProperty<RawVal<String>> valueProperty = new SimpleObjectProperty<>();
         final String usedVal = UserPrefs.prefs.getString("ui.font.name", "");
-        fontFamilies.stream().filter(v -> usedVal.equalsIgnoreCase(v.value())).findFirst().ifPresent(valueProperty::set);
-        if (null == valueProperty.get()) valueProperty.set(new RawVal<>(usedVal, usedVal));
+        return new DefaultOption<RawVal<String>>("主界面字体", null, "UI", true,
+                option -> new OptionEditorBase<>(option, new Button()) {
+                    private ObjectProperty<RawVal<String>> valueProperty;
 
-        valueProperty.addListener((o, ov, nv) -> {
-            if (null == ov || Objects.equals(ov, nv)) return;
-            UserPrefs.prefs.setProperty("ui.font.name", nv.value());
-            applyFont();
-        });
-        return new DefaultOptions<RawVal<String>>("主界面字体", null, "UI", true)
-                .setValues(fontFamilies)
-                .setValueProperty(valueProperty);
+                    @Override
+                    public Property<RawVal<String>> valueProperty() {
+                        if (this.valueProperty == null) {
+                            this.valueProperty = new SimpleObjectProperty<>();
+                            getEditor().setOnAction(evt -> chooseFontFamilies(valueProperty));
+                            valueProperty.addListener((o, ov, nv) -> {
+                                if (null == ov || Objects.equals(ov, nv)) return;
+                                setValue(nv);
+                                UserPrefs.prefs.setProperty("ui.font.name", nv.value());
+                                applyFont();
+                            });
+                        }
+                        return this.valueProperty;
+                    }
+
+                    @Override
+                    public void setValue(RawVal<String> value) {
+                        if (null != value) {
+                            getEditor().setText(value.title());
+                            getEditor().setTooltip(new Tooltip(value.title()));
+                        }
+                    }
+                })
+                .setValue(new RawVal<>(usedVal, usedVal));
     }
 
     private Option<Number> optionForFontSize() {
@@ -265,21 +283,35 @@ public final class VisualProvider {
     }
 
     private Option<RawVal<String>> optionForWebFontName() {
-        final List<RawVal<String>> fontFamilies = FontFaceHelper.getFontFamilies();
-
-        final ObjectProperty<RawVal<String>> valueProperty = new SimpleObjectProperty<>();
         final String usedVal = webFontName();
-        fontFamilies.stream().filter(v -> usedVal.equalsIgnoreCase(v.value())).findFirst().ifPresent(valueProperty::set);
-        if (null == valueProperty.get()) valueProperty.set(new RawVal<>(usedVal, usedVal));
+        return new DefaultOption<RawVal<String>>("阅读器字体", null, "VIEWER", true,
+                option -> new OptionEditorBase<>(option, new Button()) {
+                    private ObjectProperty<RawVal<String>> valueProperty;
 
-        valueProperty.addListener((o, ov, nv) -> {
-            if (null == ov || Objects.equals(ov, nv)) return;
-            UserPrefs.prefs.setProperty("web.font.name", nv.value());
-            eventBus.fireEvent(new VisualEvent(VisualEvent.SET_WEB_FONT_NAME, nv.value()));
-        });
-        return new DefaultOptions<RawVal<String>>("阅读器字体", null, "VIEWER", true)
-                .setValues(fontFamilies)
-                .setValueProperty(valueProperty);
+                    @Override
+                    public Property<RawVal<String>> valueProperty() {
+                        if (this.valueProperty == null) {
+                            this.valueProperty = new SimpleObjectProperty<>();
+                            getEditor().setOnAction(evt -> chooseFontFamilies(valueProperty));
+                            valueProperty.addListener((o, ov, nv) -> {
+                                if (null == ov || Objects.equals(ov, nv)) return;
+                                setValue(nv);
+                                UserPrefs.prefs.setProperty("web.font.name", nv.value());
+                                eventBus.fireEvent(new VisualEvent(VisualEvent.SET_WEB_FONT_NAME, nv.value()));
+                            });
+                        }
+                        return this.valueProperty;
+                    }
+
+                    @Override
+                    public void setValue(RawVal<String> value) {
+                        if (null != value) {
+                            getEditor().setText(value.title());
+                            getEditor().setTooltip(new Tooltip(value.title()));
+                        }
+                    }
+                })
+                .setValue(new RawVal<>(usedVal, usedVal));
     }
 
     private Option<Number> optionForWebFontSize() {
@@ -316,5 +348,19 @@ public final class VisualProvider {
         });
         return new DefaultOption<Color>("阅读器文字颜色", null, "VIEWER", true)
                 .setValueProperty(valueProperty);
+    }
+
+    private void chooseFontFamilies(ObjectProperty<RawVal<String>> property) {
+        final RawVal<String> usedVal = property.get();
+        CardChooser.of("选择字体")
+                .owner(primarySceneSupplier.get().getWindow())
+                .cards(FontFaceHelper.getFontFamilies().stream()
+                        .map(v -> CardChooser.ofCard(v.title())
+                                .focused(v.value().equalsIgnoreCase(usedVal.value()))
+                                .userData(v)
+                                .get())
+                        .toList())
+                .showAndWait()
+                .ifPresent(card -> property.set(card.userData()));
     }
 }
