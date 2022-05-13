@@ -47,7 +47,9 @@ public final class VisualProvider {
     public VisualProvider(EventBus eventBus, Supplier<Scene> primarySceneSupplier) {
         this.eventBus = eventBus;
         this.primarySceneSupplier = primarySceneSupplier;
-        //
+    }
+
+    public void addSettings() {
         SettingsList.add(this::optionForFontSmooth);
         SettingsList.add(this::optionForFontName);
         SettingsList.add(this::optionForFontSize);
