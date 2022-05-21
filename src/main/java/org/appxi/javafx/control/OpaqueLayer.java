@@ -1,5 +1,6 @@
 package org.appxi.javafx.control;
 
+import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
@@ -20,12 +21,21 @@ public class OpaqueLayer extends BorderPane {
     }
 
     public void show(StackPane glassPane) {
-        if (!glassPane.getChildren().contains(this))
+        if (!glassPane.getChildren().contains(this)) {
+            hideOpaqueLayer(glassPane);
             glassPane.getChildren().add(this);
+        }
     }
 
     public void hide() {
         if (this.getParent() instanceof StackPane glassPane)
             glassPane.getChildren().remove(this);
+    }
+
+    public static void hideOpaqueLayer(StackPane glassPane) {
+        ObservableList<Node> nodes = glassPane.getChildren();
+        if (!nodes.isEmpty() && nodes.get(nodes.size() - 1) instanceof OpaqueLayer opaqueLayer) {
+            nodes.remove(opaqueLayer);
+        }
     }
 }
