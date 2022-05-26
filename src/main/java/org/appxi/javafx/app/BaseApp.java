@@ -8,7 +8,7 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-import org.appxi.javafx.event.EventBus;
+import org.appxi.event.EventBus;
 import org.appxi.javafx.visual.VisualProvider;
 import org.appxi.prefs.PreferencesInProperties;
 import org.appxi.prefs.UserPrefs;

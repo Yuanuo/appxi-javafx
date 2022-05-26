@@ -1,7 +1,7 @@
 package org.appxi.javafx.visual;
 
-import javafx.event.Event;
-import javafx.event.EventType;
+import org.appxi.event.Event;
+import org.appxi.event.EventType;
 
 public final class VisualEvent extends Event {
     public static final EventType<VisualEvent> SET_STYLE = new EventType<>(Event.ANY, "SET_STYLE");
@@ -19,15 +19,7 @@ public final class VisualEvent extends Event {
     public static final EventType<VisualEvent> SET_WEB_PAGE_COLOR = new EventType<>(SET_WEB_STYLE, "SET_WEB_PAGE_COLOR");
     public static final EventType<VisualEvent> SET_WEB_TEXT_COLOR = new EventType<>(SET_WEB_STYLE, "SET_WEB_TEXT_COLOR");
 
-    private final Object data;
-
     public VisualEvent(EventType<? extends Event> eventType, Object data) {
-        super(eventType);
-        this.data = data;
-    }
-
-    public <T> T data() {
-        //noinspection unchecked
-        return (T) data;
+        super(eventType, data);
     }
 }
