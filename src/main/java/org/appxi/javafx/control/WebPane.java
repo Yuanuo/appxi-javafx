@@ -430,7 +430,7 @@ public class WebPane extends BorderPane {
         }
 
         public void find(String text) {
-            input.requestFocus();
+            FxHelper.runThread(30, input::requestFocus);
             input.setText(text);
         }
 

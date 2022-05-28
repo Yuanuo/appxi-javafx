@@ -7,11 +7,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Labeled;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.TextField;
-import javafx.scene.input.InputEvent;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.input.*;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -210,7 +206,7 @@ public abstract class LookupLayer<T> {
         if (!dialogLayer.isShowing()) {
             dialogLayer.show(glassPane);
         }
-        searchInput.requestFocus();
+        FxHelper.runThread(30, () -> searchInput.requestFocus());
         search(null != searchText ? searchText : this.searchedText);
         searchInput.selectAll();
     }
@@ -223,7 +219,7 @@ public abstract class LookupLayer<T> {
         return 200;
     }
 
-    protected abstract void  updateItemLabel(Labeled labeled, T item);
+    protected abstract void updateItemLabel(Labeled labeled, T item);
 
     protected abstract String getHeaderText();
 
