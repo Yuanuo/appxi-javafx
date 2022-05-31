@@ -815,7 +815,6 @@
 
 .tab-pane {
 	-fx-tab-min-height: 7.68mm;
-	-fx-tab-max-height: 7.68mm;
 	-charm-tab-background: -fx-background;
 	-charm-tab-text: -primary-swatch-300;
 	-charm-tab-text-selected: -primary-swatch-500;
