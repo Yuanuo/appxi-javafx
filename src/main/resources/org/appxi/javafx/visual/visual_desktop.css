@@ -880,7 +880,6 @@
 .tab-header-area .tab .tab-close-button {
     -fx-scale-shape: true;
     -fx-cursor: hand;
-	-fx-background-insets: .125em;
 }
 .tab-header-area .tab .tab-close-button:hover {
 	-fx-background-color: red;
@@ -894,6 +893,21 @@
     -fx-background-color: transparent;
 }
 
+.root.font-size-12 .tab-close-button { -fx-scale-x: 0.60; -fx-scale-y: 0.60; }
+.root.font-size-14 .tab-close-button { -fx-scale-x: 0.70; -fx-scale-y: 0.70; }
+.root.font-size-16 .tab-close-button { -fx-scale-x: 0.80; -fx-scale-y: 0.80; }
+.root.font-size-18 .tab-close-button { -fx-scale-x: 0.90; -fx-scale-y: 0.90; }
+.root.font-size-20 .tab-close-button { -fx-scale-x: 1.00; -fx-scale-y: 1.00; }
+.root.font-size-22 .tab-close-button { -fx-scale-x: 1.10; -fx-scale-y: 1.10; }
+.root.font-size-24 .tab-close-button { -fx-scale-x: 1.10; -fx-scale-y: 1.10; }
+.root.font-size-26 .tab-close-button { -fx-scale-x: 1.20; -fx-scale-y: 1.20; }
+.root.font-size-28 .tab-close-button { -fx-scale-x: 1.20; -fx-scale-y: 1.20; }
+.root.font-size-30 .tab-close-button { -fx-scale-x: 1.30; -fx-scale-y: 1.30; }
+.root.font-size-32 .tab-close-button { -fx-scale-x: 1.30; -fx-scale-y: 1.30; }
+.root.font-size-34 .tab-close-button { -fx-scale-x: 1.40; -fx-scale-y: 1.40; }
+.root.font-size-36 .tab-close-button { -fx-scale-x: 1.50; -fx-scale-y: 1.50; }
+.root.font-size-38 .tab-close-button { -fx-scale-x: 1.60; -fx-scale-y: 1.60; }
+.root.font-size-40 .tab-close-button { -fx-scale-x: 1.75; -fx-scale-y: 1.75; }
 
 /* .slider {
 	-charm-base-color: -primary-swatch-500;

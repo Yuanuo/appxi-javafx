@@ -191,11 +191,10 @@ public final class VisualProvider {
 
         fontSmooth = "-fx-font-smoothing-type: ".concat(fontSmooth).concat(";");
         fontName = " -fx-font-family: \"".concat(fontName).concat("\";");
-        fontSize = " -fx-font-size: ".concat(fontSize).concat("px;");
 
         Path file = UserPrefs.cacheDir().resolve("ui.temp.css");
         FileHelper.writeString(".root, .root * { ".concat(fontSmooth).concat(fontName).concat(" }\n")
-                .concat(".root { ").concat(fontSize).concat(" }\n")
+                .concat(".root { ").concat(" -fx-font-size: " + fontSize + "px;").concat(" }\n")
                 .concat(".icon-toggle .text, .icon-text .text { -fx-font-family: \"Material Icons\"; }\n"), file);
         final String css = file.toUri().toString().replace("///", "/");
         Scene primaryScene = primarySceneSupplier.get();
@@ -204,6 +203,11 @@ public final class VisualProvider {
         if (idx != -1)
             primaryScene.getStylesheets().add(idx, css);
         else primaryScene.getStylesheets().add(css);
+
+        // 将主界面字号加入CSS根样式中以控制组件跟随字号而缩放
+        final ObservableList<String> styleClass = primaryScene.getRoot().getStyleClass();
+        styleClass.removeIf(s -> s.startsWith("font-size-"));
+        styleClass.add("font-size-" + fontSize.split("\\.", 2)[0]);
     }
 
     private Option<String> optionForFontSmooth() {
