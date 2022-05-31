@@ -258,7 +258,7 @@ public final class VisualProvider {
             applyFont();
         });
         return new DefaultOptions<Number>("主界面字号", null, "UI", true)
-                .setValues(IntStream.iterate(12, v -> v <= 30, v -> v + 2).boxed().collect(Collectors.toList()))
+                .setValues(IntStream.iterate(12, v -> v <= 40, v -> v + 2).boxed().collect(Collectors.toList()))
                 .setValueProperty(valueProperty);
     }
 
@@ -324,7 +324,7 @@ public final class VisualProvider {
             eventBus.fireEvent(new VisualEvent(VisualEvent.SET_WEB_FONT_SIZE, nv.doubleValue()));
         });
         return new DefaultOptions<Number>("阅读器字号", null, "VIEWER", true)
-                .setValues(DoubleStream.iterate(1.3, v -> v <= 3.0,
+                .setValues(DoubleStream.iterate(1.3, v -> v <= 4.0,
                                 v -> new BigDecimal(v + .1).setScale(1, RoundingMode.HALF_UP).doubleValue())
                         .boxed().collect(Collectors.toList()))
                 .setValueProperty(valueProperty);
