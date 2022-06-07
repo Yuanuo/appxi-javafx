@@ -20,14 +20,12 @@ public abstract class WorkbenchMainViewController extends WorkbenchViewControlle
     @Override
     public final StackPane getViewport() {
         if (null == this.viewport) {
-            this.viewport = new StackPane();
-            //
-            onViewportInitOnce(this.viewport);
+            initViewport(this.viewport = new StackPane());
         }
         return viewport;
     }
 
-    protected abstract void onViewportInitOnce(StackPane viewport);
+    protected abstract void initViewport(StackPane viewport);
 
     public abstract void onViewportHiding();
 

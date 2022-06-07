@@ -45,7 +45,7 @@ public class TreeViewEx<T> extends TreeView<T> {
                         final Node pickedNode = msEvt.getPickResult().getIntersectedNode();
                         if (pickedNode instanceof StackPane && (
                                 pickedNode.getParent() instanceof TreeCell
-                                || pickedNode.getParent().getParent() instanceof TreeCell)
+                                        || pickedNode.getParent().getParent() instanceof TreeCell)
                         )
                             event.consume();
                     }

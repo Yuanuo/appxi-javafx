@@ -9,7 +9,7 @@ import org.appxi.javafx.workbench.WorkbenchPane;
 import org.appxi.javafx.workbench.WorkbenchViewController;
 
 public abstract class WorkbenchSideViewController extends WorkbenchViewController {
-    protected BorderPane viewport;
+    private BorderPane viewport;
     protected HBoxEx topBar;
 
     public WorkbenchSideViewController(String viewId, WorkbenchPane workbench) {
@@ -33,12 +33,12 @@ public abstract class WorkbenchSideViewController extends WorkbenchViewControlle
             this.topBar.addLeft(title);
 
             //
-            onViewportInitOnce();
+            initViewport(viewport);
         }
         return viewport;
     }
 
-    protected abstract void onViewportInitOnce();
+    protected abstract void initViewport(BorderPane viewport);
 
     public abstract void onViewportHiding();
 }

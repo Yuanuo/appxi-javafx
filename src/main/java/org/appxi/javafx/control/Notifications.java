@@ -129,7 +129,8 @@ public final class Notifications {
             // get anchorX
             final double anchorX = switch (notification.position) {
                 case TOP_LEFT, CENTER_LEFT, BOTTOM_LEFT -> PADDING + startX;
-                case TOP_CENTER, CENTER, BOTTOM_CENTER -> startX + (screenWidth / 2.0) - viewWidth / 2.0 - PADDING / 2.0;
+                case TOP_CENTER, CENTER, BOTTOM_CENTER ->
+                        startX + (screenWidth / 2.0) - viewWidth / 2.0 - PADDING / 2.0;
                 case TOP_RIGHT, CENTER_RIGHT, BOTTOM_RIGHT -> startX + screenWidth - viewWidth - PADDING;
                 default -> 0;
             };
@@ -137,7 +138,8 @@ public final class Notifications {
             // get anchorY
             final double anchorY = switch (notification.position) {
                 case TOP_LEFT, TOP_CENTER, TOP_RIGHT -> PADDING + startY;
-                case CENTER_LEFT, CENTER, CENTER_RIGHT -> startY + (screenHeight / 2.0) - viewHeight / 2.0 - PADDING / 2.0;
+                case CENTER_LEFT, CENTER, CENTER_RIGHT ->
+                        startY + (screenHeight / 2.0) - viewHeight / 2.0 - PADDING / 2.0;
                 case BOTTOM_LEFT, BOTTOM_CENTER, BOTTOM_RIGHT -> startY + screenHeight - viewHeight - PADDING;
                 default -> 0;
             };

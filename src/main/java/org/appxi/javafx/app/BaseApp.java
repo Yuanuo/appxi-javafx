@@ -45,7 +45,7 @@ public abstract class BaseApp extends javafx.application.Application {
     }
 
 
-    protected abstract String getAppName();
+    public abstract String getAppName();
 
     protected abstract List<URL> getAppIcons();
 
