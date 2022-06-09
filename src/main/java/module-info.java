@@ -21,7 +21,6 @@ module appxi.javafx {
     exports org.appxi.javafx.visual;
     exports org.appxi.javafx.web;
     exports org.appxi.javafx.workbench;
-    exports org.appxi.javafx.workbench.views;
 
     opens org.appxi.javafx.app.dict; // for js-engine
     opens org.appxi.javafx.app.web; // for js-engine

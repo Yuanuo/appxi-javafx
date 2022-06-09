@@ -1,6 +1,5 @@
 package org.appxi.javafx.app.web;
 
-import javafx.beans.InvalidationListener;
 import javafx.concurrent.Worker;
 import javafx.scene.layout.StackPane;
 import netscape.javascript.JSObject;
@@ -19,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Base64;
@@ -41,15 +41,6 @@ public abstract class WebRenderer {
 
     private WebPane webPane;
     private Runnable progressLayerRemover;
-
-    private final InvalidationListener _bodyResizeListener = observable -> {
-        if (null != webPane) {
-            try {
-                webPane.executeScript("onBodyResizeBefore()");
-            } catch (Throwable ignore) {
-            }
-        }
-    };
 
     public WebRenderer(WorkbenchPane workbench) {
         this(workbench, null);
@@ -138,6 +129,7 @@ public abstract class WebRenderer {
         app.eventBus.removeEventHandler(VisualEvent.SET_WEB_STYLE, _onWebStyleSetting);
         if (null != this.webPane) {
             this.webPane.reset();
+            this.webPane = null;
         }
     }
 
@@ -159,13 +151,26 @@ public abstract class WebRenderer {
         //
         if (!webPane.getProperties().containsKey(AK_INITIALIZED)) {
             webPane.getProperties().put(AK_INITIALIZED, true);
-            progressLayerRemover = ProgressLayer.show(viewport, progressLayer -> FxHelper.runThread(100, () -> {
+            progressLayerRemover = ProgressLayer.show(viewport, progressLayer -> FxHelper.runThread(60, () -> {
                 webPane.webEngine().setUserDataDirectory(UserPrefs.cacheDir().toFile());
                 // apply theme
                 this.applyStyleSheet();
                 //
                 webPane.webEngine().getLoadWorker().stateProperty().addListener((o, ov, state) -> {
                     if (state == Worker.State.SUCCEEDED) {
+                        // set an interface object named 'javaApp' in the web engine's page
+                        final JSObject window = webPane.executeScript("window");
+                        window.setMember("javaApp", createWebCallback());
+                        // apply theme
+                        webPane.executeScript("document.body.setAttribute('class','" + app.visualProvider + "');");
+                        //
+                        webPane.widthProperty().addListener(observable -> {
+                            try {
+                                webPane.executeScript("onBodyResizeBefore()");
+                            } catch (Throwable ignore) {
+                            }
+                        });
+                        //
                         onWebEngineLoadSucceeded();
                     } else if (state == Worker.State.FAILED) {
                         onWebEngineLoadFailed();
@@ -188,6 +193,9 @@ public abstract class WebRenderer {
         if (webContent instanceof Path file) {
             logger.warn("load FILE: " + file);
             FxHelper.runLater(() -> webPane.webEngine().load(file.toUri().toString()));
+        } else if (webContent instanceof URI uri) {
+            logger.warn("load URI: " + uri);
+            FxHelper.runLater(() -> webPane.webEngine().load(uri.toString()));
         } else if (webContent instanceof String text) {
             logger.warn("load TEXT: " + text.length());
             FxHelper.runLater(() -> webPane.webEngine().loadContent(text));
@@ -195,16 +203,7 @@ public abstract class WebRenderer {
     }
 
     protected void onWebEngineLoadSucceeded() {
-        // set an interface object named 'javaApp' in the web engine's page
-        final JSObject window = webPane.executeScript("window");
-        window.setMember("javaApp", createWebCallback());
-        // apply theme
-        webPane.executeScript("document.body.setAttribute('class','" + app.visualProvider + "');");
-        //
         webPane.patch();
-        //
-        webPane.widthProperty().removeListener(_bodyResizeListener);
-        webPane.widthProperty().addListener(_bodyResizeListener);
     }
 
     protected void onWebEngineLoadFailed() {

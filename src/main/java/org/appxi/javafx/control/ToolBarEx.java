@@ -1,8 +1,8 @@
 package org.appxi.javafx.control;
 
 import javafx.collections.ObservableList;
+import javafx.geometry.HPos;
 import javafx.geometry.Orientation;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.ToolBar;
 import javafx.scene.layout.HBox;
@@ -45,10 +45,11 @@ public class ToolBarEx extends ToolBar {
         return this.getItems();
     }
 
-    public ToolBarEx addAligned(Pos pos, Node... nodes) {
-        switch (pos) {
-            case TOP_LEFT, CENTER_LEFT, BOTTOM_LEFT -> this.addLeft(nodes);
-            default -> this.addRight(nodes);
+    public ToolBarEx addAligned(HPos pos, Node... nodes) {
+        if (pos == HPos.LEFT) {
+            this.addLeft(nodes);
+        } else {
+            this.addRight(nodes);
         }
         return this;
     }

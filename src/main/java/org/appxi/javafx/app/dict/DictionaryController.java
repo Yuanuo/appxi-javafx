@@ -5,7 +5,7 @@ import appxi.dict.DictionaryApi;
 import appxi.dict.SearchMode;
 import appxi.dict.SearchResultEntry;
 import appxi.dict.doc.DictEntry;
-import javafx.geometry.Pos;
+import javafx.geometry.HPos;
 import javafx.scene.Node;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
@@ -20,7 +20,8 @@ import org.appxi.javafx.app.DesktopApp;
 import org.appxi.javafx.helper.FxHelper;
 import org.appxi.javafx.visual.MaterialIcon;
 import org.appxi.javafx.workbench.WorkbenchPane;
-import org.appxi.javafx.workbench.views.WorkbenchSideToolController;
+import org.appxi.javafx.workbench.WorkbenchPart;
+import org.appxi.javafx.workbench.WorkbenchPartController;
 import org.appxi.util.FileHelper;
 
 import java.io.InputStream;
@@ -29,21 +30,27 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class DictionaryController extends WorkbenchSideToolController {
+public class DictionaryController extends WorkbenchPartController implements WorkbenchPart.SideTool {
     final Supplier<List<InputStream>> webCssSupplier;
     final Supplier<List<String>> webIncludesSupplier;
 
     public DictionaryController(WorkbenchPane workbench,
                                 Supplier<List<InputStream>> webCssSupplier,
                                 Supplier<List<String>> webIncludesSupplier) {
-        super("DICTIONARY", workbench);
+        super(workbench);
+
+        this.id.set("DICTIONARY");
+        this.title.set("查词典");
+        this.tooltip.set("查词典 (Ctrl+D)");
+        this.graphic.set(MaterialIcon.TRANSLATE.graphic());
 
         this.webCssSupplier = webCssSupplier;
         this.webIncludesSupplier = webIncludesSupplier;
+    }
 
-        this.setTitles("查词典", "查词典 (Ctrl+D)");
-        this.attr(Pos.class, Pos.CENTER_LEFT);
-        this.graphic.set(MaterialIcon.TRANSLATE.graphic());
+    @Override
+    public HPos sideToolAlignment() {
+        return HPos.LEFT;
     }
 
     @Override
@@ -63,10 +70,10 @@ public class DictionaryController extends WorkbenchSideToolController {
         });
 
         app.getPrimaryScene().getAccelerators().put(new KeyCodeCombination(KeyCode.D, KeyCombination.SHORTCUT_DOWN),
-                () -> this.onViewportShowing(false));
+                () -> this.activeViewport(false));
 
         app.eventBus.addEventHandler(DictionaryEvent.SEARCH,
-                event -> this.onViewportShowing(null != event.text ? event.text.strip() : null));
+                event -> this.lookup(null != event.text ? event.text.strip() : null));
 
         app.eventBus.addEventHandler(DictionaryEvent.SEARCH_EXACT, event -> {
             Dictionary dictionary = DictionaryApi.api().get(event.dictionary);
@@ -78,13 +85,13 @@ public class DictionaryController extends WorkbenchSideToolController {
     }
 
     @Override
-    public void onViewportShowing(boolean firstTime) {
-        onViewportShowing(null);
+    public void activeViewport(boolean firstTime) {
+        lookup(null);
     }
 
     private DictionaryLookupLayer lookupLayer;
 
-    private void onViewportShowing(String text) {
+    private void lookup(String text) {
         if (null == lookupLayer) {
             lookupLayer = new DictionaryLookupLayer(this);
         }

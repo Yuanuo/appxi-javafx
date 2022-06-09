@@ -8,26 +8,63 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
 import org.appxi.javafx.app.AppEvent;
+import org.appxi.javafx.app.DesktopApp;
 import org.appxi.javafx.app.dict.DictionaryEvent;
 import org.appxi.javafx.app.search.SearcherEvent;
 import org.appxi.javafx.web.WebFindByMarks;
 import org.appxi.javafx.workbench.WorkbenchPane;
 import org.appxi.prefs.UserPrefs;
 import org.appxi.smartcn.pinyin.PinyinHelper;
+import org.appxi.util.FileHelper;
 import org.appxi.util.StringHelper;
 import org.appxi.util.ext.Attributes;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public abstract class WebViewer extends WebRenderer {
-    protected WebFindByMarks webFinder;
+    public static List<String> getWebIncludeURIs() {
+        Path dir = null;
+        if (DesktopApp.productionMode) {
+            dir = DesktopApp.appDir().resolve("template/web-incl");
+        } else {
+            for (int i = 0; i < 3; i++) {
+                Path javafxDir = Path.of("../".repeat(i) + "appxi-javafx");
+                if (FileHelper.exists(javafxDir)) {
+                    dir = javafxDir.resolve("repo/web-incl");
+                    break;
+                }
+            }
+        }
+        if (null == dir) {
+            throw new RuntimeException("web-incl not found");
+        }
+        Path finalDir = dir;
+        return Stream.of("jquery.min.js", "jquery.ext.js",
+                        "jquery.isinviewport.js", "jquery.scrollto.js",
+                        "jquery.mark.js", "jquery.mark.finder.js",
+                        "popper.min.js", "tippy-bundle.umd.min.js",
+                        "rangy-core.js", "rangy-serializer.js",
+                        "app-base.css", "app-base.js")
+                .map(s -> finalDir.resolve(s).toUri().toString())
+                .collect(Collectors.toList());
+    }
+
+    private WebFindByMarks webFinder;
+
     protected Attributes position;
 
     public WebViewer(WorkbenchPane workbench, StackPane viewport) {
         super(workbench, viewport);
+    }
+
+    public final WebFindByMarks webFinder() {
+        return webFinder;
     }
 
     protected abstract Object location();
@@ -65,8 +102,8 @@ public abstract class WebViewer extends WebRenderer {
         super.install();
         //
         webFinder = new WebFindByMarks(webPane(), viewport);
-        webFinder.setAsciiConvertor(PinyinHelper::pinyin);
-        webPane().getTopBox().addRight(webFinder);
+        webFinder().setAsciiConvertor(PinyinHelper::pinyin);
+        webPane().getTopBox().addRight(webFinder());
         //
         webPane().addEventHandler(KeyEvent.KEY_PRESSED, this::handleWebViewShortcuts);
     }
@@ -93,11 +130,11 @@ public abstract class WebViewer extends WebRenderer {
                     longText = posParts.get(posParts.size() - 1);
                 }
                 if (null != longText && webPane().findInPage(longText, true)) {
-                    webFinder.mark(posTerm);
+                    webFinder().mark(posTerm);
                 } else if (null != longText && webPane().findInWindow(longText, true)) {
-                    webFinder.mark(posTerm);
+                    webFinder().mark(posTerm);
                 } else {
-                    webFinder.find(posTerm);
+                    webFinder().find(posTerm);
                 }
             } else if (null != pos && pos.hasAttr("position.selector")) {
                 webPane().executeScript("setScrollTop1BySelectors(\"" + pos.removeAttr("position.selector") + "\")");
@@ -131,7 +168,7 @@ public abstract class WebViewer extends WebRenderer {
             // 如果有选中文字，则按查找选中文字处理
             String selText = webPane().executeScript("getValidSelectionText()");
             selText = null == selText ? null : selText.strip().replace('\n', ' ');
-            webFinder.find(StringHelper.isBlank(selText) ? null : selText);
+            webFinder().find(StringHelper.isBlank(selText) ? null : selText);
             event.consume();
         }
     }
@@ -202,7 +239,7 @@ public abstract class WebViewer extends WebRenderer {
 
     protected MenuItem createMenu_finder(String textTip, String availText) {
         MenuItem menuItem = new MenuItem("页内查找".concat(textTip));
-        menuItem.setOnAction(event -> webFinder.find(availText));
+        menuItem.setOnAction(event -> webFinder().find(availText));
         return menuItem;
     }
 
@@ -236,5 +273,4 @@ public abstract class WebViewer extends WebRenderer {
         }
         return menuItem;
     }
-
 }

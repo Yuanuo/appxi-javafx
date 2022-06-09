@@ -15,8 +15,8 @@ public class WebCallback {
     }
 
     public void updateFinderState(int index, int count) {
-        if (webRenderer instanceof WebViewer viewer && null != viewer.webFinder) {
-            viewer.webFinder.state(index, count);
+        if (webRenderer instanceof WebViewer viewer && null != viewer.webFinder()) {
+            viewer.webFinder().state(index, count);
         }
     }
 }
