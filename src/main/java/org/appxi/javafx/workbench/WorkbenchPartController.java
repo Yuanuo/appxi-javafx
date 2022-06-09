@@ -11,9 +11,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import org.appxi.javafx.control.HBoxEx;
-import org.appxi.util.ext.Attributes;
 
-public abstract class WorkbenchPartController extends Attributes implements WorkbenchPart {
+public abstract class WorkbenchPartController implements WorkbenchPart {
     public final StringProperty id = new SimpleStringProperty();
     public final StringProperty title = new SimpleStringProperty();
     public final StringProperty tooltip = new SimpleStringProperty();

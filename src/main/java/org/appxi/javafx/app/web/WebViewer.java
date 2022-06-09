@@ -57,7 +57,7 @@ public abstract class WebViewer extends WebRenderer {
 
     private WebFindByMarks webFinder;
 
-    protected Attributes position;
+    private Attributes position;
 
     public WebViewer(WorkbenchPane workbench, StackPane viewport) {
         super(workbench, viewport);
@@ -65,6 +65,16 @@ public abstract class WebViewer extends WebRenderer {
 
     public final WebFindByMarks webFinder() {
         return webFinder;
+    }
+
+    public final void setPosition(Attributes position) {
+        this.position = position;
+    }
+
+    public final Attributes popPosition() {
+        Attributes result = this.position;
+        this.position = null;
+        return result;
     }
 
     protected abstract Object location();
