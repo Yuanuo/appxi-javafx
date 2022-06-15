@@ -2,7 +2,6 @@ package org.appxi.javafx.workbench;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.StringProperty;
-import javafx.geometry.HPos;
 import javafx.scene.Node;
 import javafx.scene.layout.Pane;
 
@@ -15,19 +14,23 @@ public interface WorkbenchPart {
 
     ObjectProperty<Node> graphic();
 
-    void initialize();
+    /**
+     * 此函数是为了解决简单的依赖问题。
+     * 在实例构造之后，在真正触发之前执行。
+     */
+    void postConstruct();
 
     interface SideTool extends WorkbenchPart {
-        default HPos sideToolAlignment() {
-            return HPos.RIGHT;
+        default boolean sideToolAlignTop() {
+            return false;
         }
 
         void activeViewport(boolean firstTime);
     }
 
     interface SideView extends WorkbenchPart {
-        default HPos sideToolAlignment() {
-            return HPos.LEFT;
+        default boolean sideToolAlignTop() {
+            return true;
         }
 
         Pane getViewport();

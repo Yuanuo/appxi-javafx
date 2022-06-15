@@ -82,16 +82,14 @@ public abstract class WebViewer extends WebRenderer {
     protected abstract String locationId();
 
     public void saveUserData() {
-        if (null != this.webPane()) {
-            try {
-                final double scrollTopPercentage = webPane().getScrollTopPercentage();
-                UserPrefs.recents.setProperty(locationId() + ".percent", scrollTopPercentage);
+        try {
+            final double scrollTopPercentage = this.webPane.getScrollTopPercentage();
+            UserPrefs.recents.setProperty(locationId() + ".percent", scrollTopPercentage);
 
-                final String selector = webPane().executeScript("getScrollTop1Selector()");
-                //            System.out.println(selector + " SET selector for " + path.get());
-                UserPrefs.recents.setProperty(locationId() + ".selector", selector);
-            } catch (Exception ignore) {
-            }
+            final String selector = this.webPane.executeScript("getScrollTop1Selector()");
+            //            System.out.println(selector + " SET selector for " + path.get());
+            UserPrefs.recents.setProperty(locationId() + ".selector", selector);
+        } catch (Exception ignore) {
         }
     }
 
@@ -102,31 +100,31 @@ public abstract class WebViewer extends WebRenderer {
     }
 
     @Override
-    public void uninstall() {
+    public void deinitialize() {
         saveUserData();
-        super.uninstall();
+        super.deinitialize();
     }
 
     @Override
-    public void install() {
-        super.install();
+    public void initialize() {
+        super.initialize();
         //
-        webFinder = new WebFindByMarks(webPane(), viewport);
+        webFinder = new WebFindByMarks(this.webPane, viewport);
         webFinder().setAsciiConvertor(PinyinHelper::pinyin);
-        webPane().getTopBox().addRight(webFinder());
+        this.webPane.getTopBox().addRight(webFinder());
         //
-        webPane().addEventHandler(KeyEvent.KEY_PRESSED, this::handleWebViewShortcuts);
+        this.webPane.addEventHandler(KeyEvent.KEY_PRESSED, this::handleWebViewShortcuts);
     }
 
     @Override
     protected void onWebEngineLoadSucceeded() {
         super.onWebEngineLoadSucceeded();
         //
-        webPane().setContextMenuBuilder(this::createWebViewContextMenu);
+        this.webPane.setContextMenuBuilder(this::createWebViewContextMenu);
         //
         position(position);
         //
-        webPane().webView().requestFocus();
+        this.webPane.webView().requestFocus();
     }
 
     protected final void position(Attributes pos) {
@@ -139,25 +137,25 @@ public abstract class WebViewer extends WebRenderer {
                     posParts.sort(Comparator.comparingInt(String::length));
                     longText = posParts.get(posParts.size() - 1);
                 }
-                if (null != longText && webPane().findInPage(longText, true)) {
+                if (null != longText && this.webPane.findInPage(longText, true)) {
                     webFinder().mark(posTerm);
-                } else if (null != longText && webPane().findInWindow(longText, true)) {
+                } else if (null != longText && this.webPane.findInWindow(longText, true)) {
                     webFinder().mark(posTerm);
                 } else {
                     webFinder().find(posTerm);
                 }
             } else if (null != pos && pos.hasAttr("position.selector")) {
-                webPane().executeScript("setScrollTop1BySelectors(\"" + pos.removeAttr("position.selector") + "\")");
+                this.webPane.executeScript("setScrollTop1BySelectors(\"" + pos.removeAttr("position.selector") + "\")");
             } else if (null != pos && pos.hasAttr("anchor")) {
-                webPane().executeScript("setScrollTop1BySelectors(\"" + pos.removeAttr("anchor") + "\")");
+                this.webPane.executeScript("setScrollTop1BySelectors(\"" + pos.removeAttr("anchor") + "\")");
             } else {
                 final String selector = UserPrefs.recents.getString(locationId() + ".selector", null);
 //                final double percent = UserPrefs.recents.getDouble(selectorKey() + ".percent", 0);
                 if (null != selector) {
 //                    System.out.println(selector + " GET selector for " + path.get());
-                    webPane().executeScript("setScrollTop1BySelectors(\"" + selector + "\")");
+                    this.webPane.executeScript("setScrollTop1BySelectors(\"" + selector + "\")");
                 } else if (location() instanceof Attributes attr && attr.hasAttr("anchor")) {
-                    webPane().executeScript("setScrollTop1BySelectors(\"" + attr.attr("anchor") + "\")");
+                    this.webPane.executeScript("setScrollTop1BySelectors(\"" + attr.attr("anchor") + "\")");
                 }
             }
         } catch (Throwable e) {
@@ -176,7 +174,7 @@ public abstract class WebViewer extends WebRenderer {
         if (!event.isConsumed() && event.isShortcutDown()
                 && event.getCode() == KeyCode.F) {
             // 如果有选中文字，则按查找选中文字处理
-            String selText = webPane().executeScript("getValidSelectionText()");
+            String selText = this.webPane.executeScript("getValidSelectionText()");
             selText = null == selText ? null : selText.strip().replace('\n', ' ');
             webFinder().find(StringHelper.isBlank(selText) ? null : selText);
             event.consume();
@@ -188,7 +186,7 @@ public abstract class WebViewer extends WebRenderer {
         if (!event.isConsumed() && event.isShortcutDown()
                 && (event.getCode() == KeyCode.G || event.getCode() == KeyCode.H)) {
             // 如果有选中文字，则按查找选中文字处理
-            final String selText = webPane().executeScript("getValidSelectionText()");
+            final String selText = this.webPane.executeScript("getValidSelectionText()");
             app.eventBus.fireEvent(event.getCode() == KeyCode.G
                     ? SearcherEvent.ofLookup(selText) // LOOKUP
                     : SearcherEvent.ofSearch(selText) // SEARCH
@@ -202,7 +200,7 @@ public abstract class WebViewer extends WebRenderer {
         if (!event.isConsumed() && event.isShortcutDown()
                 && event.getCode() == KeyCode.D) {
             // 如果有选中文字，则按选中文字处理
-            String origText = webPane().executeScript("getValidSelectionText()");
+            String origText = this.webPane.executeScript("getValidSelectionText()");
             String trimText = null == origText ? null : origText.strip().replace('\n', ' ');
             final String availText = StringHelper.isBlank(trimText) ? null : trimText;
 
@@ -213,7 +211,7 @@ public abstract class WebViewer extends WebRenderer {
     }
 
     protected ContextMenu createWebViewContextMenu() {
-        String origText = webPane().executeScript("getValidSelectionText()");
+        String origText = this.webPane.executeScript("getValidSelectionText()");
         String trimText = null == origText ? null : origText.strip().replace('\n', ' ');
         final String availText = StringHelper.isBlank(trimText) ? null : trimText;
 //        String textTip = null == availText ? "" : "：".concat(StringHelper.trimChars(availText, 8));

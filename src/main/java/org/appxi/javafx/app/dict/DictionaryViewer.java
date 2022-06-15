@@ -52,8 +52,8 @@ class DictionaryViewer extends WebViewer {
     }
 
     @Override
-    public void install() {
-        super.install();
+    public void initialize() {
+        super.initialize();
         //
         addTool_searchAllDictionaries();
         new WebToolPrinter(this);
@@ -70,7 +70,7 @@ class DictionaryViewer extends WebViewer {
             button.setDisable(true);
         });
         //
-        webPane().getTopBar().addLeft(button);
+        this.webPane.getTopBar().addLeft(button);
     }
 
     @Override
@@ -104,7 +104,7 @@ class DictionaryViewer extends WebViewer {
     }
 
     protected ContextMenu createWebViewContextMenu() {
-        final String origText = webPane().executeScript("getValidSelectionText()");
+        final String origText = this.webPane.executeScript("getValidSelectionText()");
         String trimText = null == origText ? null : origText.strip().replace('\n', ' ');
         final String availText = StringHelper.isBlank(trimText) ? null : trimText;
         //

@@ -5,7 +5,6 @@ import appxi.dict.DictionaryApi;
 import appxi.dict.SearchMode;
 import appxi.dict.SearchResultEntry;
 import appxi.dict.doc.DictEntry;
-import javafx.geometry.HPos;
 import javafx.scene.Node;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
@@ -49,12 +48,12 @@ public class DictionaryController extends WorkbenchPartController implements Wor
     }
 
     @Override
-    public HPos sideToolAlignment() {
-        return HPos.LEFT;
+    public boolean sideToolAlignTop() {
+        return true;
     }
 
     @Override
-    public void initialize() {
+    public void postConstruct() {
         app.eventBus.addEventHandler(AppEvent.STARTED, event -> {
             final Path dictRepo;
             if (DesktopApp.productionMode) {
@@ -135,7 +134,7 @@ public class DictionaryController extends WorkbenchPartController implements Wor
             //
             dictViewer.navigate(null);
         }));
-        dialog.setOnHidden(evt -> dictViewer.uninstall());
+        dialog.setOnHidden(evt -> dictViewer.deinitialize());
         dialog.show();
     }
 }

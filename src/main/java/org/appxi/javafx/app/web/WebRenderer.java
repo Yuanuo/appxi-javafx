@@ -38,44 +38,31 @@ public abstract class WebRenderer {
     public final WorkbenchApp app;
     public final WorkbenchPane workbench;
     public final StackPane viewport;
+    public final WebPane webPane;
 
-    private WebPane webPane;
     private Runnable progressLayerRemover;
-
-    public WebRenderer(WorkbenchPane workbench) {
-        this(workbench, null);
-    }
 
     public WebRenderer(WorkbenchPane workbench, StackPane viewport) {
         this.app = workbench.application;
         this.workbench = workbench;
         this.viewport = null != viewport ? viewport : new StackPane();
-    }
-
-    public final WebPane webPane() {
-        return this.webPane;
+        this.webPane = new WebPane();
     }
 
     protected void onAppEventStopping(AppEvent event) {
     }
 
     protected void onAppStyleSetting(VisualEvent event) {
-        if (null != this.webPane) {
-            this.applyStyleSheet();
-        }
+        this.applyStyleSheet();
     }
 
     protected void onWebStyleSetting(VisualEvent event) {
-        if (null != this.webPane) {
-            final String selector = webPane.executeScript("getScrollTop1Selector()");
-            this.applyStyleSheet();
-            webPane.executeScript("setScrollTop1BySelectors(\"" + selector + "\")");
-        }
+        final String selector = webPane.executeScript("getScrollTop1Selector()");
+        this.applyStyleSheet();
+        webPane.executeScript("setScrollTop1BySelectors(\"" + selector + "\")");
     }
 
     private void applyStyleSheet() {
-        if (null == this.webPane) return;
-        //
         final RawHolder<byte[]> cssBytes = new RawHolder<>();
         cssBytes.value = """
                 :root {
@@ -123,18 +110,15 @@ public abstract class WebRenderer {
      */
     protected abstract List<InputStream> getAdditionalStyleSheets();
 
-    public void uninstall() {
+    public void deinitialize() {
         app.eventBus.removeEventHandler(AppEvent.STOPPING, _onAppEventStopping);
         app.eventBus.removeEventHandler(VisualEvent.SET_STYLE, _onAppStyleSetting);
         app.eventBus.removeEventHandler(VisualEvent.SET_WEB_STYLE, _onWebStyleSetting);
-        if (null != this.webPane) {
-            this.webPane.reset();
-            this.webPane = null;
-        }
+        this.webPane.reset();
     }
 
-    public void install() {
-        viewport.getChildren().setAll(this.webPane = new WebPane());
+    public void initialize() {
+        viewport.getChildren().setAll(this.webPane);
         //
         app.eventBus.addEventHandler(AppEvent.STOPPING, _onAppEventStopping);
         app.eventBus.addEventHandler(VisualEvent.SET_STYLE, _onAppStyleSetting);
@@ -142,13 +126,6 @@ public abstract class WebRenderer {
     }
 
     public final void navigate(final Object location) {
-        if (null == this.webPane) {
-            install();
-        }
-        if (null == this.webPane) {
-            throw new RuntimeException("webPane cannot be null");
-        }
-        //
         if (!webPane.getProperties().containsKey(AK_INITIALIZED)) {
             webPane.getProperties().put(AK_INITIALIZED, true);
             progressLayerRemover = ProgressLayer.show(viewport, progressLayer -> FxHelper.runThread(60, () -> {

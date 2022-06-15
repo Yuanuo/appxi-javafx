@@ -48,16 +48,16 @@ public abstract class WebViewerPart extends WebViewer implements WorkbenchPart {
 
         @Override
         public final StackPane getViewport() {
-            if (!viewport.getProperties().containsKey(AK_INITIALIZED)) {
-                viewport.getProperties().put(AK_INITIALIZED, true);
-                install();
-            }
             return viewport;
         }
 
         @Override
         public void activeViewport(boolean firstTime) {
             if (firstTime) {
+                if (!viewport.getProperties().containsKey(AK_INITIALIZED)) {
+                    viewport.getProperties().put(AK_INITIALIZED, true);
+                    initialize();
+                }
                 navigate(null);
             }
         }
@@ -82,16 +82,16 @@ public abstract class WebViewerPart extends WebViewer implements WorkbenchPart {
 
         @Override
         public final StackPane getViewport() {
-            if (!viewport.getProperties().containsKey(AK_INITIALIZED)) {
-                viewport.getProperties().put(AK_INITIALIZED, true);
-                install();
-            }
             return viewport;
         }
 
         @Override
         public void activeViewport(boolean firstTime) {
             if (firstTime) {
+                if (!viewport.getProperties().containsKey(AK_INITIALIZED)) {
+                    viewport.getProperties().put(AK_INITIALIZED, true);
+                    initialize();
+                }
                 navigate(null);
             }
         }
@@ -99,7 +99,7 @@ public abstract class WebViewerPart extends WebViewer implements WorkbenchPart {
         @Override
         public void inactiveViewport(boolean closing) {
             if (closing) {
-                uninstall();
+                deinitialize();
             } else {
                 saveUserData();
             }

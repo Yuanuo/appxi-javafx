@@ -129,7 +129,7 @@ public class WorkbenchPane extends BorderPane {
         final long st0 = System.currentTimeMillis();
 
         views.forEach(this::addWorkbenchPart);
-        views.forEach(WorkbenchPart::initialize);
+        views.forEach(WorkbenchPart::postConstruct);
 
         application.logger.warn("load views used time: " + (System.currentTimeMillis() - st0));
     }
@@ -219,13 +219,13 @@ public class WorkbenchPane extends BorderPane {
 
         tool.graphicProperty().bind(part.graphic());
 
-        HPos pos = null;
+        boolean alignTop = true;
         if (part instanceof WorkbenchPart.SideTool sideTool) {
-            pos = sideTool.sideToolAlignment();
+            alignTop = sideTool.sideToolAlignTop();
         } else if (part instanceof WorkbenchPart.SideView sideView) {
-            pos = sideView.sideToolAlignment();
+            alignTop = sideView.sideToolAlignTop();
         }
-        this.sideTools.addAligned(null == pos ? HPos.LEFT : pos, tool);
+        this.sideTools.addAligned(alignTop ? HPos.LEFT : HPos.RIGHT, tool);
     }
 
     private boolean ensureFirstTime(WorkbenchPart part) {

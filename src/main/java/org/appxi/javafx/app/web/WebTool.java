@@ -11,6 +11,6 @@ public abstract class WebTool {
     public WebTool(WebViewer webViewer) {
         this.webViewer = webViewer;
         this.app = webViewer.app;
-        this.webPane = webViewer.webPane();
+        this.webPane = webViewer.webPane;
     }
 }
