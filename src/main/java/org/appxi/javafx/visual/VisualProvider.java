@@ -37,6 +37,11 @@ import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
 public final class VisualProvider {
+    private static final double WEB_FONT_MIN = 1.3;
+    private static final double WEB_FONT_MAX = 4.0;
+    private static final int APP_FONT_MIN = 12;
+    private static final int APP_FONT_MAX = 40;
+
     public final EventBus eventBus;
     private final Supplier<Scene> primarySceneSupplier;
 
@@ -76,7 +81,7 @@ public final class VisualProvider {
     public double webFontSize() {
         double zoomLevel = UserPrefs.prefs.getDouble("web.font.size", -1);
         if (zoomLevel == -1) zoomLevel = UserPrefs.prefs.getDouble("display.zoom", -1);
-        if (zoomLevel < 1.3 || zoomLevel > 3.0)
+        if (zoomLevel < WEB_FONT_MIN || zoomLevel > WEB_FONT_MAX)
             zoomLevel = 1.6;
         return zoomLevel;
     }
@@ -183,9 +188,9 @@ public final class VisualProvider {
             UserPrefs.prefs.setProperty("ui.font.name", fontName);
         }
         //
-        String fontSize = UserPrefs.prefs.getString("ui.font.size", null);
-        if (null == fontSize || fontSize.isBlank()) {
-            fontSize = "14";
+        int fontSize = UserPrefs.prefs.getInt("ui.font.size", 14);
+        if (fontSize < APP_FONT_MIN || fontSize > APP_FONT_MAX) {
+            fontSize = 14;
             UserPrefs.prefs.setProperty("ui.font.size", fontSize);
         }
 
@@ -207,7 +212,7 @@ public final class VisualProvider {
         // 将主界面字号加入CSS根样式中以控制组件跟随字号而缩放
         final ObservableList<String> styleClass = primaryScene.getRoot().getStyleClass();
         styleClass.removeIf(s -> s.startsWith("font-size-"));
-        styleClass.add("font-size-" + fontSize.split("\\.", 2)[0]);
+        styleClass.add("font-size-" + fontSize);
     }
 
     private Option<String> optionForFontSmooth() {
@@ -262,7 +267,7 @@ public final class VisualProvider {
             applyFont();
         });
         return new DefaultOptions<Number>("主界面字号", null, "UI", true)
-                .setValues(IntStream.iterate(12, v -> v <= 40, v -> v + 2).boxed().collect(Collectors.toList()))
+                .setValues(IntStream.iterate(APP_FONT_MIN, v -> v <= APP_FONT_MAX, v -> v + 2).boxed().collect(Collectors.toList()))
                 .setValueProperty(valueProperty);
     }
 
@@ -328,7 +333,7 @@ public final class VisualProvider {
             eventBus.fireEvent(new VisualEvent(VisualEvent.SET_WEB_FONT_SIZE, nv.doubleValue()));
         });
         return new DefaultOptions<Number>("阅读器字号", null, "VIEWER", true)
-                .setValues(DoubleStream.iterate(1.3, v -> v <= 4.0,
+                .setValues(DoubleStream.iterate(WEB_FONT_MIN, v -> v <= WEB_FONT_MAX,
                                 v -> new BigDecimal(v + .1).setScale(1, RoundingMode.HALF_UP).doubleValue())
                         .boxed().collect(Collectors.toList()))
                 .setValueProperty(valueProperty);
