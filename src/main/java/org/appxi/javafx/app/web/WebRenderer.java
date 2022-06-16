@@ -140,6 +140,8 @@ public abstract class WebRenderer {
                         window.setMember("javaApp", createWebCallback());
                         // apply theme
                         webPane.executeScript("document.body.setAttribute('class','" + app.visualProvider + "');");
+                        // 尝试执行onDocumentReady此函数以通知网页端javaApp已准备就绪
+                        webPane.executeScript("(typeof onDocumentReady === 'function') && onDocumentReady(window.javaApp)");
                         //
                         webPane.widthProperty().addListener(observable -> {
                             try {
@@ -188,6 +190,13 @@ public abstract class WebRenderer {
 
     protected abstract Object createWebContent();
 
-    protected abstract WebCallback createWebCallback();
+    protected WebCallback createWebCallback() {
+        return new WebCallback();
+    }
 
+    public static class WebCallback {
+        public void log(String msg) {
+            logger.warn(msg);
+        }
+    }
 }

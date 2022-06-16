@@ -99,11 +99,6 @@ $(document).ready(function () {
         if (rangy) rangy.init();
     } catch (err) {
     }
-
-    try {
-        if (javaApp) javaApp.onDocumentReady();
-    } catch (err) {
-    }
 });
 
 function getValidSelection() {

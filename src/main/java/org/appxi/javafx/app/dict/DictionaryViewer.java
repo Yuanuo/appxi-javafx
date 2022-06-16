@@ -8,8 +8,6 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.Tooltip;
-import org.appxi.javafx.app.web.WebCallback;
-import org.appxi.javafx.app.web.WebRenderer;
 import org.appxi.javafx.app.web.WebToolPrinter;
 import org.appxi.javafx.app.web.WebViewer;
 import org.appxi.javafx.visual.MaterialIcon;
@@ -99,8 +97,8 @@ class DictionaryViewer extends WebViewer {
     }
 
     @Override
-    protected WebCallback createWebCallback() {
-        return new WebCallbackImpl(this);
+    protected WebCallbackImpl createWebCallback() {
+        return new WebCallbackImpl();
     }
 
     protected ContextMenu createWebViewContextMenu() {
@@ -131,11 +129,7 @@ class DictionaryViewer extends WebViewer {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public class WebCallbackImpl extends WebCallback {
-        public WebCallbackImpl(WebRenderer webRenderer) {
-            super(webRenderer);
-        }
-
+    public class WebCallbackImpl extends WebViewer.WebCallbackImpl {
         public void seeAlso(String dictId, String keyword) {
             controller.app.eventBus.fireEvent(DictionaryEvent.ofSearchExact(dictId, keyword));
         }

@@ -6,7 +6,6 @@ import javafx.collections.transformation.FilteredList;
 import javafx.geometry.HPos;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBase;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.SplitPane;
@@ -162,18 +161,6 @@ public class WorkbenchPane extends BorderPane {
         }
     }
 
-    public void addWorkbenchPartAsSideTool(WorkbenchPart.SideTool part) {
-        final Button tool = new Button();
-        addSideTool(tool, part);
-        tool.setOnAction(event -> FxHelper.runLater(() -> part.activeViewport(ensureFirstTime(part))));
-    }
-
-    public void addWorkbenchPartAsSideView(WorkbenchPart.SideView part) {
-        final ToggleButton tool = new ToggleButton();
-        addSideTool(tool, part);
-        tool.setToggleGroup(sideToolsGroup);
-    }
-
     public void addWorkbenchPartAsMainView(WorkbenchPart.MainView part, boolean addToEnd) {
         final Tab tool = new Tab();
         tool.idProperty().bind(part.id());
@@ -204,6 +191,25 @@ public class WorkbenchPane extends BorderPane {
 
         final int addToIdx = addToEnd ? this.mainViews.getTabs().size() : this.mainViews.getSelectionModel().getSelectedIndex() + 1;
         this.mainViews.getTabs().add(addToIdx, tool);
+    }
+
+    public void addWorkbenchPartAsSideTool(WorkbenchPart.SideTool part) {
+        final ToggleButton tool = new ToggleButton();
+        addSideTool(tool, part);
+        tool.setOnAction(event -> FxHelper.runLater(() -> {
+            try {
+                part.activeViewport(ensureFirstTime(part));
+            } finally {
+                // 总是重置选中状态以避免更改样式
+                tool.setSelected(false);
+            }
+        }));
+    }
+
+    public void addWorkbenchPartAsSideView(WorkbenchPart.SideView part) {
+        final ToggleButton tool = new ToggleButton();
+        addSideTool(tool, part);
+        tool.setToggleGroup(sideToolsGroup);
     }
 
     private void addSideTool(ButtonBase tool, WorkbenchPart part) {

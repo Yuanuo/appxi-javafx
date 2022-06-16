@@ -11,6 +11,7 @@ import org.appxi.javafx.app.AppEvent;
 import org.appxi.javafx.app.DesktopApp;
 import org.appxi.javafx.app.dict.DictionaryEvent;
 import org.appxi.javafx.app.search.SearcherEvent;
+import org.appxi.javafx.helper.FxHelper;
 import org.appxi.javafx.web.WebFindByMarks;
 import org.appxi.javafx.workbench.WorkbenchPane;
 import org.appxi.prefs.UserPrefs;
@@ -124,7 +125,7 @@ public abstract class WebViewer extends WebRenderer {
         //
         position(position);
         //
-        this.webPane.webView().requestFocus();
+        FxHelper.runThread(30, () -> this.webPane.webView().requestFocus());
     }
 
     protected final void position(Attributes pos) {
@@ -280,5 +281,18 @@ public abstract class WebViewer extends WebRenderer {
             menuItem.setText("查拼音：<选择1~10字>，并点击可复制");
         }
         return menuItem;
+    }
+
+    @Override
+    protected WebCallbackImpl createWebCallback() {
+        return new WebCallbackImpl();
+    }
+
+    public class WebCallbackImpl extends WebCallback {
+        public void updateFinderState(int index, int count) {
+            if (null != webFinder) {
+                webFinder.state(index, count);
+            }
+        }
     }
 }
