@@ -2,8 +2,6 @@ package org.appxi.javafx.app.web;
 
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.DataFormat;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
@@ -24,35 +22,36 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public abstract class WebViewer extends WebRenderer {
-    public static List<String> getWebIncludeURIs() {
-        Path dir = null;
+    public static Path getWebIncludeDir() {
         if (DesktopApp.productionMode) {
-            dir = DesktopApp.appDir().resolve("template/web-incl");
+            return DesktopApp.appDir().resolve("template/web-incl");
         } else {
             for (int i = 0; i < 3; i++) {
                 Path javafxDir = Path.of("../".repeat(i) + "appxi-javafx");
                 if (FileHelper.exists(javafxDir)) {
-                    dir = javafxDir.resolve("repo/web-incl");
-                    break;
+                    return javafxDir.resolve("repo/web-incl");
                 }
             }
         }
+        return null;
+    }
+
+    public static List<String> getWebIncludeURIs() {
+        Path dir = getWebIncludeDir();
         if (null == dir) {
             throw new RuntimeException("web-incl not found");
         }
-        Path finalDir = dir;
         return Stream.of("jquery.min.js", "jquery.ext.js",
                         "jquery.isinviewport.js", "jquery.scrollto.js",
                         "jquery.mark.js", "jquery.mark.finder.js",
                         "popper.min.js", "tippy-bundle.umd.min.js",
                         "rangy-core.js", "rangy-serializer.js",
                         "app-base.css", "app-base.js")
-                .map(s -> finalDir.resolve(s).toUri().toString())
+                .map(s -> dir.resolve(s).toUri().toString())
                 .collect(Collectors.toList());
     }
 
@@ -82,7 +81,7 @@ public abstract class WebViewer extends WebRenderer {
 
     protected abstract String locationId();
 
-    public void saveUserData() {
+    protected void saveUserData() {
         try {
             final double scrollTopPercentage = this.webPane.getScrollTopPercentage();
             UserPrefs.recents.setProperty(locationId() + ".percent", scrollTopPercentage);
@@ -173,7 +172,7 @@ public abstract class WebViewer extends WebRenderer {
     protected void onWebShortcut_findInPage(KeyEvent event) {
         // Ctrl + F
         if (!event.isConsumed() && event.isShortcutDown()
-                && event.getCode() == KeyCode.F) {
+            && event.getCode() == KeyCode.F) {
             // 如果有选中文字，则按查找选中文字处理
             String selText = this.webPane.executeScript("getValidSelectionText()");
             selText = null == selText ? null : selText.strip().replace('\n', ' ');
@@ -185,7 +184,7 @@ public abstract class WebViewer extends WebRenderer {
     protected void onWebShortcut_search(KeyEvent event) {
         // Ctrl + G, Ctrl + H
         if (!event.isConsumed() && event.isShortcutDown()
-                && (event.getCode() == KeyCode.G || event.getCode() == KeyCode.H)) {
+            && (event.getCode() == KeyCode.G || event.getCode() == KeyCode.H)) {
             // 如果有选中文字，则按查找选中文字处理
             final String selText = this.webPane.executeScript("getValidSelectionText()");
             app.eventBus.fireEvent(event.getCode() == KeyCode.G
@@ -199,7 +198,7 @@ public abstract class WebViewer extends WebRenderer {
     protected void onWebShortcut_dict(KeyEvent event) {
         // Ctrl + D
         if (!event.isConsumed() && event.isShortcutDown()
-                && event.getCode() == KeyCode.D) {
+            && event.getCode() == KeyCode.D) {
             // 如果有选中文字，则按选中文字处理
             String origText = this.webPane.executeScript("getValidSelectionText()");
             String trimText = null == origText ? null : origText.strip().replace('\n', ' ');
@@ -223,7 +222,7 @@ public abstract class WebViewer extends WebRenderer {
     protected MenuItem createMenu_copy(String origText, String availText) {
         MenuItem menuItem = new MenuItem("复制文字");
         menuItem.setDisable(null == availText);
-        menuItem.setOnAction(event -> Clipboard.getSystemClipboard().setContent(Map.of(DataFormat.PLAIN_TEXT, origText)));
+        menuItem.setOnAction(event -> FxHelper.copyText(origText));
         return menuItem;
     }
 
@@ -274,7 +273,7 @@ public abstract class WebViewer extends WebRenderer {
             final String strPy = PinyinHelper.pinyin(str, true);
             menuItem.setText("查拼音：" + strPy);
             menuItem.setOnAction(event -> {
-                Clipboard.getSystemClipboard().setContent(Map.of(DataFormat.PLAIN_TEXT, str + "\n" + strPy));
+                FxHelper.copyText(str + "\n" + strPy);
                 app.toast("已复制拼音到剪贴板！");
             });
         } else {

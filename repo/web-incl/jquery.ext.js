@@ -34,6 +34,18 @@ jQuery.fn.cssSelector = function () {
     });
     return paths.join(',');
 };
+jQuery.fn.cssSelectorEx = function () {
+    if (this.is("[id]"))
+        return this.tagName() + '#' + this.attr('id');
+    else if (this.is("span.note"))
+        return "span." + this.attr("class").replaceAll("  ", " ").replaceAll(" ", ".") + "[data-n='" + (this.attr('data-n')) + "']";
+    else if (this.is("[data-n]"))
+        return this.tagName() + "." + this.attr("class").replaceAll("  ", " ").replaceAll(" ", ".") + "[data-n='" + (this.attr('data-n')) + "']";
+    else if (this.is("span.lb"))
+        return "span.lb[data-n='" + (this.attr('data-n')) + "']:first";
+    return this.cssSelector();
+};
+
 jQuery.fn.traverse = function (predicate) {
     if (predicate(this[0]))
         return true;

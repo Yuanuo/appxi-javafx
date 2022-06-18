@@ -1,14 +1,4 @@
-jQuery.fn.cssSelectorEx = function () {
-    if (this.is("[id]"))
-        return this.tagName() + '#' + this.attr('id');
-    else if (this.is("span.note"))
-        return "span." + this.attr("class").replaceAll("  ", " ").replaceAll(" ", ".") + "[data-n='" + (this.attr('data-n')) + "']";
-    else if (this.is("[data-n]"))
-        return this.tagName() + "." + this.attr("class").replaceAll("  ", " ").replaceAll(" ", ".") + "[data-n='" + (this.attr('data-n')) + "']";
-    else if (this.is("span.lb"))
-        return "span.lb[data-n='" + (this.attr('data-n')) + "']:first";
-    return this.cssSelector();
-};
+var urlParams = new URLSearchParams(window.location.search);
 
 function getScrollTopNElements(num = 10) {
     const list = $("body > article *:in-viewport");
@@ -71,35 +61,6 @@ function setScrollTop1BySelectors(selector, percent = 0) {
     $("html, body").animate({scrollTop: scrollTop}, 150);
 }
 
-
-var javaApp;
-let resizeBodyTimer;
-let markedScrollTop1Selector;
-let documentLoaded = false;
-
-function onBodyResizeBefore() {
-    if (!documentLoaded) return;
-    markedScrollTop1Selector = markedScrollTop1Selector || getScrollTop1Selector();
-}
-
-$(document).ready(function () {
-    documentLoaded = true;
-    document.body.onresize = function () {
-        if (!documentLoaded) return;
-        if (resizeBodyTimer) clearTimeout(resizeBodyTimer);
-        resizeBodyTimer = setTimeout(function () {
-            resizeBodyTimer = null;
-            if (!markedScrollTop1Selector) return;
-            setScrollTop1BySelectors(markedScrollTop1Selector, 0);
-            markedScrollTop1Selector = null;
-        }, 200);
-    };
-
-    try {
-        if (rangy) rangy.init();
-    } catch (err) {
-    }
-});
 
 function getValidSelection() {
     const selection = window.getSelection();

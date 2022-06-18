@@ -13,7 +13,6 @@ import org.appxi.javafx.app.web.WebViewer;
 import org.appxi.javafx.visual.MaterialIcon;
 import org.appxi.util.StringHelper;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,13 +39,8 @@ class DictionaryViewer extends WebViewer {
     }
 
     @Override
-    public void saveUserData() {
+    protected void saveUserData() {
         //
-    }
-
-    @Override
-    protected List<InputStream> getAdditionalStyleSheets() {
-        return null == controller.webCssSupplier ? List.of() : controller.webCssSupplier.get();
     }
 
     @Override

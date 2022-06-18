@@ -6,6 +6,8 @@ import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Labeled;
 import javafx.scene.control.SelectionModel;
 import javafx.scene.control.TextField;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.DataFormat;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
@@ -13,6 +15,7 @@ import org.appxi.javafx.control.ListViewEx;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -134,5 +137,15 @@ public abstract class FxHelper {
             node = node.getParent();
         }
         return Optional.empty();
+    }
+
+    /**
+     * 复制文字到剪贴板
+     *
+     * @param text 要复制的文字
+     */
+    public static void copyText(String text) {
+        // 必须用Platform.runLater，否则内容会被清除掉而复制失败
+        Platform.runLater(() -> Clipboard.getSystemClipboard().setContent(Map.of(DataFormat.PLAIN_TEXT, text)));
     }
 }

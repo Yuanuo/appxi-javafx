@@ -4,7 +4,6 @@ import javafx.concurrent.Worker;
 import javafx.scene.layout.StackPane;
 import netscape.javascript.JSObject;
 import org.appxi.event.EventHandler;
-import org.appxi.holder.RawHolder;
 import org.appxi.javafx.app.AppEvent;
 import org.appxi.javafx.control.ProgressLayer;
 import org.appxi.javafx.helper.FxHelper;
@@ -16,15 +15,8 @@ import org.appxi.prefs.UserPrefs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedInputStream;
-import java.io.InputStream;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.Base64;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
 
 public abstract class WebRenderer {
     protected static final Logger logger = LoggerFactory.getLogger(WebRenderer.class);
@@ -49,66 +41,50 @@ public abstract class WebRenderer {
         this.webPane = new WebPane();
     }
 
-    protected void onAppEventStopping(AppEvent event) {
-    }
-
-    protected void onAppStyleSetting(VisualEvent event) {
-        this.applyStyleSheet();
-    }
-
-    protected void onWebStyleSetting(VisualEvent event) {
-        final String selector = webPane.executeScript("getScrollTop1Selector()");
-        this.applyStyleSheet();
-        webPane.executeScript("setScrollTop1BySelectors(\"" + selector + "\")");
-    }
-
-    private void applyStyleSheet() {
-        final RawHolder<byte[]> cssBytes = new RawHolder<>();
-        cssBytes.value = """
-                :root {
-                    --font-family: tibetan, "%s", AUTO !important;
-                    --zoom: %.2f !important;
-                    --text-color: %s;
-                }
-                body {
-                    background-color: %s;
-                }
-                """.formatted(
-                        app.visualProvider.webFontName(),
-                        app.visualProvider.webFontSize(),
-                        app.visualProvider.webTextColor(),
-                        app.visualProvider.webPageColor()
-                )
-                .getBytes(StandardCharsets.UTF_8);
-
-        Consumer<InputStream> combiner = stream -> {
-            try (BufferedInputStream in = new BufferedInputStream(stream)) {
-                int pos = cssBytes.value.length;
-                byte[] tmpBytes = new byte[pos + in.available()];
-                System.arraycopy(cssBytes.value, 0, tmpBytes, 0, pos);
-                cssBytes.value = tmpBytes;
-                //noinspection ResultOfMethodCallIgnored
-                in.read(cssBytes.value, pos, in.available());
-            } catch (Exception exception) {
-                logger.warn("combine css", exception);
-            }
-        };
-        // 加载主题相关的CSS
-        Optional.ofNullable(VisualEvent.class.getResourceAsStream("web.css")).ifPresent(combiner);
-        // 加载应用相关的CSS
-        Optional.ofNullable(getAdditionalStyleSheets()).ifPresent(v -> v.forEach(combiner));
-        // 编码成base64并应用
-        String cssData = "data:text/css;charset=utf-8;base64," + Base64.getMimeEncoder().encodeToString(cssBytes.value);
-        FxHelper.runLater(() -> {
-            webPane.webEngine().setUserStyleSheetLocation(cssData);
-            webPane.executeScript("document.body.setAttribute('class','" + app.visualProvider + "');");
-        });
+    protected final String getWebStyleSheetLocationScript() {
+        return """
+                       window.setUserStyleSheetLocation = function(src) {
+                           let ele = document.querySelector('html > head > link#CSS');
+                           if (ele) {
+                               ele.setAttribute('href', src);
+                           } else {
+                               ele = document.createElement('link');
+                               ele.setAttribute('id', 'CSS');
+                               ele.setAttribute('rel', 'stylesheet');
+                               ele.setAttribute('type', 'text/css');
+                               ele.setAttribute('href', src);
+                               document.head.appendChild(ele);
+                           }
+                       };
+                       """
+               + "setUserStyleSheetLocation('" + app.visualProvider.getWebStyleSheetLocationURI() + "');";
     }
 
     /**
-     * 获取应用相关的CSS
+     * 响应App关闭事件，在App关闭过程中可在此处做一些数据保存等操作
      */
-    protected abstract List<InputStream> getAdditionalStyleSheets();
+    protected void onAppEventStopping(AppEvent event) {
+    }
+
+    /**
+     * 响应App样式修改事件
+     */
+    protected void onAppStyleSetting(VisualEvent event) {
+        // APP样式只涉及 明/暗 和 颜色，此时只需直接更改即可
+        webPane.executeScript("document.body.setAttribute('class','" + app.visualProvider + "');"
+                              + getWebStyleSheetLocationScript());
+    }
+
+    /**
+     * 响应Web样式修改事件，字体、字号、字色、底色等改变时触发
+     */
+    protected void onWebStyleSetting(VisualEvent event) {
+        // 以不重载页面的方式动态更新
+        webPane.executeScript("window._selector = typeof(getScrollTop1Selector) === 'function' && getScrollTop1Selector() || -1;"
+                              + getWebStyleSheetLocationScript()
+                              + "_selector && _selector !== -1 && setScrollTop1BySelectors(_selector);"
+        );
+    }
 
     public void deinitialize() {
         app.eventBus.removeEventHandler(AppEvent.STOPPING, _onAppEventStopping);
@@ -118,6 +94,8 @@ public abstract class WebRenderer {
     }
 
     public void initialize() {
+        // 标记此函数已被显式调用
+        viewport.getProperties().put(AK_INITIALIZED, true);
         viewport.getChildren().setAll(this.webPane);
         //
         app.eventBus.addEventHandler(AppEvent.STOPPING, _onAppEventStopping);
@@ -126,26 +104,28 @@ public abstract class WebRenderer {
     }
 
     public final void navigate(final Object location) {
+        // 检查是否已调用函数initialize
+        if (!viewport.getProperties().containsKey(AK_INITIALIZED)) {
+            initialize();
+        }
+        // 在首次使用时需要触发一些特殊操作
         if (!webPane.getProperties().containsKey(AK_INITIALIZED)) {
             webPane.getProperties().put(AK_INITIALIZED, true);
             progressLayerRemover = ProgressLayer.show(viewport, progressLayer -> FxHelper.runThread(60, () -> {
                 webPane.webEngine().setUserDataDirectory(UserPrefs.cacheDir().toFile());
-                // apply theme
-                this.applyStyleSheet();
                 //
                 webPane.webEngine().getLoadWorker().stateProperty().addListener((o, ov, state) -> {
                     if (state == Worker.State.SUCCEEDED) {
                         // set an interface object named 'javaApp' in the web engine's page
                         final JSObject window = webPane.executeScript("window");
-                        window.setMember("javaApp", createWebCallback());
-                        // apply theme
-                        webPane.executeScript("document.body.setAttribute('class','" + app.visualProvider + "');");
-                        // 尝试执行onDocumentReady此函数以通知网页端javaApp已准备就绪
-                        webPane.executeScript("(typeof onDocumentReady === 'function') && onDocumentReady(window.javaApp)");
+                        window.setMember("javaApp", _javaApp);
+                        // apply theme; 尝试执行onDocumentReady此函数以通知网页端javaApp已准备就绪
+                        webPane.executeScript("document.body.setAttribute('class','" + app.visualProvider + "');" +
+                                              "typeof(onDocumentReady) === 'function' && onDocumentReady(window.javaApp)");
                         //
                         webPane.widthProperty().addListener(observable -> {
                             try {
-                                webPane.executeScript("onBodyResizeBefore()");
+                                webPane.executeScript("typeof(onBodyResizeBefore) === 'function' && onBodyResizeBefore()");
                             } catch (Throwable ignore) {
                             }
                         });
@@ -168,13 +148,22 @@ public abstract class WebRenderer {
     }
 
     protected void navigating(Object location, boolean firstTime) {
-        final Object webContent = createWebContent();
+        Object webContent = createWebContent();
         if (webContent instanceof Path file) {
-            logger.warn("load FILE: " + file);
-            FxHelper.runLater(() -> webPane.webEngine().load(file.toUri().toString()));
-        } else if (webContent instanceof URI uri) {
-            logger.warn("load URI: " + uri);
-            FxHelper.runLater(() -> webPane.webEngine().load(uri.toString()));
+            webContent = file.toUri();
+        }
+        if (webContent instanceof URI uri) {
+            try {
+                String uriStr = uri.toString();
+                String uriParams = "theme=" + app.visualProvider.toString().replace(' ', '+');
+                //
+                uriStr = uriStr + (uriStr.contains("?") ? "&" : "?") + uriParams;
+                uri = new URI(uriStr);
+            } catch (Exception ignore) {
+            }
+            final String uriStr = uri.toString();
+            logger.warn("load URI: " + uriStr);
+            FxHelper.runLater(() -> webPane.webEngine().load(uriStr));
         } else if (webContent instanceof String text) {
             logger.warn("load TEXT: " + text.length());
             FxHelper.runLater(() -> webPane.webEngine().loadContent(text));
@@ -189,6 +178,15 @@ public abstract class WebRenderer {
     }
 
     protected abstract Object createWebContent();
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * for communication from the Javascript engine.
+     * <p>
+     * 此处必须存在一个实例属性，否则Webkit中会回收掉window.javaApp
+     */
+    private final WebCallback _javaApp = createWebCallback();
 
     protected WebCallback createWebCallback() {
         return new WebCallback();

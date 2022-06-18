@@ -28,7 +28,9 @@ import org.appxi.util.ext.RawVal;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.Base64;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -42,7 +44,7 @@ public final class VisualProvider {
     private static final int APP_FONT_MIN = 12;
     private static final int APP_FONT_MAX = 40;
 
-    public final EventBus eventBus;
+    private final EventBus eventBus;
     private final Supplier<Scene> primarySceneSupplier;
 
     private Visual visual;
@@ -109,6 +111,11 @@ public final class VisualProvider {
         this.applyTheme(null);
         this.applySwatch(null);
         this.applyVisual(null);
+
+        if (null != eventBus) {
+            eventBus.addEventHandler(VisualEvent.SET_STYLE, event -> _cachedWebStyleSheetLocationURI = null);
+            eventBus.addEventHandler(VisualEvent.SET_WEB_STYLE, event -> _cachedWebStyleSheetLocationURI = null);
+        }
     }
 
     @Override
@@ -373,5 +380,37 @@ public final class VisualProvider {
                         .toList())
                 .showAndWait()
                 .ifPresent(card -> property.set(card.userData()));
+    }
+
+    private String _cachedWebStyleSheetLocationURI;
+
+    /**
+     * 针对Web显示工具的用户定义样式，此函数构建经过Base64编码的内嵌URI，
+     * 可直接用于css标签的href属性
+     *
+     * @return 以data:text/css;开始的内嵌URI
+     */
+    public String getWebStyleSheetLocationURI() {
+        if (null != _cachedWebStyleSheetLocationURI) {
+            return _cachedWebStyleSheetLocationURI;
+        }
+        String css = """
+                :root {
+                    --font-family: tibetan, "%s", AUTO !important;
+                    --zoom: %.2f !important;
+                    --text-color: %s;
+                }
+                body {
+                    background-color: %s;
+                }
+                """.formatted(
+                webFontName(),
+                webFontSize(),
+                webTextColor(),
+                webPageColor()
+        );
+        String cssData = Base64.getMimeEncoder().encodeToString(css.getBytes(StandardCharsets.UTF_8));
+        cssData = cssData.replaceAll("[\r\n]", "");
+        return _cachedWebStyleSheetLocationURI = "data:text/css;charset=utf-8;base64," + cssData;
     }
 }

@@ -23,18 +23,15 @@ import org.appxi.javafx.workbench.WorkbenchPart;
 import org.appxi.javafx.workbench.WorkbenchPartController;
 import org.appxi.util.FileHelper;
 
-import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Supplier;
 
 public class DictionaryController extends WorkbenchPartController implements WorkbenchPart.SideTool {
-    final Supplier<List<InputStream>> webCssSupplier;
     final Supplier<List<String>> webIncludesSupplier;
 
     public DictionaryController(WorkbenchPane workbench,
-                                Supplier<List<InputStream>> webCssSupplier,
                                 Supplier<List<String>> webIncludesSupplier) {
         super(workbench);
 
@@ -43,7 +40,6 @@ public class DictionaryController extends WorkbenchPartController implements Wor
         this.tooltip.set("查词典 (Ctrl+D)");
         this.graphic.set(MaterialIcon.TRANSLATE.graphic());
 
-        this.webCssSupplier = webCssSupplier;
         this.webIncludesSupplier = webIncludesSupplier;
     }
 
