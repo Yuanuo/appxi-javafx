@@ -90,7 +90,7 @@ const markFinder = {
     getHighlights: (textCutLen = 21) => {
         const result = [];
         $("body > article mark").each(function(i) {
-            result.push((i+1) + "#" + $(this).centerText(textCutLen).replaceAll(/\n\s+/g, ' '));
+            result.push((i+1) + "#" + $(this).centerText(textCutLen).replaceAll(/[\r\n\s]+/g, ' '));
         });
         return result.join("\n");
     },
