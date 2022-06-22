@@ -37,7 +37,7 @@ public class WebPane extends BorderPane {
         try {
             com.sun.webkit.WebPage.getWorkerThreadCount();
             com.sun.javafx.webkit.WebConsoleListener.setDefaultListener((webView, message, lineNumber, sourceId) ->
-                    logger.warn(StringHelper.concat(message, "[at ", lineNumber, "]")));
+                    logger.info(StringHelper.concat(message, "[at ", lineNumber, "]")));
         } catch (Throwable e) {
             logger.error("load library for WebView Failed", e);
         }

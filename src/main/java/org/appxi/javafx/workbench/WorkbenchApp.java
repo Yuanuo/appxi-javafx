@@ -36,7 +36,7 @@ public abstract class WorkbenchApp extends DesktopApp {
         if (UserPrefs.prefs.getBoolean("workbench.sides.visible", true))
             FxHelper.runThread(() -> {
                 workbench.selectSideTool(null);
-                logger.warn(StringHelper.concat("home-view shown after: ", System.currentTimeMillis() - startTime));
+                logger.info(StringHelper.concat("home-view shown after: ", System.currentTimeMillis() - startTime));
             });
 
         super.started(primaryStage);

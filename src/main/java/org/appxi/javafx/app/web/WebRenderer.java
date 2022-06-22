@@ -162,10 +162,10 @@ public abstract class WebRenderer {
             } catch (Exception ignore) {
             }
             final String uriStr = uri.toString();
-            logger.warn("load URI: " + uriStr);
+            logger.info("load URI: " + uriStr);
             FxHelper.runLater(() -> webPane.webEngine().load(uriStr));
         } else if (webContent instanceof String text) {
-            logger.warn("load TEXT: " + text.length());
+            logger.info("load TEXT: " + text.length());
             FxHelper.runLater(() -> webPane.webEngine().loadContent(text));
         }
     }
@@ -194,7 +194,7 @@ public abstract class WebRenderer {
 
     public static class WebCallback {
         public void log(String msg) {
-            logger.warn(msg);
+            logger.info(msg);
         }
     }
 }

@@ -55,7 +55,7 @@ public final class FontFaceHelper {
                     if (filterExists.contains(id)) continue;
                     filterExists.add(id);
                     //
-                    logger.warn("fixing font " + id);
+                    logger.info("fixing font " + id);
                     if (null != Font.loadFont(Path.of(fr.getFileName()).toUri().toString(), Font.getDefault().getSize()))
                         allFamilyNames.add(fr.getFamilyName());
                 }

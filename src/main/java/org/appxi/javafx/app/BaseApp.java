@@ -97,7 +97,7 @@ public abstract class BaseApp extends javafx.application.Application {
             started(primaryStage);
 
             // for debug only
-            logger.warn("App startup after: %d".formatted(System.currentTimeMillis() - startTime));
+            logger.info("App startup after: %d".formatted(System.currentTimeMillis() - startTime));
         }).whenComplete((ret, err) -> {
             if (null != err) err.printStackTrace();
         });
@@ -105,22 +105,22 @@ public abstract class BaseApp extends javafx.application.Application {
 
     protected void starting(Scene primaryScene) {
         // for debug only
-        logger.warn("starting after: %d".formatted(System.currentTimeMillis() - startTime));
+        logger.info("starting after: %d".formatted(System.currentTimeMillis() - startTime));
         eventBus.fireEvent(new AppEvent(AppEvent.STARTING));
         // for debug only
-        logger.warn("post init after: %d".formatted(System.currentTimeMillis() - startTime));
+        logger.info("post init after: %d".formatted(System.currentTimeMillis() - startTime));
     }
 
     protected void showing(Stage primaryStage) {
         // for debug only
-        logger.warn("primaryStage showing after: %d".formatted(System.currentTimeMillis() - startTime));
+        logger.info("primaryStage showing after: %d".formatted(System.currentTimeMillis() - startTime));
         primaryStage.show();
         // for debug only
-        logger.warn("primaryStage shown after: %d".formatted(System.currentTimeMillis() - startTime));
+        logger.info("primaryStage shown after: %d".formatted(System.currentTimeMillis() - startTime));
         //
         visualProvider.initialize();
         // for debug only
-        logger.warn("visual initialize after: %d".formatted(System.currentTimeMillis() - startTime));
+        logger.info("visual initialize after: %d".formatted(System.currentTimeMillis() - startTime));
     }
 
     protected void started(Stage primaryStage) {

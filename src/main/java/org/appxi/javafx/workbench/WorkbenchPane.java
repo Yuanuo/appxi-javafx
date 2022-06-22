@@ -130,7 +130,7 @@ public class WorkbenchPane extends BorderPane {
         views.forEach(this::addWorkbenchPart);
         views.forEach(WorkbenchPart::postConstruct);
 
-        application.logger.warn("load views used time: " + (System.currentTimeMillis() - st0));
+        application.logger.info("load views used time: " + (System.currentTimeMillis() - st0));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
