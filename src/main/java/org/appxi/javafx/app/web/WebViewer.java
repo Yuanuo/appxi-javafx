@@ -4,7 +4,6 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.StackPane;
 import org.appxi.javafx.app.AppEvent;
 import org.appxi.javafx.app.DesktopApp;
 import org.appxi.javafx.app.dict.DictionaryEvent;
@@ -59,8 +58,8 @@ public abstract class WebViewer extends WebRenderer {
 
     private Attributes position;
 
-    public WebViewer(WorkbenchPane workbench, StackPane viewport) {
-        super(workbench, viewport);
+    public WebViewer(WorkbenchPane workbench) {
+        super(workbench);
     }
 
     public final WebFindByMarks webFinder() {

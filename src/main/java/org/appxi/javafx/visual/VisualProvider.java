@@ -390,18 +390,33 @@ public final class VisualProvider {
      *
      * @return 以data:text/css;开始的内嵌URI
      */
-    public String getWebStyleSheetLocationURI() {
+    public String getWebStyleSheetURI() {
         if (null != _cachedWebStyleSheetLocationURI) {
             return _cachedWebStyleSheetLocationURI;
         }
-        String css = """
+        String cssData = Base64.getMimeEncoder().encodeToString(getWebStyleSheetCSS().getBytes(StandardCharsets.UTF_8));
+        cssData = cssData.replaceAll("[\r\n]", "");
+        return _cachedWebStyleSheetLocationURI = "data:text/css;charset=utf-8;base64," + cssData;
+    }
+
+    public String getWebStyleSheetCSS() {
+        return """
                 :root {
                     --font-family: tibetan, "%s", AUTO !important;
                     --zoom: %.2f !important;
+                    --font-size: calc(var(--zoom) * 1rem);
                     --text-color: %s;
                 }
+                * {
+                    font-family: var(--font-family);
+                }
+                                
                 body {
                     background-color: %s;
+                    font-family: var(--font-family) !;
+                    font-size: var(--font-size);
+                    color: var(--text-color);
+                    line-height: calc(var(--font-size) * 1.85);
                 }
                 """.formatted(
                 webFontName(),
@@ -409,8 +424,5 @@ public final class VisualProvider {
                 webTextColor(),
                 webPageColor()
         );
-        String cssData = Base64.getMimeEncoder().encodeToString(css.getBytes(StandardCharsets.UTF_8));
-        cssData = cssData.replaceAll("[\r\n]", "");
-        return _cachedWebStyleSheetLocationURI = "data:text/css;charset=utf-8;base64," + cssData;
     }
 }

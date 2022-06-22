@@ -23,7 +23,7 @@ class DictionaryViewer extends WebViewer {
     private boolean _searchAllDictionaries;
 
     public DictionaryViewer(DictionaryController controller, DictEntry dictEntry) {
-        super(controller.workbench, null);
+        super(controller.workbench);
         this.controller = controller;
         this.dictEntry = dictEntry;
     }

@@ -34,10 +34,10 @@ public abstract class WebRenderer {
 
     private Runnable progressLayerRemover;
 
-    public WebRenderer(WorkbenchPane workbench, StackPane viewport) {
+    public WebRenderer(WorkbenchPane workbench) {
         this.app = workbench.application;
         this.workbench = workbench;
-        this.viewport = null != viewport ? viewport : new StackPane();
+        this.viewport = new StackPane();
         this.webPane = new WebPane();
     }
 
@@ -57,7 +57,7 @@ public abstract class WebRenderer {
                            }
                        };
                        """
-               + "setUserStyleSheetLocation('" + app.visualProvider.getWebStyleSheetLocationURI() + "');";
+               + "setUserStyleSheetLocation('" + app.visualProvider.getWebStyleSheetURI() + "');";
     }
 
     /**

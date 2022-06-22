@@ -17,8 +17,8 @@ public abstract class WebRendererPart extends WebRenderer implements WorkbenchPa
     public final StringProperty tooltip = new SimpleStringProperty();
     public final ObjectProperty<Node> graphic = new SimpleObjectProperty<>();
 
-    public WebRendererPart(WorkbenchPane workbench, StackPane viewport) {
-        super(workbench, viewport);
+    public WebRendererPart(WorkbenchPane workbench) {
+        super(workbench);
     }
 
     @Override
@@ -42,8 +42,8 @@ public abstract class WebRendererPart extends WebRenderer implements WorkbenchPa
     }
 
     public static abstract class SideView extends WebRendererPart implements WorkbenchPart.SideView {
-        public SideView(WorkbenchPane workbench, StackPane viewport) {
-            super(workbench, viewport);
+        public SideView(WorkbenchPane workbench) {
+            super(workbench);
         }
 
         @Override
@@ -68,8 +68,8 @@ public abstract class WebRendererPart extends WebRenderer implements WorkbenchPa
     public static abstract class MainView extends WebRendererPart implements WorkbenchPart.MainView {
         public final StringProperty appTitle = new SimpleStringProperty();
 
-        public MainView(WorkbenchPane workbench, StackPane viewport) {
-            super(workbench, viewport);
+        public MainView(WorkbenchPane workbench) {
+            super(workbench);
         }
 
         @Override
