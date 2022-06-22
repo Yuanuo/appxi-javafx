@@ -163,9 +163,37 @@ public abstract class WebViewer extends WebRenderer {
     }
 
     protected void handleWebViewShortcuts(KeyEvent event) {
+        onWebShortcut_arrow(event);
         onWebShortcut_findInPage(event);
         onWebShortcut_search(event);
         onWebShortcut_dict(event);
+    }
+
+    protected void onWebShortcut_arrow(KeyEvent event) {
+        if (!event.isConsumed()) {
+            // LEFT 避免切换TAB
+            if (event.getCode() == KeyCode.LEFT || event.getCode() == KeyCode.KP_LEFT) {
+                event.consume();
+                return;
+            }
+            // RIGHT 避免切换TAB
+            if (event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.KP_RIGHT) {
+                event.consume();
+                return;
+            }
+            // HOME 到页首
+            if (event.getCode() == KeyCode.HOME) {
+                event.consume();
+                this.webPane.executeScript("setScrollTop1BySelectors(null, 0)");
+                return;
+            }
+            // END 到页尾
+            if (event.getCode() == KeyCode.END) {
+                event.consume();
+                this.webPane.executeScript("setScrollTop1BySelectors(null, 1)");
+                return;
+            }
+        }
     }
 
     protected void onWebShortcut_findInPage(KeyEvent event) {
