@@ -53,11 +53,13 @@ public abstract class WebRendererPart extends WebRenderer implements WorkbenchPa
 
         @Override
         public void activeViewport(boolean firstTime) {
+            // 确保initialize函数被调用
+            if (!viewport.getProperties().containsKey(AK_INITIALIZED)) {
+                initialize();
+                viewport.getProperties().put(AK_INITIALIZED, true);
+            }
+            // 此处默认实现中仅在首次调用时触发
             if (firstTime) {
-                if (!viewport.getProperties().containsKey(AK_INITIALIZED)) {
-                    viewport.getProperties().put(AK_INITIALIZED, true);
-                    initialize();
-                }
                 navigate(null);
             }
         }
@@ -82,17 +84,23 @@ public abstract class WebRendererPart extends WebRenderer implements WorkbenchPa
 
         @Override
         public void activeViewport(boolean firstTime) {
+            // 确保initialize函数被调用
+            if (!viewport.getProperties().containsKey(AK_INITIALIZED)) {
+                initialize();
+                viewport.getProperties().put(AK_INITIALIZED, true);
+            }
+            // 此处默认实现中仅在首次调用时触发
             if (firstTime) {
-                if (!viewport.getProperties().containsKey(AK_INITIALIZED)) {
-                    viewport.getProperties().put(AK_INITIALIZED, true);
-                    initialize();
-                }
                 navigate(null);
             }
         }
 
         @Override
         public void inactiveViewport(boolean closing) {
+            // 尚未真实显示过此视图时，不须更多操作
+            if (!viewport.getProperties().containsKey(AK_INITIALIZED)) {
+                return;
+            }
             if (closing) {
                 deinitialize();
             }
