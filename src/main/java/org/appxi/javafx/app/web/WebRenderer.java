@@ -1,10 +1,14 @@
 package org.appxi.javafx.app.web;
 
 import javafx.concurrent.Worker;
+import javafx.scene.control.MenuItem;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
 import netscape.javascript.JSObject;
 import org.appxi.event.EventHandler;
 import org.appxi.javafx.app.AppEvent;
+import org.appxi.javafx.app.DesktopApp;
 import org.appxi.javafx.control.ProgressLayer;
 import org.appxi.javafx.helper.FxHelper;
 import org.appxi.javafx.visual.VisualEvent;
@@ -17,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.nio.file.Path;
+import java.util.List;
 
 public abstract class WebRenderer {
     protected static final Logger logger = LoggerFactory.getLogger(WebRenderer.class);
@@ -41,25 +46,6 @@ public abstract class WebRenderer {
         this.webPane = new WebPane();
     }
 
-    protected final String getWebStyleSheetLocationScript() {
-        return """
-                       window.setUserStyleSheetLocation = function(src) {
-                           let ele = document.querySelector('html > head > link#CSS');
-                           if (ele) {
-                               ele.setAttribute('href', src);
-                           } else {
-                               ele = document.createElement('link');
-                               ele.setAttribute('id', 'CSS');
-                               ele.setAttribute('rel', 'stylesheet');
-                               ele.setAttribute('type', 'text/css');
-                               ele.setAttribute('href', src);
-                               document.head.appendChild(ele);
-                           }
-                       };
-                       """
-               + "setUserStyleSheetLocation('" + app.visualProvider.getWebStyleSheetURI() + "');";
-    }
-
     /**
      * 响应App关闭事件，在App关闭过程中可在此处做一些数据保存等操作
      */
@@ -71,8 +57,9 @@ public abstract class WebRenderer {
      */
     protected void onAppStyleSetting(VisualEvent event) {
         // APP样式只涉及 明/暗 和 颜色，此时只需直接更改即可
-        webPane.executeScript("document.body.setAttribute('class','" + app.visualProvider + "');"
-                              + getWebStyleSheetLocationScript());
+        webPane.executeScript("typeof(setWebStyleTheme) === 'function' && setWebStyleTheme('" + app.visualProvider + "');"
+                              + "typeof(setWebStyleSheetLocation) === 'function' && setWebStyleSheetLocation('" + app.visualProvider.getWebStyleSheetURI() + "');"
+        );
     }
 
     /**
@@ -81,7 +68,7 @@ public abstract class WebRenderer {
     protected void onWebStyleSetting(VisualEvent event) {
         // 以不重载页面的方式动态更新
         webPane.executeScript("window._selector = typeof(getScrollTop1Selector) === 'function' && getScrollTop1Selector() || -1;"
-                              + getWebStyleSheetLocationScript()
+                              + "typeof(setWebStyleSheetLocation) === 'function' && setWebStyleSheetLocation('" + app.visualProvider.getWebStyleSheetURI() + "');"
                               + "_selector && _selector !== -1 && setScrollTop1BySelectors(_selector);"
         );
     }
@@ -101,6 +88,13 @@ public abstract class WebRenderer {
         app.eventBus.addEventHandler(AppEvent.STOPPING, _onAppEventStopping);
         app.eventBus.addEventHandler(VisualEvent.SET_STYLE, _onAppStyleSetting);
         app.eventBus.addEventHandler(VisualEvent.SET_WEB_STYLE, _onWebStyleSetting);
+        // 对WebView绑定右键菜单请求事件
+        this.webPane.setWebViewContextMenuBuilder(this::onWebViewContextMenuRequest);
+        // 对WebPane绑定快捷键Pressed事件
+        this.webPane.addEventHandler(KeyEvent.KEY_PRESSED, this::onWebPaneShortcutsPressed);
+        // 监听主要视图区“宽度”变化
+        webPane.widthProperty().addListener(observable ->
+                webPane.executeScript("typeof(onBodyResizeBefore) === 'function' && onBodyResizeBefore()"));
     }
 
     public final void navigate(final Object location) {
@@ -108,43 +102,71 @@ public abstract class WebRenderer {
         if (!viewport.getProperties().containsKey(AK_INITIALIZED)) {
             initialize();
         }
-        // 在首次使用时需要触发一些特殊操作
-        if (!webPane.getProperties().containsKey(AK_INITIALIZED)) {
-            webPane.getProperties().put(AK_INITIALIZED, true);
-            progressLayerRemover = ProgressLayer.show(viewport, progressLayer -> FxHelper.runThread(60, () -> {
-                webPane.webEngine().setUserDataDirectory(UserPrefs.cacheDir().toFile());
-                //
-                webPane.webEngine().getLoadWorker().stateProperty().addListener((o, ov, state) -> {
-                    if (state == Worker.State.SUCCEEDED) {
-                        // set an interface object named 'javaApp' in the web engine's page
-                        final JSObject window = webPane.executeScript("window");
-                        window.setMember("javaApp", _javaApp);
-                        // apply theme; 尝试执行onDocumentReady此函数以通知网页端javaApp已准备就绪
-                        webPane.executeScript("document.body.setAttribute('class','" + app.visualProvider + "');" +
-                                              "typeof(onDocumentReady) === 'function' && onDocumentReady(window.javaApp)");
-                        //
-                        webPane.widthProperty().addListener(observable -> {
-                            try {
-                                webPane.executeScript("typeof(onBodyResizeBefore) === 'function' && onBodyResizeBefore()");
-                            } catch (Throwable ignore) {
-                            }
-                        });
-                        //
-                        onWebEngineLoadSucceeded();
-                    } else if (state == Worker.State.FAILED) {
-                        onWebEngineLoadFailed();
-                    }
-                    if ((state == Worker.State.SUCCEEDED || state == Worker.State.FAILED) && null != progressLayerRemover) {
-                        progressLayerRemover.run();
-                        progressLayerRemover = null;
-                    }
-                });
-                //
-                navigating(location, true);
-            }));
-        } else {
+        if (webPane.getProperties().containsKey(AK_INITIALIZED)) {
             navigating(location, false);
+            return;
         }
+        // 在首次使用时需要触发一些特殊操作
+        webPane.getProperties().put(AK_INITIALIZED, true);
+        progressLayerRemover = ProgressLayer.show(viewport, progressLayer -> FxHelper.runThread(60, () -> {
+            // 指定在当前数据目录，避免在公共目录写入数据
+            webPane.webEngine().setUserDataDirectory(UserPrefs.cacheDir().toFile());
+            //
+            webPane.webEngine().getLoadWorker().stateProperty().addListener((o, ov, state) -> {
+                if (state == Worker.State.SUCCEEDED) {
+                    // set an interface object named 'javaApp' in the web engine's page
+                    final JSObject window = webPane.executeScript("window");
+                    window.setMember("productionMode", DesktopApp.productionMode);
+                    window.setMember("javaApp", _javaApp);
+                    // apply theme; 尝试执行onDocumentReady此函数以通知网页端javaApp已准备就绪
+                    // 首次时注入函数用于内部功能
+                    webPane.executeScript("""
+                                                  if (typeof(window.setWebStyleTheme) !== 'function') {
+                                                      window.setWebStyleTheme = function(theme) {
+                                                          const oldValue = document.body.getAttribute('class') || '';
+                                                          const oldTheme = document.body.getAttribute('theme');
+                                                          let newValue;
+                                                          if (oldTheme && oldTheme.length > 0) {
+                                                              newValue = oldValue.replace(oldTheme, theme);
+                                                          } else {
+                                                              newValue = oldValue.trim() + ' ' + theme;
+                                                          }
+                                                          document.body.setAttribute('theme', theme);
+                                                          document.body.setAttribute('class', newValue);
+                                                      };
+                                                  }
+                                                                              
+                                                  if (typeof(window.setWebStyleSheetLocation) !== 'function') {
+                                                      window.setWebStyleSheetLocation = function(src, _id = 'CSS') {
+                                                         let ele = document.querySelector('html > head > link#' + _id);
+                                                         if (ele) {
+                                                             ele.setAttribute('href', src);
+                                                         } else {
+                                                             ele = document.createElement('link');
+                                                             ele.setAttribute('id', _id);
+                                                             ele.setAttribute('rel', 'stylesheet');
+                                                             ele.setAttribute('type', 'text/css');
+                                                             ele.setAttribute('href', src);
+                                                             document.head.appendChild(ele);
+                                                         }
+                                                      }
+                                                  }
+                                                  """
+                                          + "typeof(onDocumentReady) === 'function' && onDocumentReady('" + app.visualProvider + "');"
+                    );
+                    //
+                    onWebEngineLoadSucceeded();
+                } else if (state == Worker.State.FAILED) {
+                    onWebEngineLoadFailed();
+                }
+                if ((state == Worker.State.SUCCEEDED || state == Worker.State.FAILED) && null != progressLayerRemover) {
+                    progressLayerRemover.run();
+                    progressLayerRemover = null;
+                }
+            });
+            //
+            navigating(location, true);
+        }));
     }
 
     protected void navigating(Object location, boolean firstTime) {
@@ -170,15 +192,55 @@ public abstract class WebRenderer {
         }
     }
 
+    /**
+     * 响应WebEngine加载成功事件
+     */
     protected void onWebEngineLoadSucceeded() {
         webPane.patch();
     }
 
+    /**
+     * 响应WebEngine加载失败事件
+     */
     protected void onWebEngineLoadFailed() {
     }
 
+    /**
+     * 创建当前需要展示的Web内容，
+     *
+     * @return Path | URI | String
+     */
     protected abstract Object createWebContent();
 
+    /**
+     * 响应Web视图中右键菜单事件，子类应实现构建MenuItem
+     */
+    protected void onWebViewContextMenuRequest(List<MenuItem> model) {
+        if (!DesktopApp.productionMode) {
+            MenuItem menuItem = new MenuItem("查看源码（复制到剪贴板）");
+            menuItem.setOnAction(event -> FxHelper.copyText(webPane.executeScript("document.documentElement.outerHTML")));
+            model.add(menuItem);
+        }
+    }
+
+    /**
+     * 响应WebPane视图中快捷键KeyEvent.KEY_PRESSED事件
+     */
+    protected void onWebPaneShortcutsPressed(KeyEvent event) {
+        if (event.isConsumed()) {
+            return;
+        }
+        // LEFT 避免切换TAB
+        if (event.getCode() == KeyCode.LEFT || event.getCode() == KeyCode.KP_LEFT) {
+            event.consume();
+            return;
+        }
+        // RIGHT 避免切换TAB
+        if (event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.KP_RIGHT) {
+            event.consume();
+            return;
+        }
+    }
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
@@ -188,13 +250,31 @@ public abstract class WebRenderer {
      */
     private final WebCallback _javaApp = createWebCallback();
 
+    /**
+     * 创建用于Javascript engine与Java通信的具体实例
+     */
     protected WebCallback createWebCallback() {
         return new WebCallback();
     }
 
-    public static class WebCallback {
+    /**
+     * 用于Javascript engine与Java通信的实例基类
+     */
+    public class WebCallback {
         public void log(String msg) {
             logger.info(msg);
+        }
+
+        public void copy(String text) {
+            FxHelper.copyText(text);
+        }
+
+        public String getWebStyleSheetCSS() {
+            return app.visualProvider.getWebStyleSheetCSS();
+        }
+
+        public String getWebStyleSheetURI() {
+            return app.visualProvider.getWebStyleSheetURI();
         }
     }
 }

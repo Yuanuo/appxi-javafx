@@ -11,6 +11,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -27,8 +28,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
-import java.util.function.Supplier;
+import java.util.function.Consumer;
 
 public class WebPane extends BorderPane {
     protected static final Logger logger = LoggerFactory.getLogger(WebPane.class);
@@ -47,26 +50,8 @@ public class WebPane extends BorderPane {
     private WebEngine webEngine;
     private WebPage webPage;
 
-    private ContextMenu contextMenu;
-    private Supplier<ContextMenu> contextMenuBuilder;
-
-    private final EventHandler<MouseEvent> handleContextMenuShow = event -> {
-        // only for right click
-        if (event.getButton() == MouseButton.SECONDARY) {
-            contextMenu = null == contextMenuBuilder ? null : contextMenuBuilder.get();
-            if (null != contextMenu)
-                this.contextMenu.show(this.webView(), event.getScreenX(), event.getScreenY());
-            event.consume();
-        }
-    };
-
-    private final EventHandler<Event> handleContextMenuHide = event -> {
-        if (null != contextMenu && this.contextMenu.isShowing()) {
-            this.contextMenu.hide();
-            this.contextMenu = null;
-            event.consume();
-        }
-    };
+    private ContextMenu webViewContextMenu;
+    private Consumer<List<MenuItem>> webViewContextMenuBuilder;
 
     public WebPane() {
         super();
@@ -117,6 +102,35 @@ public class WebPane extends BorderPane {
             ));
             ev.consume();
         });
+        // 禁用默认右键菜单
+        this.webView.setContextMenuEnabled(false);
+        // 监听鼠标释放事件以显示右键菜单
+        this.webView.addEventHandler(MouseEvent.MOUSE_RELEASED, event -> {
+            // only for right click
+            if (event.getButton() == MouseButton.SECONDARY) {
+                if (null == this.webViewContextMenu) {
+                    this.webViewContextMenu = new ContextMenu();
+                }
+                final List<MenuItem> menuItems = new ArrayList<>();
+                if (null != this.webViewContextMenuBuilder) {
+                    this.webViewContextMenuBuilder.accept(menuItems);
+                }
+                this.webViewContextMenu.getItems().setAll(menuItems);
+                this.webViewContextMenu.show(this.webView(), event.getScreenX(), event.getScreenY());
+                event.consume();
+            }
+        });
+        final EventHandler<Event> _hideWebViewContextMenuAction = event -> {
+            if (null != this.webViewContextMenu && this.webViewContextMenu.isShowing()) {
+                this.webViewContextMenu.hide();
+                event.consume();
+            }
+        };
+        // 监听鼠标按键事件以隐藏右键菜单
+        this.webView.addEventHandler(MouseEvent.MOUSE_PRESSED, _hideWebViewContextMenuAction);
+        // 监听滚轮事件以隐藏右键菜单
+        this.webView.addEventHandler(ScrollEvent.SCROLL, _hideWebViewContextMenuAction);
+        //
         this.setCenter(this.webView);
         return this.webView;
     }
@@ -159,19 +173,8 @@ public class WebPane extends BorderPane {
         return null;
     }
 
-    public final void setContextMenuBuilder(Supplier<ContextMenu> contextMenuBuilder) {
-        this.contextMenuBuilder = contextMenuBuilder;
-        if (null == contextMenuBuilder) {
-            this.webView().setContextMenuEnabled(true);
-            this.webView().removeEventHandler(MouseEvent.MOUSE_RELEASED, handleContextMenuShow);
-            this.webView().removeEventHandler(MouseEvent.MOUSE_PRESSED, handleContextMenuHide);
-            this.webView().removeEventHandler(ScrollEvent.SCROLL, handleContextMenuHide);
-            return;
-        }
-        this.webView().setContextMenuEnabled(false);
-        this.webView().addEventHandler(MouseEvent.MOUSE_RELEASED, handleContextMenuShow);
-        this.webView().addEventHandler(MouseEvent.MOUSE_PRESSED, handleContextMenuHide);
-        this.webView().addEventHandler(ScrollEvent.SCROLL, handleContextMenuHide);
+    public final void setWebViewContextMenuBuilder(Consumer<List<MenuItem>> webViewContextMenuBuilder) {
+        this.webViewContextMenuBuilder = webViewContextMenuBuilder;
     }
 
     public final void patch() {

@@ -1,6 +1,5 @@
 package org.appxi.javafx.app.web;
 
-import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -111,19 +110,15 @@ public abstract class WebViewer extends WebRenderer {
         webFinder = new WebFindByMarks(this.webPane, viewport);
         webFinder().setAsciiConvertor(PinyinHelper::pinyin);
         this.webPane.getTopBox().addRight(webFinder());
-        //
-        this.webPane.addEventHandler(KeyEvent.KEY_PRESSED, this::handleWebViewShortcuts);
     }
 
     @Override
     protected void onWebEngineLoadSucceeded() {
         super.onWebEngineLoadSucceeded();
         //
-        this.webPane.setContextMenuBuilder(this::createWebViewContextMenu);
-        //
         position(position);
         //
-        FxHelper.runThread(30, () -> this.webPane.webView().requestFocus());
+        FxHelper.runThread(50, () -> this.webPane.webView().requestFocus());
     }
 
     protected final void position(Attributes pos) {
@@ -162,56 +157,34 @@ public abstract class WebViewer extends WebRenderer {
         }
     }
 
-    protected void handleWebViewShortcuts(KeyEvent event) {
-        onWebShortcut_arrow(event);
-        onWebShortcut_findInPage(event);
-        onWebShortcut_search(event);
-        onWebShortcut_dict(event);
-    }
-
-    protected void onWebShortcut_arrow(KeyEvent event) {
-        if (!event.isConsumed()) {
-            // LEFT 避免切换TAB
-            if (event.getCode() == KeyCode.LEFT || event.getCode() == KeyCode.KP_LEFT) {
-                event.consume();
-                return;
-            }
-            // RIGHT 避免切换TAB
-            if (event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.KP_RIGHT) {
-                event.consume();
-                return;
-            }
-            // HOME 到页首
-            if (event.getCode() == KeyCode.HOME) {
-                event.consume();
-                this.webPane.executeScript("setScrollTop1BySelectors(null, 0)");
-                return;
-            }
-            // END 到页尾
-            if (event.getCode() == KeyCode.END) {
-                event.consume();
-                this.webPane.executeScript("setScrollTop1BySelectors(null, 1)");
-                return;
-            }
+    @Override
+    protected void onWebPaneShortcutsPressed(KeyEvent event) {
+        if (event.isConsumed()) {
+            return;
         }
-    }
-
-    protected void onWebShortcut_findInPage(KeyEvent event) {
-        // Ctrl + F
-        if (!event.isConsumed() && event.isShortcutDown()
-            && event.getCode() == KeyCode.F) {
-            // 如果有选中文字，则按查找选中文字处理
-            String selText = this.webPane.executeScript("getValidSelectionText()");
-            selText = null == selText ? null : selText.strip().replace('\n', ' ');
-            webFinder().find(StringHelper.isBlank(selText) ? null : selText);
+        // HOME 到页首
+        if (event.getCode() == KeyCode.HOME) {
             event.consume();
+            this.webPane.executeScript("setScrollTop1BySelectors(null, 0)");
+            return;
         }
-    }
-
-    protected void onWebShortcut_search(KeyEvent event) {
+        // END 到页尾
+        if (event.getCode() == KeyCode.END) {
+            event.consume();
+            this.webPane.executeScript("setScrollTop1BySelectors(null, 1)");
+            return;
+        }
+        // Ctrl + F
+        if (event.isShortcutDown() && event.getCode() == KeyCode.F) {
+            // 如果有选中文字，则按查找选中文字处理
+            String selText1 = this.webPane.executeScript("getValidSelectionText()");
+            selText1 = null == selText1 ? null : selText1.strip().replace('\n', ' ');
+            webFinder().find(StringHelper.isBlank(selText1) ? null : selText1);
+            event.consume();
+            return;
+        }
         // Ctrl + G, Ctrl + H
-        if (!event.isConsumed() && event.isShortcutDown()
-            && (event.getCode() == KeyCode.G || event.getCode() == KeyCode.H)) {
+        if (event.isShortcutDown() && (event.getCode() == KeyCode.G || event.getCode() == KeyCode.H)) {
             // 如果有选中文字，则按查找选中文字处理
             final String selText = this.webPane.executeScript("getValidSelectionText()");
             app.eventBus.fireEvent(event.getCode() == KeyCode.G
@@ -219,13 +192,10 @@ public abstract class WebViewer extends WebRenderer {
                     : SearcherEvent.ofSearch(selText) // SEARCH
             );
             event.consume();
+            return;
         }
-    }
-
-    protected void onWebShortcut_dict(KeyEvent event) {
         // Ctrl + D
-        if (!event.isConsumed() && event.isShortcutDown()
-            && event.getCode() == KeyCode.D) {
+        if (event.isShortcutDown() && event.getCode() == KeyCode.D) {
             // 如果有选中文字，则按选中文字处理
             String origText = this.webPane.executeScript("getValidSelectionText()");
             String trimText = null == origText ? null : origText.strip().replace('\n', ' ');
@@ -234,16 +204,10 @@ public abstract class WebViewer extends WebRenderer {
             final String str = null == availText ? null : StringHelper.trimChars(availText, 20, "");
             app.eventBus.fireEvent(DictionaryEvent.ofSearch(str));
             event.consume();
+            return;
         }
-    }
-
-    protected ContextMenu createWebViewContextMenu() {
-        String origText = this.webPane.executeScript("getValidSelectionText()");
-        String trimText = null == origText ? null : origText.strip().replace('\n', ' ');
-        final String availText = StringHelper.isBlank(trimText) ? null : trimText;
-//        String textTip = null == availText ? "" : "：".concat(StringHelper.trimChars(availText, 8));
-//        String textForSearch = null == availText ? null : prepareTextForSearch(availText);
-        return new ContextMenu();
+        //
+        super.onWebPaneShortcutsPressed(event);
     }
 
     protected MenuItem createMenu_copy(String origText, String availText) {

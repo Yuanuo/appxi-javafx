@@ -4,7 +4,6 @@ import appxi.dict.DictionaryApi;
 import appxi.dict.SearchMode;
 import appxi.dict.doc.DictEntry;
 import javafx.scene.control.Button;
-import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.Tooltip;
@@ -71,6 +70,13 @@ class DictionaryViewer extends WebViewer {
         //
         buff.append("<!DOCTYPE html><html lang=\"zh\"><head><meta charset=\"UTF-8\">");
         StringHelper.buildWebIncludes(buff, controller.webIncludesSupplier.get());
+        buff.append("""
+                <script type="text/javascript">
+                function onDocumentReady(theme) {
+                    setWebStyleTheme(theme);
+                }
+                </script>
+                """);
         //
         buff.append("</head><body><article style=\"padding: 0 1rem;\">");
         //
@@ -95,7 +101,9 @@ class DictionaryViewer extends WebViewer {
         return new WebCallbackImpl();
     }
 
-    protected ContextMenu createWebViewContextMenu() {
+    protected void onWebViewContextMenuRequest(List<MenuItem> model) {
+        super.onWebViewContextMenuRequest(model);
+        //
         final String origText = this.webPane.executeScript("getValidSelectionText()");
         String trimText = null == origText ? null : origText.strip().replace('\n', ' ');
         final String availText = StringHelper.isBlank(trimText) ? null : trimText;
@@ -107,18 +115,16 @@ class DictionaryViewer extends WebViewer {
         copyRef.setDisable(true);
 
         //
-        return new ContextMenu(
-                createMenu_copy(origText, availText),
-                copyRef,
-                new SeparatorMenuItem(),
-                createMenu_search(textTip, textForSearch),
-                createMenu_searchExact(textTip, textForSearch),
-                createMenu_lookup(textTip, textForSearch),
-                createMenu_finder(textTip, availText),
-                new SeparatorMenuItem(),
-                createMenu_dict(availText),
-                createMenu_pinyin(availText)
-        );
+        model.add(createMenu_copy(origText, availText));
+        model.add(copyRef);
+        model.add(new SeparatorMenuItem());
+        model.add(createMenu_search(textTip, textForSearch));
+        model.add(createMenu_searchExact(textTip, textForSearch));
+        model.add(createMenu_lookup(textTip, textForSearch));
+        model.add(createMenu_finder(textTip, availText));
+        model.add(new SeparatorMenuItem());
+        model.add(createMenu_dict(availText));
+        model.add(createMenu_pinyin(availText));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
