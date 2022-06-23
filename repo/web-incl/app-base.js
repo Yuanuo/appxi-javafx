@@ -1,5 +1,32 @@
 var urlParams = new URLSearchParams(window.location.search);
 
+function setWebStyleTheme(theme) {
+    const oldValue = document.body.getAttribute('class') || '';
+    const oldTheme = document.body.getAttribute('theme');
+    let newValue;
+    if (oldTheme && oldTheme.length > 0) {
+        newValue = oldValue.replace(oldTheme, theme);
+    } else {
+        newValue = oldValue.trim() + ' ' + theme;
+    }
+    document.body.setAttribute('theme', theme);
+    document.body.setAttribute('class', newValue);
+}
+
+function setWebStyleSheetLocation(src, _id = 'CSS') {
+   let ele = document.querySelector('html > head > link#' + _id);
+   if (ele) {
+       ele.setAttribute('href', src);
+   } else {
+       ele = document.createElement('link');
+       ele.setAttribute('id', _id);
+       ele.setAttribute('rel', 'stylesheet');
+       ele.setAttribute('type', 'text/css');
+       ele.setAttribute('href', src);
+       document.head.appendChild(ele);
+   }
+}
+
 function getScrollTopNElements(num = 10) {
     const list = $("body > article *:in-viewport");
     const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
