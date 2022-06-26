@@ -31,7 +31,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 public class WebPane extends BorderPane {
     protected static final Logger logger = LoggerFactory.getLogger(WebPane.class);
@@ -51,7 +51,7 @@ public class WebPane extends BorderPane {
     private WebPage webPage;
 
     private ContextMenu webViewContextMenu;
-    private Consumer<List<MenuItem>> webViewContextMenuBuilder;
+    private BiConsumer<List<MenuItem>, WebSelection> webViewContextMenuBuilder;
 
     public WebPane() {
         super();
@@ -113,7 +113,7 @@ public class WebPane extends BorderPane {
                 }
                 final List<MenuItem> menuItems = new ArrayList<>();
                 if (null != this.webViewContextMenuBuilder) {
-                    this.webViewContextMenuBuilder.accept(menuItems);
+                    this.webViewContextMenuBuilder.accept(menuItems, webSelection());
                 }
                 this.webViewContextMenu.getItems().setAll(menuItems);
                 this.webViewContextMenu.show(this.webView(), event.getScreenX(), event.getScreenY());
@@ -138,7 +138,6 @@ public class WebPane extends BorderPane {
     public final WebEngine webEngine() {
         if (null != webEngine) return webEngine;
         this.webEngine = this.webView().getEngine();
-//        this.webEngine.getLoadWorker().stateProperty().addListener(this::handleWebEngineLoadStateChanged);
         this.webEngine.setOnAlert(event -> {
             final Alert alert = new Alert(Alert.AlertType.NONE);
             alert.setTitle("Web Alert");
@@ -173,7 +172,14 @@ public class WebPane extends BorderPane {
         return null;
     }
 
-    public final void setWebViewContextMenuBuilder(Consumer<List<MenuItem>> webViewContextMenuBuilder) {
+    public final WebSelection webSelection() {
+        if (null == this.webEngine) {
+            return new WebSelection("");
+        }
+        return new WebSelection(webPage());
+    }
+
+    public final void setWebViewContextMenuBuilder(BiConsumer<List<MenuItem>, WebSelection> webViewContextMenuBuilder) {
         this.webViewContextMenuBuilder = webViewContextMenuBuilder;
     }
 

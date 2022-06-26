@@ -9,6 +9,7 @@ import org.appxi.javafx.app.dict.DictionaryEvent;
 import org.appxi.javafx.app.search.SearcherEvent;
 import org.appxi.javafx.helper.FxHelper;
 import org.appxi.javafx.web.WebFindByMarks;
+import org.appxi.javafx.web.WebSelection;
 import org.appxi.javafx.workbench.WorkbenchPane;
 import org.appxi.prefs.UserPrefs;
 import org.appxi.smartcn.pinyin.PinyinHelper;
@@ -210,57 +211,54 @@ public abstract class WebViewer extends WebRenderer {
         super.onWebPaneShortcutsPressed(event);
     }
 
-    protected MenuItem createMenu_copy(String origText, String availText) {
+    protected MenuItem createMenu_copy(WebSelection selection) {
         MenuItem menuItem = new MenuItem("复制文字");
-        menuItem.setDisable(null == availText);
-        menuItem.setOnAction(event -> FxHelper.copyText(origText));
+        menuItem.setDisable(!selection.hasText);
+        menuItem.setOnAction(event -> FxHelper.copyText(selection.text));
         return menuItem;
     }
 
     protected MenuItem createMenu_search(String textTip, String textForSearch) {
-        MenuItem menuItem = new MenuItem("全文检索".concat(textTip));
+        MenuItem menuItem = new MenuItem("全文检索" + textTip);
         menuItem.setOnAction(event -> app.eventBus.fireEvent(SearcherEvent.ofSearch(textForSearch)));
         return menuItem;
     }
 
     protected MenuItem createMenu_searchExact(String textTip, String textForSearch) {
-        MenuItem menuItem = new MenuItem("全文检索（精确检索）".concat(textTip));
+        MenuItem menuItem = new MenuItem("全文检索（精确检索）" + textTip);
         menuItem.setOnAction(event -> app.eventBus.fireEvent(
-                SearcherEvent.ofSearch(null == textForSearch ? "" : "\"".concat(textForSearch).concat("\""))));
+                SearcherEvent.ofSearch(null == textForSearch ? "" : "\"" + textForSearch + "\"")));
         return menuItem;
     }
 
     protected MenuItem createMenu_lookup(String textTip, String textForSearch) {
-        MenuItem menuItem = new MenuItem("快捷检索（经名、作译者等）".concat(textTip));
+        MenuItem menuItem = new MenuItem("快捷检索（经名、作译者等）" + textTip);
         menuItem.setOnAction(event -> app.eventBus.fireEvent(SearcherEvent.ofLookup(textForSearch)));
         return menuItem;
     }
 
-    protected MenuItem createMenu_finder(String textTip, String availText) {
-        MenuItem menuItem = new MenuItem("页内查找".concat(textTip));
-        menuItem.setOnAction(event -> webFinder().find(availText));
+    protected MenuItem createMenu_finder(String textTip, WebSelection selection) {
+        MenuItem menuItem = new MenuItem("页内查找" + textTip);
+        menuItem.setOnAction(event -> webFinder().find(selection.trims));
         return menuItem;
     }
 
-    protected MenuItem createMenu_dict(String availText) {
+    protected MenuItem createMenu_dict(WebSelection selection) {
         MenuItem menuItem = new MenuItem();
-        if (null != availText) {
-            final String str = StringHelper.trimChars(availText, 10);
-            menuItem.setText("查词典：" + str);
+        if (selection.hasTrims) {
+            menuItem.setText("查词典：" + StringHelper.trimChars(selection.trims, 10));
         } else {
             menuItem.setText("查词典");
         }
-        menuItem.setOnAction(event -> {
-            final String str = null == availText ? null : StringHelper.trimChars(availText, 20, "");
-            app.eventBus.fireEvent(DictionaryEvent.ofSearch(str));
-        });
+        menuItem.setOnAction(event -> app.eventBus.fireEvent(DictionaryEvent.ofSearch(
+                selection.hasTrims ? StringHelper.trimChars(selection.trims, 20, "") : null)));
         return menuItem;
     }
 
-    protected MenuItem createMenu_pinyin(String availText) {
+    protected MenuItem createMenu_pinyin(WebSelection selection) {
         MenuItem menuItem = new MenuItem();
-        if (null != availText) {
-            final String str = StringHelper.trimChars(availText, 10, "");
+        if (selection.hasTrims) {
+            final String str = StringHelper.trimChars(selection.trims, 10, "");
             final String strPy = PinyinHelper.pinyin(str, true);
             menuItem.setText("查拼音：" + strPy);
             menuItem.setOnAction(event -> {
@@ -268,17 +266,17 @@ public abstract class WebViewer extends WebRenderer {
                 app.toast("已复制拼音到剪贴板！");
             });
         } else {
-            menuItem.setText("查拼音：<选择1~10字>，并点击可复制");
+            menuItem.setText("查拼音：<选择1~10字>，右键查看（点此可复制）");
         }
         return menuItem;
     }
 
     @Override
-    protected WebCallbackImpl createWebCallback() {
-        return new WebCallbackImpl();
+    protected WebJavaBridgeImpl createWebJavaBridge() {
+        return new WebJavaBridgeImpl();
     }
 
-    public class WebCallbackImpl extends WebCallback {
+    public class WebJavaBridgeImpl extends WebJavaBridge {
         public void updateFinderState(int index, int count) {
             if (null != webFinder) {
                 webFinder.state(index, count);

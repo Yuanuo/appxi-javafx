@@ -13,15 +13,20 @@ import org.appxi.javafx.control.ProgressLayer;
 import org.appxi.javafx.helper.FxHelper;
 import org.appxi.javafx.visual.VisualEvent;
 import org.appxi.javafx.web.WebPane;
+import org.appxi.javafx.web.WebSelection;
 import org.appxi.javafx.workbench.WorkbenchApp;
 import org.appxi.javafx.workbench.WorkbenchPane;
 import org.appxi.prefs.UserPrefs;
+import org.appxi.util.StringHelper;
+import org.appxi.util.ext.RawVal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public abstract class WebRenderer {
     protected static final Logger logger = LoggerFactory.getLogger(WebRenderer.class);
@@ -116,43 +121,15 @@ public abstract class WebRenderer {
                 if (state == Worker.State.SUCCEEDED) {
                     // set an interface object named 'javaApp' in the web engine's page
                     final JSObject window = webPane.executeScript("window");
-                    window.setMember("productionMode", DesktopApp.productionMode);
-                    window.setMember("javaApp", _javaApp);
-                    // apply theme; 尝试执行onDocumentReady此函数以通知网页端javaApp已准备就绪
-                    // 首次时注入函数用于内部功能
-                    webPane.executeScript("""
-                                                  if (typeof(window.setWebStyleTheme) !== 'function') {
-                                                      window.setWebStyleTheme = function(theme) {
-                                                          const oldValue = document.body.getAttribute('class') || '';
-                                                          const oldTheme = document.body.getAttribute('theme');
-                                                          let newValue;
-                                                          if (oldTheme && oldTheme.length > 0) {
-                                                              newValue = oldValue.replace(oldTheme, theme);
-                                                          } else {
-                                                              newValue = oldValue.trim() + ' ' + theme;
-                                                          }
-                                                          document.body.setAttribute('theme', theme);
-                                                          document.body.setAttribute('class', newValue);
-                                                      };
-                                                  }
-                                                                              
-                                                  if (typeof(window.setWebStyleSheetLocation) !== 'function') {
-                                                      window.setWebStyleSheetLocation = function(src, _id = 'CSS') {
-                                                         let ele = document.querySelector('html > head > link#' + _id);
-                                                         if (ele) {
-                                                             ele.setAttribute('href', src);
-                                                         } else {
-                                                             ele = document.createElement('link');
-                                                             ele.setAttribute('id', _id);
-                                                             ele.setAttribute('rel', 'stylesheet');
-                                                             ele.setAttribute('type', 'text/css');
-                                                             ele.setAttribute('href', src);
-                                                             document.head.appendChild(ele);
-                                                         }
-                                                      }
-                                                  }
-                                                  """
-                                          + "typeof(onDocumentReady) === 'function' && onDocumentReady('" + app.visualProvider + "');"
+                    window.setMember("devMode", !DesktopApp.productionMode);
+                    window.setMember("javaApp", webJavaBridge);
+                    // 尝试执行onJavaReady函数以通知网页端javaApp已准备就绪
+                    final String args = webJavaBridge.getJavaReadyArguments()
+                            .stream()
+                            .map(v -> "'" + v.key() + "': " + (v.value() instanceof String s ? "`" + s + "`" : v.value()))
+                            .collect(Collectors.joining(", "));
+                    webPane.executeScript(webJavaBridge.getJavaReadyPreScript()
+                                          + ";typeof(onJavaReady) === 'function' && onJavaReady({" + args + "});"
                     );
                     //
                     onWebEngineLoadSucceeded();
@@ -177,9 +154,10 @@ public abstract class WebRenderer {
         if (webContent instanceof URI uri) {
             try {
                 String uriStr = uri.toString();
-                String uriParams = "theme=" + app.visualProvider.toString().replace(' ', '+');
-                //
-                uriStr = uriStr + (uriStr.contains("?") ? "&" : "?") + uriParams;
+                uriStr = uriStr + (uriStr.contains("?") ? "&" : "?") + StringHelper.concat(
+                        "devMode=", !DesktopApp.productionMode,
+                        "&theme=" + app.visualProvider.toString().replace(' ', '+')
+                );
                 uri = new URI(uriStr);
             } catch (Exception ignore) {
             }
@@ -189,6 +167,8 @@ public abstract class WebRenderer {
         } else if (webContent instanceof String text) {
             logger.info("load TEXT: " + text.length());
             FxHelper.runLater(() -> webPane.webEngine().loadContent(text));
+        } else {
+            throw new UnsupportedOperationException("Unsupported webContent: " + webContent);
         }
     }
 
@@ -214,8 +194,11 @@ public abstract class WebRenderer {
 
     /**
      * 响应Web视图中右键菜单事件，子类应实现构建MenuItem
+     *
+     * @param model     菜单列表
+     * @param selection 当前选区
      */
-    protected void onWebViewContextMenuRequest(List<MenuItem> model) {
+    protected void onWebViewContextMenuRequest(List<MenuItem> model, WebSelection selection) {
         if (!DesktopApp.productionMode) {
             MenuItem menuItem = new MenuItem("查看源码（复制到剪贴板）");
             menuItem.setOnAction(event -> FxHelper.copyText(webPane.executeScript("document.documentElement.outerHTML")));
@@ -248,31 +231,87 @@ public abstract class WebRenderer {
      * <p>
      * 此处必须存在一个实例属性，否则Webkit中会回收掉window.javaApp
      */
-    private final WebCallback _javaApp = createWebCallback();
+    private final WebJavaBridge webJavaBridge = createWebJavaBridge();
 
     /**
      * 创建用于Javascript engine与Java通信的具体实例
      */
-    protected WebCallback createWebCallback() {
-        return new WebCallback();
+    protected WebJavaBridge createWebJavaBridge() {
+        return new WebJavaBridge();
     }
 
     /**
      * 用于Javascript engine与Java通信的实例基类
      */
-    public class WebCallback {
-        public void log(String msg) {
-            logger.info(msg);
+    public class WebJavaBridge {
+        /**
+         * 预定义的在onJavaReady触发之前可以执行的Javascript代码
+         */
+        protected String getJavaReadyPreScript() {
+            // 注入内置函数用于内部功能
+            return """
+                    if (typeof(window.setWebStyleTheme) !== 'function') {
+                        window.setWebStyleTheme = function(theme) {
+                            const oldValue = document.body.getAttribute('class') || '';
+                            const oldTheme = document.body.getAttribute('theme');
+                            let newValue;
+                            if (oldTheme && oldTheme.length > 0) {
+                                newValue = oldValue.replace(oldTheme, theme);
+                            } else {
+                                newValue = oldValue.trim() + ' ' + theme;
+                            }
+                            document.body.setAttribute('theme', theme);
+                            document.body.setAttribute('class', newValue);
+                        };
+                    }
+                                                
+                    if (typeof(window.setWebStyleSheetLocation) !== 'function') {
+                        window.setWebStyleSheetLocation = function(src, _id = 'CSS') {
+                           let ele = document.querySelector('html > head > link#' + _id);
+                           if (ele) {
+                               ele.setAttribute('href', src);
+                           } else {
+                               ele = document.createElement('link');
+                               ele.setAttribute('id', _id);
+                               ele.setAttribute('rel', 'stylesheet');
+                               ele.setAttribute('type', 'text/css');
+                               ele.setAttribute('href', src);
+                               document.head.appendChild(ele);
+                           }
+                        }
+                    }
+                    """;
         }
 
-        public void copy(String text) {
+        /**
+         * 预定义的在onJavaReady触发之时可以传递的参数
+         */
+        protected List<RawVal<Object>> getJavaReadyArguments() {
+            List<RawVal<Object>> args = new ArrayList<>();
+            args.add(RawVal.kv("theme", app.visualProvider.toString()));
+            return args;
+        }
+
+        /**
+         * 用于在Javascript中复制文本到系统剪贴板
+         *
+         * @param text 需要复制的文本
+         */
+        public void copyText(String text) {
             FxHelper.copyText(text);
         }
 
+        /**
+         * 用于在Javascript中获得当前应用设置的Web字色等样式的CSS格式
+         */
         public String getWebStyleSheetCSS() {
             return app.visualProvider.getWebStyleSheetCSS();
         }
 
+        /**
+         * 用于在Javascript中获得当前应用设置的Web字色等样式的CSS-DATA-URI格式，
+         * 可直接应用在link的href属性中。
+         */
         public String getWebStyleSheetURI() {
             return app.visualProvider.getWebStyleSheetURI();
         }
