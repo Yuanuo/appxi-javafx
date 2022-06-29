@@ -19,8 +19,7 @@ public abstract class WorkbenchApp extends DesktopApp {
 
     @Override
     protected void starting(Scene primaryScene) {
-        workbench = new WorkbenchPane(this);
-        workbench.initialize(createWorkbenchParts(workbench));
+        workbench = new WorkbenchPane(this, this::createWorkbenchParts);
         getPrimaryGlass().getChildren().setAll(this.workbench);
         eventBus.addEventHandler(AppEvent.STOPPING, e -> {
             UserPrefs.prefs.setProperty("workbench.views.divider", workbench.getRootViewsDividerPosition());

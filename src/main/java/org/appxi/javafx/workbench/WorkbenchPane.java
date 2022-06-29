@@ -16,20 +16,19 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
-import org.appxi.holder.RawHolder;
 import org.appxi.javafx.control.TabPaneEx;
 import org.appxi.javafx.control.ToolBarEx;
 import org.appxi.javafx.helper.FxHelper;
 
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
+import java.util.function.Function;
 
 public class WorkbenchPane extends BorderPane {
-    private final Set<String> cachedVisitedPart = new HashSet<>();
-    private final RawHolder<WorkbenchPart> markedDefaultPart = new RawHolder<>();
-    private final RawHolder<WorkbenchPart> markedClosingPart = new RawHolder<>();
+    private static final Object AK_VISITED = new Object();
+    private static final Object AK_DEFAULT_TAB = new Object();
+    private static final Object AK_CLOSING_TAB = new Object();
 
     private final ToggleGroup sideToolsGroup = new ToggleGroup();
     protected final ToolBarEx sideTools;
@@ -41,7 +40,9 @@ public class WorkbenchPane extends BorderPane {
 
     public final WorkbenchApp application;
 
-    public WorkbenchPane(WorkbenchApp application) {
+    private final boolean autoPostConstructWhenWorkbenchPartAdded;
+
+    public WorkbenchPane(WorkbenchApp application, Function<WorkbenchPane, List<WorkbenchPart>> workbenchPartsSupplier) {
         super();
         this.application = application;
         this.getStyleClass().add("workbench");
@@ -85,7 +86,7 @@ public class WorkbenchPane extends BorderPane {
                 // 显示已选中的视图
                 this.sideViews.setCenter(part.getViewport());
                 // 并触发事件
-                part.activeViewport(ensureFirstTime(part));
+                part.activeViewport(isFirstTime(newToggle.getProperties()));
             }
         });
         //
@@ -103,34 +104,32 @@ public class WorkbenchPane extends BorderPane {
 
             // update old tab
             if (null != oldTab && oldTab.getUserData() instanceof WorkbenchPart.MainView part) {
-                if (cachedVisitedPart.contains(part.id().get()) && markedClosingPart.value != part) {
+                if (oldTab.getProperties().containsKey(AK_VISITED) && !oldTab.getProperties().containsKey(AK_CLOSING_TAB)) {
                     part.inactiveViewport(false);
                 } else {
-                    markedClosingPart.value = null;
-                    cachedVisitedPart.remove(part.id().get());
+                    oldTab.getProperties().remove(AK_CLOSING_TAB);
+                    oldTab.getProperties().remove(AK_VISITED);
                 }
             }
 
             // update new tab
             if (null != newTab && newTab.getUserData() instanceof WorkbenchPart.MainView part) {
-                if (markedDefaultPart.value == part) {
-                    markedDefaultPart.value = null;
+                if (newTab.getProperties().containsKey(AK_DEFAULT_TAB)) {
+                    newTab.getProperties().remove(AK_DEFAULT_TAB);
                 } else {
                     if (newTab.getContent() == null) // always lazy init
                         newTab.setContent(part.getViewport());
-                    part.activeViewport(ensureFirstTime(part));
+                    part.activeViewport(isFirstTime(newTab.getProperties()));
                 }
             }
         });
-    }
-
-    public void initialize(List<WorkbenchPart> views) {
+        //
         final long st0 = System.currentTimeMillis();
-
-        views.forEach(this::addWorkbenchPart);
-        views.forEach(WorkbenchPart::postConstruct);
-
-        application.logger.info("load views used time: " + (System.currentTimeMillis() - st0));
+        final List<WorkbenchPart> workbenchParts = workbenchPartsSupplier.apply(this);
+        workbenchParts.forEach(this::addWorkbenchPart);
+        workbenchParts.forEach(WorkbenchPart::postConstruct);
+        application.logger.info("load workbenchParts used time: " + (System.currentTimeMillis() - st0));
+        this.autoPostConstructWhenWorkbenchPartAdded = true;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -158,6 +157,8 @@ public class WorkbenchPane extends BorderPane {
             this.addWorkbenchPartAsSideView(sideView);
         } else if (part instanceof WorkbenchPart.MainView mainView) {
             this.addWorkbenchPartAsMainView(mainView, false);
+        } else if (null != part && this.autoPostConstructWhenWorkbenchPartAdded) {
+            part.postConstruct();
         }
     }
 
@@ -175,22 +176,26 @@ public class WorkbenchPane extends BorderPane {
 
         tool.setOnCloseRequest(event -> {
             if (event.getTarget() instanceof Tab t
-                    && t.getUserData() instanceof WorkbenchPart.MainView c
-                    && cachedVisitedPart.contains(c.id().get())) {
+                && t.getUserData() instanceof WorkbenchPart.MainView c
+                && t.getProperties().containsKey(AK_VISITED)) {
                 try {
                     c.inactiveViewport(true);
-                    markedClosingPart.value = part;
+                    t.getProperties().put(AK_CLOSING_TAB, true);
                 } catch (Exception ignore) {
                     event.consume();
                 }
             }
         });
         if (this.mainViews.getTabs().isEmpty()) {
-            markedDefaultPart.value = part;
+            tool.getProperties().put(AK_DEFAULT_TAB, true);
         }
 
         final int addToIdx = addToEnd ? this.mainViews.getTabs().size() : this.mainViews.getSelectionModel().getSelectedIndex() + 1;
         this.mainViews.getTabs().add(addToIdx, tool);
+        //
+        if (this.autoPostConstructWhenWorkbenchPartAdded) {
+            part.postConstruct();
+        }
     }
 
     public void addWorkbenchPartAsSideTool(WorkbenchPart.SideTool part) {
@@ -198,18 +203,26 @@ public class WorkbenchPane extends BorderPane {
         addSideTool(tool, part);
         tool.setOnAction(event -> FxHelper.runLater(() -> {
             try {
-                part.activeViewport(ensureFirstTime(part));
+                part.activeViewport(isFirstTime(tool.getProperties()));
             } finally {
                 // 总是重置选中状态以避免更改样式
                 tool.setSelected(false);
             }
         }));
+        //
+        if (this.autoPostConstructWhenWorkbenchPartAdded) {
+            part.postConstruct();
+        }
     }
 
     public void addWorkbenchPartAsSideView(WorkbenchPart.SideView part) {
         final ToggleButton tool = new ToggleButton();
         addSideTool(tool, part);
         tool.setToggleGroup(sideToolsGroup);
+        //
+        if (this.autoPostConstructWhenWorkbenchPartAdded) {
+            part.postConstruct();
+        }
     }
 
     private void addSideTool(ButtonBase tool, WorkbenchPart part) {
@@ -234,10 +247,11 @@ public class WorkbenchPane extends BorderPane {
         this.sideTools.addAligned(alignTop ? HPos.LEFT : HPos.RIGHT, tool);
     }
 
-    private boolean ensureFirstTime(WorkbenchPart part) {
-        if (cachedVisitedPart.contains(part.id().get()))
+    private boolean isFirstTime(Map<Object, Object> properties) {
+        if (properties.containsKey(AK_VISITED)) {
             return false;
-        cachedVisitedPart.add(part.id().get());
+        }
+        properties.put(AK_VISITED, true);
         return true;
     }
 
@@ -289,11 +303,9 @@ public class WorkbenchPane extends BorderPane {
     public void selectMainView(String id) {
         Tab tab = null == id ? this.mainViews.getSelectionModel().getSelectedItem() : findMainView(id);
         if (null == tab) return;
-        if (tab.getUserData() instanceof WorkbenchPart.MainView part) {
-            if (markedDefaultPart.value == part) {
-                markedDefaultPart.value = null;
-            }
-            if (tab.isSelected() && (!cachedVisitedPart.contains(part.id().get()) || tab.getContent() == null)) {
+        if (tab.getUserData() instanceof WorkbenchPart.MainView) {
+            tab.getProperties().remove(AK_DEFAULT_TAB);
+            if (tab.isSelected() && (!tab.getProperties().containsKey(AK_VISITED) || tab.getContent() == null)) {
                 this.mainViews.getSelectionModel().clearSelection();
             }
         }
