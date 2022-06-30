@@ -847,6 +847,10 @@
 	-fx-background-color: -charm-tab-background;
 }
 
+.tab-pane.compact > .tab-header-area > .headers-region > .tab {
+    -fx-padding: .25em;
+}
+
 .tab-pane:focused > .tab-header-area > .headers-region > .tab:selected .focus-indicator {
 	-fx-border-width: 0;
 	-fx-border-insets: 0;
@@ -857,6 +861,10 @@
 	-fx-alignment: CENTER;
 	-fx-text-fill: -charm-tab-text;
     -fx-padding: 0 .4em 0 0;
+}
+
+.tab-pane.compact > .tab-header-area > .headers-region > .tab > .tab-container > .tab-label {
+    -fx-padding: 0;
 }
 
 .tab-pane > .tab-header-area > .headers-region > .tab:selected > .tab-container > .tab-label {
