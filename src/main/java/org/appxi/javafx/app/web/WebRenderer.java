@@ -97,9 +97,6 @@ public abstract class WebRenderer {
         this.webPane.setWebViewContextMenuBuilder(this::onWebViewContextMenuRequest);
         // 对WebPane绑定快捷键Pressed事件
         this.webPane.addEventHandler(KeyEvent.KEY_PRESSED, this::onWebPaneShortcutsPressed);
-        // 监听主要视图区“宽度”变化
-        webPane.widthProperty().addListener(observable ->
-                webPane.executeScript("typeof(onBodyResizeBefore) === 'function' && onBodyResizeBefore()"));
     }
 
     public final void navigate(final Object location) {
@@ -116,6 +113,9 @@ public abstract class WebRenderer {
         progressLayerRemover = ProgressLayer.show(viewport, progressLayer -> FxHelper.runThread(60, () -> {
             // 指定在当前数据目录，避免在公共目录写入数据
             webPane.webEngine().setUserDataDirectory(UserPrefs.cacheDir().toFile());
+            // 监听主要视图区“宽度”变化
+            webPane.widthProperty().addListener(observable ->
+                    webPane.executeScript("typeof(onBodyResizeBefore) === 'function' && onBodyResizeBefore()"));
             //
             webPane.webEngine().getLoadWorker().stateProperty().addListener((o, ov, state) -> {
                 if (state == Worker.State.SUCCEEDED) {
