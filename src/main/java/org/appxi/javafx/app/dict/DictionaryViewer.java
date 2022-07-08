@@ -1,8 +1,9 @@
 package org.appxi.javafx.app.dict;
 
+import appxi.dict.DictEntry;
 import appxi.dict.DictionaryApi;
 import appxi.dict.SearchMode;
-import appxi.dict.doc.DictEntry;
+import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
@@ -11,8 +12,11 @@ import org.appxi.javafx.app.web.WebToolPrinter;
 import org.appxi.javafx.app.web.WebViewer;
 import org.appxi.javafx.visual.MaterialIcon;
 import org.appxi.javafx.web.WebSelection;
+import org.appxi.prefs.UserPrefs;
+import org.appxi.util.FileHelper;
 import org.appxi.util.StringHelper;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,15 +58,17 @@ class DictionaryViewer extends WebViewer {
     protected void addTool_searchAllDictionaries() {
         Button button = MaterialIcon.TRAVEL_EXPLORE.flatButton();
         button.setText("查全部词典");
-        button.setTooltip(new Tooltip("从所有词典中精确查词“" + dictEntry.title + "”"));
-        button.setOnAction(event -> {
-            _searchAllDictionaries = true;
-            navigate(null);
-            // 已从全部词典查询，此时禁用掉此按钮
-            button.setDisable(true);
-        });
+        button.setTooltip(new Tooltip("从所有词典中精确查词“" + dictEntry.title() + "”"));
+        button.setOnAction(this::onSearchAllDictionaries);
         //
         this.webPane.getTopBar().addLeft(button);
+    }
+
+    void onSearchAllDictionaries(ActionEvent event) {
+        _searchAllDictionaries = true;
+        navigate(null);
+        // 已从全部词典查询，此时禁用掉此按钮
+        ((Button) event.getSource()).setDisable(true);
     }
 
     @Override
@@ -81,20 +87,29 @@ class DictionaryViewer extends WebViewer {
         //
         buff.append("</head><body><article style=\"padding: 0 1rem;\">");
         //
+        StringBuilder htmlDoc = new StringBuilder();
         if (_searchAllDictionaries) {
             List<DictEntry> list = new ArrayList<>();
-            DictionaryApi.api().searchTitle(SearchMode.TitleEquals, dictEntry.title, null, null)
-                    .forEachRemaining(entry -> list.add(entry.dictEntry.dictionary == dictEntry.dictionary ? 0 : list.size(), entry.dictEntry));
+            DictionaryApi.api().searchTitle(SearchMode.TitleEquals, dictEntry.title(), null, null)
+                    .forEachRemaining(entry -> list.add(entry.dictionary == dictEntry.dictionary ? 0 : list.size(), entry));
             for (DictEntry entry : list) {
-                buff.append(DictionaryApi.toHtmlDocument(entry));
+                htmlDoc.append(DictionaryApi.toHtmlDocument(entry));
             }
         } else {
-            buff.append(DictionaryApi.toHtmlDocument(dictEntry));
+            htmlDoc.append(DictionaryApi.toHtmlDocument(dictEntry));
+        }
+        if (null != controller.htmlDocumentWrapper) {
+            buff.append(controller.htmlDocumentWrapper.apply(htmlDoc.toString()));
+        } else {
+            buff.append(htmlDoc);
         }
         //
         buff.append("</article></body></html>");
-        //
-        return buff.toString();
+        // 由于词条内容可能涉及特殊字符，此处使用本地文件以保证正常显示
+        String tempInfo = dictEntry.dictionary.id + "." + dictEntry.id + (_searchAllDictionaries ? ".all" : "");
+        Path tempFile = UserPrefs.cacheDir().resolve(FileHelper.makeEncodedPath(tempInfo, ".html"));
+        FileHelper.writeString(buff.toString(), tempFile);
+        return tempFile;
     }
 
     @Override

@@ -1,9 +1,8 @@
 package org.appxi.javafx.app.dict;
 
+import appxi.dict.DictEntry;
 import appxi.dict.DictionaryApi;
 import appxi.dict.SearchMode;
-import appxi.dict.SearchResultEntry;
-import appxi.dict.doc.DictEntry;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.Labeled;
@@ -22,7 +21,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 class DictionaryLookupLayer extends LookupLayer<DictEntry> {
     final WorkbenchApp app;
@@ -62,7 +60,7 @@ class DictionaryLookupLayer extends LookupLayer<DictEntry> {
         SearchMode searchMode = SearchMode.TitleStartsWith;
         if (lookupText.length() > 2) {
             if (lookupText.charAt(0) == '"' && lookupText.charAt(lookupText.length() - 1) == '"'
-                    || lookupText.charAt(0) == '“' && lookupText.charAt(lookupText.length() - 1) == '”') {
+                || lookupText.charAt(0) == '“' && lookupText.charAt(lookupText.length() - 1) == '”') {
                 searchMode = SearchMode.TitleEquals;
                 lookupText = lookupText.substring(1, lookupText.length() - 1);
             } else if (lookupText.charAt(0) == '*' && lookupText.charAt(lookupText.length() - 1) == '*') {
@@ -85,9 +83,9 @@ class DictionaryLookupLayer extends LookupLayer<DictEntry> {
 
         resultLimit += 1;
         final boolean finalQueryIsBlank = null == finalQuery || finalQuery.isBlank();
-        List<SearchResultEntry> result = new ArrayList<>(1024);
+        List<DictEntry.Scored> result = new ArrayList<>(1024);
         try {
-            Iterator<SearchResultEntry> iter = DictionaryApi.api().searchTitle(searchMode, finalQuery, null, null);
+            Iterator<DictEntry.Scored> iter = DictionaryApi.api().searchTitle(searchMode, finalQuery, null, null);
             while (iter.hasNext()) {
                 result.add(iter.next());
                 if (finalQueryIsBlank && result.size() > resultLimit) {
@@ -101,7 +99,7 @@ class DictionaryLookupLayer extends LookupLayer<DictEntry> {
         if (result.size() > resultLimit) {
             result = result.subList(0, resultLimit);
         }
-        return result.stream().map(e -> e.dictEntry).collect(Collectors.toList());
+        return new ArrayList<>(result);
     }
 
     protected void lookupByCommands(String searchTerm, Collection<DictEntry> result) {
@@ -110,7 +108,7 @@ class DictionaryLookupLayer extends LookupLayer<DictEntry> {
     @Override
     protected void updateItemLabel(Labeled labeled, DictEntry data) {
         //
-        Label title = new Label(data.title);
+        Label title = new Label(data.title());
         title.getStyleClass().addAll("primary", "plaintext");
 
         Label detail = new Label(data.dictionary.getName(), MaterialIcon.LOCATION_ON.graphic());

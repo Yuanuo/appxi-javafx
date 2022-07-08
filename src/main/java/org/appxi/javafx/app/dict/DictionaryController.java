@@ -1,10 +1,10 @@
 package org.appxi.javafx.app.dict;
 
+import appxi.dict.DictEntry;
 import appxi.dict.Dictionary;
 import appxi.dict.DictionaryApi;
 import appxi.dict.SearchMode;
-import appxi.dict.SearchResultEntry;
-import appxi.dict.doc.DictEntry;
+import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
@@ -26,13 +26,16 @@ import org.appxi.util.FileHelper;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class DictionaryController extends WorkbenchPartController implements WorkbenchPart.SideTool {
     final Supplier<List<String>> webIncludesSupplier;
+    final Function<String, String> htmlDocumentWrapper;
 
     public DictionaryController(WorkbenchPane workbench,
-                                Supplier<List<String>> webIncludesSupplier) {
+                                Supplier<List<String>> webIncludesSupplier,
+                                Function<String, String> htmlDocumentWrapper) {
         super(workbench);
 
         this.id.set("DICTIONARY");
@@ -41,6 +44,7 @@ public class DictionaryController extends WorkbenchPartController implements Wor
         this.graphic.set(MaterialIcon.TRANSLATE.graphic());
 
         this.webIncludesSupplier = webIncludesSupplier;
+        this.htmlDocumentWrapper = htmlDocumentWrapper;
     }
 
     @Override
@@ -72,9 +76,9 @@ public class DictionaryController extends WorkbenchPartController implements Wor
 
         app.eventBus.addEventHandler(DictionaryEvent.SEARCH_EXACT, event -> {
             Dictionary dictionary = DictionaryApi.api().get(event.dictionary);
-            Iterator<SearchResultEntry> iterator = dictionary.entries.search(SearchMode.TitleEquals, event.text, null);
+            Iterator<DictEntry.Scored> iterator = dictionary.model.search(SearchMode.TitleEquals, event.text, null);
             if (iterator.hasNext()) {
-                showDictEntryWindow(iterator.next().dictEntry);
+                showDictEntryWindow(iterator.next());
             }
         });
     }
@@ -94,7 +98,7 @@ public class DictionaryController extends WorkbenchPartController implements Wor
     }
 
     void showDictEntryWindow(DictEntry item) {
-        final String windowId = item.dictionary.id + " /" + item.title;
+        final String windowId = item.dictionary.id + " /" + item.id;
 
         //
         Window window = Window.getWindows().stream().filter(w -> windowId.equals(w.getScene().getUserData())).findFirst().orElse(null);
@@ -103,19 +107,26 @@ public class DictionaryController extends WorkbenchPartController implements Wor
             return;
         }
         //
-        final DictionaryViewer dictViewer = new DictionaryViewer(this, item);
-        //
         final DialogPane dialogPane = new DialogPane() {
             @Override
             protected Node createButtonBar() {
                 return null;
             }
         };
+        final Dialog<?> dialog = new Dialog<>();
+        final DictionaryViewer dictViewer = new DictionaryViewer(this, item) {
+            @Override
+            void onSearchAllDictionaries(ActionEvent event) {
+                dialog.setTitle(item.title() + " -- 全部词典  -  " + app.getAppName());
+                dialogPane.getScene().setUserData(windowId + "/all");
+                super.onSearchAllDictionaries(event);
+            }
+        };
+        //
         dialogPane.setContent(dictViewer.viewport);
         dialogPane.getButtonTypes().add(ButtonType.OK);
         //
-        Dialog<?> dialog = new Dialog<>();
-        dialog.setTitle(item.title + " -- " + item.dictionary.getName() + "  -  " + app.getAppName());
+        dialog.setTitle(item.title() + " -- " + item.dictionary.getName() + "  -  " + app.getAppName());
         dialog.setDialogPane(dialogPane);
         dialog.getDialogPane().setPrefWidth(800);
         dialog.setResizable(true);
