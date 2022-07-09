@@ -1,14 +1,14 @@
 package org.appxi.javafx.app.dict;
 
-import appxi.dict.DictEntry;
-import appxi.dict.DictionaryApi;
-import appxi.dict.SearchMode;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.Labeled;
 import javafx.scene.input.InputEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import org.appxi.dictionary.DictEntry;
+import org.appxi.dictionary.DictEntryExpr;
+import org.appxi.dictionary.DictionaryApi;
 import org.appxi.javafx.control.LookupLayer;
 import org.appxi.javafx.helper.FxHelper;
 import org.appxi.javafx.visual.MaterialIcon;
@@ -57,26 +57,9 @@ class DictionaryLookupLayer extends LookupLayer<DictEntry> {
         inputQuery = lookupText;
 
         // detect
-        SearchMode searchMode = SearchMode.TitleStartsWith;
-        if (lookupText.length() > 2) {
-            if (lookupText.charAt(0) == '"' && lookupText.charAt(lookupText.length() - 1) == '"'
-                || lookupText.charAt(0) == '“' && lookupText.charAt(lookupText.length() - 1) == '”') {
-                searchMode = SearchMode.TitleEquals;
-                lookupText = lookupText.substring(1, lookupText.length() - 1);
-            } else if (lookupText.charAt(0) == '*' && lookupText.charAt(lookupText.length() - 1) == '*') {
-                searchMode = SearchMode.TitleContains;
-                lookupText = lookupText.substring(1, lookupText.length() - 1);
-            } else if (lookupText.charAt(0) == '*') {
-                searchMode = SearchMode.TitleEndsWith;
-                lookupText = lookupText.substring(1);
-            } else if (lookupText.charAt(lookupText.length() - 1) == '*') {
-                searchMode = SearchMode.TitleStartsWith;
-                lookupText = lookupText.substring(0, lookupText.length() - 1);
-            }
-        } else if (lookupText.equals("*")) {
-            lookupText = "";
-            searchMode = SearchMode.TitleStartsWith;
-        }
+        final StringBuilder keywords = new StringBuilder(lookupText);
+        final DictEntryExpr entryExpr = DictEntryExpr.detectForTitle(keywords);
+        lookupText = keywords.toString();
 
         lookupText = lookupText.isBlank() ? "" : ChineseConvertors.toHans(lookupText);
         finalQuery = lookupText;
@@ -85,9 +68,9 @@ class DictionaryLookupLayer extends LookupLayer<DictEntry> {
         final boolean finalQueryIsBlank = null == finalQuery || finalQuery.isBlank();
         List<DictEntry.Scored> result = new ArrayList<>(1024);
         try {
-            Iterator<DictEntry.Scored> iter = DictionaryApi.api().searchTitle(searchMode, finalQuery, null, null);
-            while (iter.hasNext()) {
-                result.add(iter.next());
+            Iterator<DictEntry.Scored> iterator = DictionaryApi.api().search(finalQuery, entryExpr, null, null);
+            while (iterator.hasNext()) {
+                result.add(iterator.next());
                 if (finalQueryIsBlank && result.size() > resultLimit) {
                     break;
                 }
@@ -111,7 +94,7 @@ class DictionaryLookupLayer extends LookupLayer<DictEntry> {
         Label title = new Label(data.title());
         title.getStyleClass().addAll("primary", "plaintext");
 
-        Label detail = new Label(data.dictionary.getName(), MaterialIcon.LOCATION_ON.graphic());
+        Label detail = new Label(data.dictionary().getName(), MaterialIcon.LOCATION_ON.graphic());
         detail.getStyleClass().add("secondary");
 
         HBox.setHgrow(title, Priority.ALWAYS);

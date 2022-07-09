@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.appxi</groupId>
     <artifactId>javafx</artifactId>
-    <version>22.07.08</version>
+    <version>22.07.09</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -36,8 +36,8 @@
         </dependency>
         <dependency>
             <groupId>org.appxi</groupId>
-            <artifactId>dictionary</artifactId>
-            <version>[22.06.01,)</version>
+            <artifactId>dictionary-api</artifactId>
+            <version>[22.07.01,)</version>
         </dependency>
     </dependencies>
 
@@ -46,7 +46,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>3.10.1</version>
                 <configuration>
                     <compilerArgs>
                         <arg>--add-exports=javafx.web/com.sun.javafx.webkit=appxi.javafx</arg>

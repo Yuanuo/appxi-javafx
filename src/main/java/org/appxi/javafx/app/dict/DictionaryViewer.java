@@ -1,13 +1,14 @@
 package org.appxi.javafx.app.dict;
 
-import appxi.dict.DictEntry;
-import appxi.dict.DictionaryApi;
-import appxi.dict.SearchMode;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.Tooltip;
+import org.appxi.dictionary.DictEntry;
+import org.appxi.dictionary.DictEntryExpr;
+import org.appxi.dictionary.DictionaryApi;
+import org.appxi.dictionary.DictionaryHelper;
 import org.appxi.javafx.app.web.WebToolPrinter;
 import org.appxi.javafx.app.web.WebViewer;
 import org.appxi.javafx.visual.MaterialIcon;
@@ -39,7 +40,7 @@ class DictionaryViewer extends WebViewer {
 
     @Override
     protected String locationId() {
-        return "dict@" + dictEntry.dictionary.id + "@" + dictEntry.id;
+        return "dict@" + dictEntry.dictionary().id + "@" + dictEntry.id;
     }
 
     @Override
@@ -90,13 +91,13 @@ class DictionaryViewer extends WebViewer {
         StringBuilder htmlDoc = new StringBuilder();
         if (_searchAllDictionaries) {
             List<DictEntry> list = new ArrayList<>();
-            DictionaryApi.api().searchTitle(SearchMode.TitleEquals, dictEntry.title(), null, null)
-                    .forEachRemaining(entry -> list.add(entry.dictionary == dictEntry.dictionary ? 0 : list.size(), entry));
+            DictionaryApi.api().search(dictEntry.title(), DictEntryExpr.TitleEquals, null, null)
+                    .forEachRemaining(entry -> list.add(entry.dictionary() == dictEntry.dictionary() ? 0 : list.size(), entry));
             for (DictEntry entry : list) {
-                htmlDoc.append(DictionaryApi.toHtmlDocument(entry));
+                htmlDoc.append(DictionaryHelper.toHtmlDocument(entry));
             }
         } else {
-            htmlDoc.append(DictionaryApi.toHtmlDocument(dictEntry));
+            htmlDoc.append(DictionaryHelper.toHtmlDocument(dictEntry));
         }
         if (null != controller.htmlDocumentWrapper) {
             buff.append(controller.htmlDocumentWrapper.apply(htmlDoc.toString()));
@@ -106,7 +107,7 @@ class DictionaryViewer extends WebViewer {
         //
         buff.append("</article></body></html>");
         // 由于词条内容可能涉及特殊字符，此处使用本地文件以保证正常显示
-        String tempInfo = dictEntry.dictionary.id + "." + dictEntry.id + (_searchAllDictionaries ? ".all" : "");
+        String tempInfo = dictEntry.dictionary().id + "." + dictEntry.id + (_searchAllDictionaries ? ".all" : "");
         Path tempFile = UserPrefs.cacheDir().resolve(FileHelper.makeEncodedPath(tempInfo, ".html"));
         FileHelper.writeString(buff.toString(), tempFile);
         return tempFile;

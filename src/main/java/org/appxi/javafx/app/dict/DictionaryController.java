@@ -1,9 +1,5 @@
 package org.appxi.javafx.app.dict;
 
-import appxi.dict.DictEntry;
-import appxi.dict.Dictionary;
-import appxi.dict.DictionaryApi;
-import appxi.dict.SearchMode;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import javafx.scene.control.ButtonType;
@@ -14,6 +10,10 @@ import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.stage.Modality;
 import javafx.stage.Window;
+import org.appxi.dictionary.DictEntry;
+import org.appxi.dictionary.DictEntryExpr;
+import org.appxi.dictionary.DictionaryApi;
+import org.appxi.dictionary.DictionaryModel;
 import org.appxi.javafx.app.AppEvent;
 import org.appxi.javafx.app.DesktopApp;
 import org.appxi.javafx.helper.FxHelper;
@@ -75,8 +75,8 @@ public class DictionaryController extends WorkbenchPartController implements Wor
                 event -> this.lookup(null != event.text ? event.text.strip() : null));
 
         app.eventBus.addEventHandler(DictionaryEvent.SEARCH_EXACT, event -> {
-            Dictionary dictionary = DictionaryApi.api().get(event.dictionary);
-            Iterator<DictEntry.Scored> iterator = dictionary.model.search(SearchMode.TitleEquals, event.text, null);
+            DictionaryModel dictionaryModel = DictionaryApi.api().getDictionaryModel(event.dictionary);
+            Iterator<DictEntry.Scored> iterator = dictionaryModel.search(event.text, DictEntryExpr.TitleEquals, null);
             if (iterator.hasNext()) {
                 showDictEntryWindow(iterator.next());
             }
@@ -98,7 +98,7 @@ public class DictionaryController extends WorkbenchPartController implements Wor
     }
 
     void showDictEntryWindow(DictEntry item) {
-        final String windowId = item.dictionary.id + " /" + item.id;
+        final String windowId = item.dictionary().id + " /" + item.id;
 
         //
         Window window = Window.getWindows().stream().filter(w -> windowId.equals(w.getScene().getUserData())).findFirst().orElse(null);
@@ -126,7 +126,7 @@ public class DictionaryController extends WorkbenchPartController implements Wor
         dialogPane.setContent(dictViewer.viewport);
         dialogPane.getButtonTypes().add(ButtonType.OK);
         //
-        dialog.setTitle(item.title() + " -- " + item.dictionary.getName() + "  -  " + app.getAppName());
+        dialog.setTitle(item.title() + " -- " + item.dictionary().getName() + "  -  " + app.getAppName());
         dialog.setDialogPane(dialogPane);
         dialog.getDialogPane().setPrefWidth(800);
         dialog.setResizable(true);
