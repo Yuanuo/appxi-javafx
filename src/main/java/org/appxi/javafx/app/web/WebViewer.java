@@ -14,6 +14,7 @@ import org.appxi.javafx.workbench.WorkbenchPane;
 import org.appxi.prefs.UserPrefs;
 import org.appxi.smartcn.pinyin.PinyinHelper;
 import org.appxi.util.FileHelper;
+import org.appxi.util.OSVersions;
 import org.appxi.util.StringHelper;
 import org.appxi.util.ext.Attributes;
 
@@ -184,8 +185,8 @@ public abstract class WebViewer extends WebRenderer {
             event.consume();
             return;
         }
-        // Ctrl + G, Ctrl + H
-        if (event.isShortcutDown() && (event.getCode() == KeyCode.G || event.getCode() == KeyCode.H)) {
+        // Ctrl + G, Ctrl + H (Win) / J (Mac) ,MacOS平台上Cmd+H与系统快捷键冲突
+        if (event.isShortcutDown() && (event.getCode() == KeyCode.G || event.getCode() == (OSVersions.isMac ? KeyCode.J : KeyCode.H))) {
             // 如果有选中文字，则按查找选中文字处理
             final String selText = this.webPane.executeScript("getValidSelectionText()");
             app.eventBus.fireEvent(event.getCode() == KeyCode.G
