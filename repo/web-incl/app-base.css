@@ -29,17 +29,13 @@
 
 * {
     box-sizing: border-box;
-    font-family: var(--font-family);
     -webkit-font-smoothing: subpixel-antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
 body {
     font-family: var(--font-family);
-    font-size: var(--font-size);
     color: var(--text-color);
-    line-height: calc(var(--font-size) * 1.85);
-    letter-spacing: calc(var(--font-size) / 10);
     margin: 0;
 }
 

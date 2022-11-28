@@ -407,9 +407,6 @@ public final class VisualProvider {
                     --font-size: calc(var(--zoom) * 1rem);
                     --text-color: %s;
                 }
-                * {
-                    font-family: var(--font-family);
-                }
                                 
                 body {
                     background-color: %s;
