@@ -1836,6 +1836,30 @@
 .progress-layer .label {
 	-fx-text-fill: #ccc;
 }
+
+.like-text-input {
+	-fx-padding: 1.28mm;
+	-fx-border-width: 0 0 1px 0, 0 0 1px 0;
+	-fx-border-insets: 0 0 -1px 0, 0 0 -1px 0;
+	-fx-border-color: transparent transparent -text-input-prompt-color transparent, transparent transparent transparent transparent;
+	-fx-prompt-text-fill: -text-input-prompt-color;
+}
+
+.like-text-input-focused {
+	-fx-padding: 1.28mm;
+	-fx-border-width: 0 0 2px 0, 0 0 0 0;
+	-fx-border-insets: 0 0 -2px 0, 0 0 0 0;
+	-fx-border-color: transparent transparent -primary-swatch-500 transparent, transparent transparent transparent transparent;
+}
+
+.hyperlink.never-visited:visited {
+    -fx-text-fill: -fx-accent;
+    -fx-underline: false;
+}
+
+.hyperlink.never-visited:visited:hover{
+    -fx-underline: true;
+}
 /* ****************************************************************************************************************** */
 
 
