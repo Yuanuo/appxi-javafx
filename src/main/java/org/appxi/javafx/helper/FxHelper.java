@@ -2,22 +2,34 @@ package org.appxi.javafx.helper;
 
 import javafx.application.Platform;
 import javafx.scene.Node;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
 import javafx.scene.control.Labeled;
 import javafx.scene.control.SelectionModel;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import javafx.stage.Modality;
+import javafx.stage.Window;
+import org.appxi.javafx.app.BaseApp;
+import org.appxi.javafx.app.web.WebViewer;
 import org.appxi.javafx.control.ListViewEx;
+import org.appxi.javafx.workbench.WorkbenchApp;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public abstract class FxHelper {
@@ -147,5 +159,105 @@ public abstract class FxHelper {
     public static void copyText(String text) {
         // 必须用Platform.runLater，否则内容会被清除掉而复制失败
         Platform.runLater(() -> Clipboard.getSystemClipboard().setContent(Map.of(DataFormat.PLAIN_TEXT, text)));
+    }
+
+    public static void showTextViewerWindow(BaseApp app, String windowId, String windowTitle, String text) {
+        Window window = Window.getWindows().stream().filter(w -> windowId.equals(w.getScene().getUserData())).findFirst().orElse(null);
+        if (null != window) {
+            window.requestFocus();
+            return;
+        }
+        //
+        final Dialog<?> dialog = new Dialog<>();
+        final DialogPane dialogPane = new DialogPane() {
+            @Override
+            protected Node createButtonBar() {
+                return null;
+            }
+        };
+
+        final TextArea viewer = new TextArea();
+        VBox.setVgrow(viewer, Priority.ALWAYS);
+        viewer.setWrapText(true);
+        viewer.setEditable(false);
+        viewer.setPrefRowCount(15);
+        //
+        dialogPane.setContent(viewer);
+        dialogPane.getButtonTypes().add(ButtonType.OK);
+        //
+        dialog.setTitle(windowTitle);
+        dialog.setDialogPane(dialogPane);
+        dialog.getDialogPane().setPrefWidth(800);
+        dialog.setResizable(true);
+        dialog.initModality(Modality.NONE);
+        dialog.initOwner(app.getPrimaryStage());
+        dialog.getDialogPane().getScene().setUserData(windowId);
+        dialog.setOnShown(evt -> FxHelper.runThread(100, () -> {
+            dialog.setHeight(600);
+            dialog.setY(dialog.getOwner().getY() + (dialog.getOwner().getHeight() - dialog.getHeight()) / 2);
+            if (dialog.getX() < 0) dialog.setX(0);
+            if (dialog.getY() < 0) dialog.setY(0);
+            //
+            viewer.setText(text);
+        }));
+        dialog.show();
+    }
+
+    public static void showHtmlViewerWindow(WorkbenchApp app, String windowId, String windowTitle, Object webContent) {
+        showHtmlViewerWindow(app, windowId, windowTitle, dialog -> new WebViewer(app.workbench()) {
+            @Override
+            protected Object location() {
+                return null;
+            }
+
+            @Override
+            protected String locationId() {
+                return windowId;
+            }
+
+            @Override
+            protected Object createWebContent() {
+                return webContent;
+            }
+        });
+    }
+
+    public static void showHtmlViewerWindow(BaseApp app, String windowId, String windowTitle, Function<Dialog<?>, WebViewer> webViewerSupplier) {
+        Window window = Window.getWindows().stream().filter(w -> windowId.equals(w.getScene().getUserData())).findFirst().orElse(null);
+        if (null != window) {
+            window.requestFocus();
+            return;
+        }
+        //
+        final Dialog<?> dialog = new Dialog<>();
+        final DialogPane dialogPane = new DialogPane() {
+            @Override
+            protected Node createButtonBar() {
+                return null;
+            }
+        };
+
+        final WebViewer viewer = webViewerSupplier.apply(dialog);
+        //
+        dialogPane.setContent(viewer.viewport);
+        dialogPane.getButtonTypes().add(ButtonType.OK);
+        //
+        dialog.setTitle(windowTitle);
+        dialog.setDialogPane(dialogPane);
+        dialog.getDialogPane().setPrefWidth(800);
+        dialog.setResizable(true);
+        dialog.initModality(Modality.NONE);
+        dialog.initOwner(app.getPrimaryStage());
+        dialog.getDialogPane().getScene().setUserData(windowId);
+        dialog.setOnShown(evt -> FxHelper.runThread(100, () -> {
+            dialog.setHeight(600);
+            dialog.setY(dialog.getOwner().getY() + (dialog.getOwner().getHeight() - dialog.getHeight()) / 2);
+            if (dialog.getX() < 0) dialog.setX(0);
+            if (dialog.getY() < 0) dialog.setY(0);
+            //
+            viewer.navigate(null);
+        }));
+        dialog.setOnHidden(evt -> viewer.deinitialize());
+        dialog.show();
     }
 }

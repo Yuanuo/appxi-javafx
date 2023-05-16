@@ -1,4 +1,4 @@
-package org.appxi.javafx.app.dict;
+package org.appxi.javafx.app.search;
 
 import org.appxi.event.Event;
 import org.appxi.event.EventType;

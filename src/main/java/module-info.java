@@ -8,10 +8,8 @@ module appxi.javafx {
     requires transitive appxi.shared;
     requires transitive appxi.smartcn.convert;
     requires transitive appxi.smartcn.pinyin;
-    requires transitive appxi.dictionary.api;
 
     exports org.appxi.javafx.app;
-    exports org.appxi.javafx.app.dict;
     exports org.appxi.javafx.app.search;
     exports org.appxi.javafx.app.web;
     exports org.appxi.javafx.control;

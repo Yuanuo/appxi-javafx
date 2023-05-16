@@ -5,7 +5,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import org.appxi.javafx.app.AppEvent;
 import org.appxi.javafx.app.DesktopApp;
-import org.appxi.javafx.app.dict.DictionaryEvent;
+import org.appxi.javafx.app.search.DictionaryEvent;
 import org.appxi.javafx.app.search.SearcherEvent;
 import org.appxi.javafx.helper.FxHelper;
 import org.appxi.javafx.web.WebFindByMarks;
