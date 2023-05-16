@@ -109,7 +109,7 @@ public abstract class WebViewer extends WebRenderer {
     public void initialize() {
         super.initialize();
         //
-        webFinder = new WebFindByMarks(this.webPane, viewport);
+        webFinder = new WebFindByMarks(app, this.webPane, viewport);
         webFinder().setAsciiConvertor(PinyinHelper::pinyin);
         this.webPane.getTopBox().addRight(webFinder());
     }

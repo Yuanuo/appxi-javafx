@@ -1,10 +1,12 @@
 package org.appxi.javafx.web;
 
+import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Labeled;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.InputEvent;
 import javafx.scene.layout.StackPane;
+import org.appxi.javafx.app.BaseApp;
 import org.appxi.javafx.control.LookupLayer;
 import org.appxi.javafx.helper.FxHelper;
 import org.appxi.javafx.visual.MaterialIcon;
@@ -24,7 +26,7 @@ public class WebFindByMarks extends WebFindByMark {
     private LookupLayer<String> lookupLayer;
     private Function<String, String> asciiConvertor;
 
-    public WebFindByMarks(WebPane webPane, StackPane glassPane) {
+    public WebFindByMarks(BaseApp app, WebPane webPane, StackPane glassPane) {
         super(webPane);
 
         more = MaterialIcon.MORE_VERT.flatButton();
@@ -39,10 +41,11 @@ public class WebFindByMarks extends WebFindByMark {
                     }
 
                     @Override
-                    protected String getUsagesText() {
-                        return """
-                                >> 快捷键：ESC 或 点击透明区 退出此界面；上下方向键选择列表项；回车键打开；
-                                """;
+                    protected void helpButtonAction(ActionEvent actionEvent) {
+                        FxHelper.showTextViewerWindow(app, "webFindByMarks.helpWindow", "页内查找使用方法",
+                                """
+                                        >> 快捷键：ESC 或 点击透明区 退出此界面；上下方向键选择列表项；回车键打开；
+                                        """);
                     }
 
                     private Set<String> usedKeywords;
@@ -55,7 +58,7 @@ public class WebFindByMarks extends WebFindByMark {
                     }
 
                     @Override
-                    protected Collection<String> lookupByKeywords(String lookupText, int resultLimit) {
+                    protected LookupResult<String> lookupByKeywords(String lookupText, int resultLimit) {
                         final List<String> result = new ArrayList<>();
                         usedKeywords = new LinkedHashSet<>();
                         //
@@ -75,7 +78,7 @@ public class WebFindByMarks extends WebFindByMark {
                                 });
                         if (!isInputEmpty && optional.isEmpty()) {
                             // not a valid expression
-                            return result;
+                            return new LookupResult<>(result.size(), result.size(), result);
                         }
                         final LookupExpression lookupExpression = optional.orElse(null);
                         //
@@ -97,7 +100,7 @@ public class WebFindByMarks extends WebFindByMark {
                             lookupExpression.keywords().forEach(k -> usedKeywords.add(k.keyword()));
                         if (usedKeywords.isEmpty())
                             usedKeywords.add(searchedText);
-                        return result;
+                        return new LookupResult<>(result.size(), result.size(), result);
                     }
 
                     @Override
