@@ -410,7 +410,7 @@ public final class VisualProvider {
                                 
                 body {
                     background-color: %s;
-                    font-family: var(--font-family) !;
+                    font-family: var(--font-family) !important;
                     font-size: var(--font-size);
                     color: var(--text-color);
                     line-height: calc(var(--font-size) * 1.85);
