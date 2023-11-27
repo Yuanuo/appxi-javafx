@@ -31,6 +31,7 @@ public abstract class LookupPane<T> extends VBox {
 
     public LookupPane() {
         super(3);
+        getStyleClass().add("non-transparent");
 
         textInput = new TextInput();
         textInput.input.setPromptText("在此输入");
