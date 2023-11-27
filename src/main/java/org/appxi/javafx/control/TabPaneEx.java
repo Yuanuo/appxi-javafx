@@ -11,6 +11,8 @@ import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.input.ContextMenuEvent;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import org.appxi.javafx.helper.FxHelper;
@@ -65,6 +67,14 @@ public class TabPaneEx extends TabPane {
         });
 
         this.addEventFilter(ContextMenuEvent.CONTEXT_MENU_REQUESTED, this::handleOnContextMenuRequested);
+
+        // 避免 LEFT/ RIGHT 切换TAB
+        this.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (event.getCode() == KeyCode.LEFT || event.getCode() == KeyCode.KP_LEFT
+                || event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.KP_RIGHT) {
+                event.consume();
+            }
+        });
     }
 
     private void handleOnContextMenuRequested(ContextMenuEvent event) {
