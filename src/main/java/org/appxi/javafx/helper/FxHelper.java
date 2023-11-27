@@ -1,6 +1,8 @@
 package org.appxi.javafx.helper;
 
 import javafx.application.Platform;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.Node;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContentDisplay;
@@ -22,7 +24,10 @@ import javafx.stage.Window;
 import org.appxi.javafx.app.BaseApp;
 import org.appxi.javafx.app.web.WebViewer;
 import org.appxi.javafx.control.ListViewEx;
+import org.appxi.javafx.settings.DefaultOptions;
+import org.appxi.javafx.settings.Option;
 import org.appxi.javafx.workbench.WorkbenchApp;
+import org.appxi.util.ext.HanLang;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -259,5 +264,13 @@ public abstract class FxHelper {
         }));
         dialog.setOnHidden(evt -> viewer.deinitialize());
         dialog.show();
+    }
+
+    public static Option<HanLang> optionForHanLang(String desc) {
+        final ObjectProperty<HanLang> valueProperty = new SimpleObjectProperty<>(HanLang.get());
+        valueProperty.addListener((o, ov, nv) -> HanLang.apply(nv));
+        return new DefaultOptions<HanLang>("简繁体", desc, "VIEWER", true)
+                .setValues(HanLang.hans, HanLang.hant, HanLang.hantHK, HanLang.hantTW)
+                .setValueProperty(valueProperty);
     }
 }
