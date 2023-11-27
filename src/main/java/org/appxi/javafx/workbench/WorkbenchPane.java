@@ -10,6 +10,7 @@ import javafx.scene.control.ButtonBase;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
@@ -61,6 +62,7 @@ public class WorkbenchPane extends BorderPane {
         mainViews = new TabPaneEx();
         mainViews.getStyleClass().add("main-views");
         mainViews.setTabClosingPolicy(TabClosingPolicy.ALL_TABS);
+        mainViews.setTabDragPolicy(TabPane.TabDragPolicy.REORDER);
         rootViews.getItems().add(mainViews);
 
         this.setLeft(sideTools);
