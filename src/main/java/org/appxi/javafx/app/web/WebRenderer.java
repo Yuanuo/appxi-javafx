@@ -3,7 +3,7 @@ package org.appxi.javafx.app.web;
 import javafx.concurrent.Worker;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
+import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.layout.StackPane;
 import netscape.javascript.JSObject;
 import org.appxi.event.EventHandler;
@@ -13,7 +13,6 @@ import org.appxi.javafx.control.ProgressLayer;
 import org.appxi.javafx.helper.FxHelper;
 import org.appxi.javafx.visual.VisualEvent;
 import org.appxi.javafx.web.WebPane;
-import org.appxi.javafx.web.WebSelection;
 import org.appxi.javafx.workbench.WorkbenchApp;
 import org.appxi.javafx.workbench.WorkbenchPane;
 import org.appxi.prefs.UserPrefs;
@@ -94,9 +93,26 @@ public abstract class WebRenderer {
         app.eventBus.addEventHandler(VisualEvent.SET_STYLE, _onAppStyleSetting);
         app.eventBus.addEventHandler(VisualEvent.SET_WEB_STYLE, _onWebStyleSetting);
         // 对WebView绑定右键菜单请求事件
-        this.webPane.setWebViewContextMenuBuilder(this::onWebViewContextMenuRequest);
+        if (!DesktopApp.productionMode) {
+            webPane.shortcutMenu.add((webSelection) -> {
+                MenuItem menuItem = new MenuItem("查看源码（复制到剪贴板）");
+                menuItem.getProperties().put(WebPane.GRP_MENU, "!");
+                menuItem.setOnAction(event -> FxHelper.copyText(webPane.executeScript("document.documentElement.outerHTML")));
+                return List.of(menuItem);
+            });
+        }
         // 对WebPane绑定快捷键Pressed事件
-        this.webPane.addEventHandler(KeyEvent.KEY_PRESSED, this::onWebPaneShortcutsPressed);
+
+        // HOME 到页首
+        webPane.shortcutKeys.put(new KeyCodeCombination(KeyCode.HOME), (keyEvent) -> {
+            keyEvent.consume();
+            this.webPane.executeScript("typeof(setScrollTop1BySelectors) === 'function' && setScrollTop1BySelectors(null, 0)");
+        });
+        // END 到页尾
+        webPane.shortcutKeys.put(new KeyCodeCombination(KeyCode.HOME), (keyEvent) -> {
+            keyEvent.consume();
+            this.webPane.executeScript("typeof(setScrollTop1BySelectors) === 'function' && setScrollTop1BySelectors(null, 1)");
+        });
     }
 
     public final void navigate(final Object location) {
@@ -192,38 +208,6 @@ public abstract class WebRenderer {
      */
     protected abstract Object createWebContent();
 
-    /**
-     * 响应Web视图中右键菜单事件，子类应实现构建MenuItem
-     *
-     * @param model     菜单列表
-     * @param selection 当前选区
-     */
-    protected void onWebViewContextMenuRequest(List<MenuItem> model, WebSelection selection) {
-        if (!DesktopApp.productionMode) {
-            MenuItem menuItem = new MenuItem("查看源码（复制到剪贴板）");
-            menuItem.setOnAction(event -> FxHelper.copyText(webPane.executeScript("document.documentElement.outerHTML")));
-            model.add(menuItem);
-        }
-    }
-
-    /**
-     * 响应WebPane视图中快捷键KeyEvent.KEY_PRESSED事件
-     */
-    protected void onWebPaneShortcutsPressed(KeyEvent event) {
-        if (event.isConsumed()) {
-            return;
-        }
-        // LEFT 避免切换TAB
-        if (event.getCode() == KeyCode.LEFT || event.getCode() == KeyCode.KP_LEFT) {
-            event.consume();
-            return;
-        }
-        // RIGHT 避免切换TAB
-        if (event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.KP_RIGHT) {
-            event.consume();
-            return;
-        }
-    }
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**

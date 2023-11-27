@@ -2,14 +2,15 @@ package org.appxi.javafx.app.web;
 
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import org.appxi.javafx.app.AppEvent;
 import org.appxi.javafx.app.DesktopApp;
-import org.appxi.javafx.app.search.DictionaryEvent;
 import org.appxi.javafx.app.search.SearcherEvent;
 import org.appxi.javafx.helper.FxHelper;
 import org.appxi.javafx.web.WebFindByMarks;
-import org.appxi.javafx.web.WebSelection;
+import org.appxi.javafx.web.WebPane;
+import org.appxi.javafx.workbench.WorkbenchApp;
 import org.appxi.javafx.workbench.WorkbenchPane;
 import org.appxi.prefs.UserPrefs;
 import org.appxi.smartcn.pinyin.PinyinHelper;
@@ -149,127 +150,14 @@ public abstract class WebViewer extends WebRenderer {
 //                final double percent = UserPrefs.recents.getDouble(selectorKey() + ".percent", 0);
                 if (null != selector) {
 //                    System.out.println(selector + " GET selector for " + path.get());
-                    this.webPane.executeScript("setScrollTop1BySelectors(\"" + selector + "\")");
+                    this.webPane.executeScript("typeof(setScrollTop1BySelectors)==='function' && setScrollTop1BySelectors(\"" + selector + "\")");
                 } else if (location() instanceof Attributes attr && attr.hasAttr("anchor")) {
-                    this.webPane.executeScript("setScrollTop1BySelectors(\"" + attr.attr("anchor") + "\")");
+                    this.webPane.executeScript("typeof(setScrollTop1BySelectors)==='function' && setScrollTop1BySelectors(\"" + attr.attr("anchor") + "\")");
                 }
             }
         } catch (Throwable e) {
             e.printStackTrace();
         }
-    }
-
-    @Override
-    protected void onWebPaneShortcutsPressed(KeyEvent event) {
-        if (event.isConsumed()) {
-            return;
-        }
-        // HOME 到页首
-        if (event.getCode() == KeyCode.HOME) {
-            event.consume();
-            this.webPane.executeScript("setScrollTop1BySelectors(null, 0)");
-            return;
-        }
-        // END 到页尾
-        if (event.getCode() == KeyCode.END) {
-            event.consume();
-            this.webPane.executeScript("setScrollTop1BySelectors(null, 1)");
-            return;
-        }
-        // Ctrl + F
-        if (event.isShortcutDown() && event.getCode() == KeyCode.F) {
-            // 如果有选中文字，则按查找选中文字处理
-            String selText1 = this.webPane.executeScript("getValidSelectionText()");
-            selText1 = null == selText1 ? null : selText1.strip().replace('\n', ' ');
-            webFinder().find(StringHelper.isBlank(selText1) ? null : selText1);
-            event.consume();
-            return;
-        }
-        // Ctrl + G, Ctrl + H (Win) / J (Mac) ,MacOS平台上Cmd+H与系统快捷键冲突
-        if (event.isShortcutDown() && (event.getCode() == KeyCode.G || event.getCode() == (OSVersions.isMac ? KeyCode.J : KeyCode.H))) {
-            // 如果有选中文字，则按查找选中文字处理
-            final String selText = this.webPane.executeScript("getValidSelectionText()");
-            app.eventBus.fireEvent(event.getCode() == KeyCode.G
-                    ? SearcherEvent.ofLookup(selText) // LOOKUP
-                    : SearcherEvent.ofSearch(selText) // SEARCH
-            );
-            event.consume();
-            return;
-        }
-        // Ctrl + D
-        if (event.isShortcutDown() && event.getCode() == KeyCode.D) {
-            // 如果有选中文字，则按选中文字处理
-            String origText = this.webPane.executeScript("getValidSelectionText()");
-            String trimText = null == origText ? null : origText.strip().replace('\n', ' ');
-            final String availText = StringHelper.isBlank(trimText) ? null : trimText;
-
-            final String str = null == availText ? null : StringHelper.trimChars(availText, 20, "");
-            app.eventBus.fireEvent(DictionaryEvent.ofSearch(str));
-            event.consume();
-            return;
-        }
-        //
-        super.onWebPaneShortcutsPressed(event);
-    }
-
-    protected MenuItem createMenu_copy(WebSelection selection) {
-        MenuItem menuItem = new MenuItem("复制文字");
-        menuItem.setDisable(!selection.hasText);
-        menuItem.setOnAction(event -> FxHelper.copyText(selection.text));
-        return menuItem;
-    }
-
-    protected MenuItem createMenu_search(String textTip, String textForSearch) {
-        MenuItem menuItem = new MenuItem("全文检索" + textTip);
-        menuItem.setOnAction(event -> app.eventBus.fireEvent(SearcherEvent.ofSearch(textForSearch)));
-        return menuItem;
-    }
-
-    protected MenuItem createMenu_searchExact(String textTip, String textForSearch) {
-        MenuItem menuItem = new MenuItem("全文检索（精确检索）" + textTip);
-        menuItem.setOnAction(event -> app.eventBus.fireEvent(
-                SearcherEvent.ofSearch(null == textForSearch ? "" : "\"" + textForSearch + "\"")));
-        return menuItem;
-    }
-
-    protected MenuItem createMenu_lookup(String textTip, String textForSearch) {
-        MenuItem menuItem = new MenuItem("快捷检索（经名、作译者等）" + textTip);
-        menuItem.setOnAction(event -> app.eventBus.fireEvent(SearcherEvent.ofLookup(textForSearch)));
-        return menuItem;
-    }
-
-    protected MenuItem createMenu_finder(String textTip, WebSelection selection) {
-        MenuItem menuItem = new MenuItem("页内查找" + textTip);
-        menuItem.setOnAction(event -> webFinder().find(selection.trims));
-        return menuItem;
-    }
-
-    protected MenuItem createMenu_dict(WebSelection selection) {
-        MenuItem menuItem = new MenuItem();
-        if (selection.hasTrims) {
-            menuItem.setText("查词典：" + StringHelper.trimChars(selection.trims, 10));
-        } else {
-            menuItem.setText("查词典");
-        }
-        menuItem.setOnAction(event -> app.eventBus.fireEvent(DictionaryEvent.ofSearch(
-                selection.hasTrims ? StringHelper.trimChars(selection.trims, 20, "") : null)));
-        return menuItem;
-    }
-
-    protected MenuItem createMenu_pinyin(WebSelection selection) {
-        MenuItem menuItem = new MenuItem();
-        if (selection.hasTrims) {
-            final String str = StringHelper.trimChars(selection.trims, 10, "");
-            final String strPy = PinyinHelper.pinyin(str, true);
-            menuItem.setText("查拼音：" + strPy);
-            menuItem.setOnAction(event -> {
-                FxHelper.copyText(str + "\n" + strPy);
-                app.toast("已复制拼音到剪贴板！");
-            });
-        } else {
-            menuItem.setText("查拼音：<选择1~10字>，右键查看（点此可复制）");
-        }
-        return menuItem;
     }
 
     @Override
@@ -283,5 +171,87 @@ public abstract class WebViewer extends WebRenderer {
                 webFinder.state(index, count);
             }
         }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public static void addShortcutKeys(WebViewer webViewer) {
+        final WebPane webPane = webViewer.webPane;
+        final WorkbenchApp app = webViewer.app;
+        // Ctrl + F
+        webPane.shortcutKeys.put(new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN), (event) -> {
+            // 如果有选中文字，则按查找选中文字处理
+            String selText = webPane.executeScript("getValidSelectionText()");
+            selText = null == selText ? null : selText.strip().replace('\n', ' ');
+            webViewer.webFinder().find(StringHelper.isBlank(selText) ? null : selText);
+            event.consume();
+        });
+        // Ctrl + G
+        webPane.shortcutKeys.put(new KeyCodeCombination(KeyCode.G, KeyCombination.SHORTCUT_DOWN), (event) -> {
+            // 如果有选中文字，则按查找选中文字处理
+            final String selText = webPane.executeScript("getValidSelectionText()");
+            app.eventBus.fireEvent(SearcherEvent.ofLookup(selText));// LOOKUP
+            event.consume();
+        });
+        // Ctrl + H (Win) / J (Mac) ,MacOS平台上Cmd+H与系统快捷键冲突
+        webPane.shortcutKeys.put(new KeyCodeCombination(OSVersions.isMac ? KeyCode.J : KeyCode.H, KeyCombination.SHORTCUT_DOWN), (event) -> {
+            // 如果有选中文字，则按查找选中文字处理
+            final String selText = webPane.executeScript("getValidSelectionText()");
+            app.eventBus.fireEvent(SearcherEvent.ofSearch(selText)); // SEARCH
+            event.consume();
+        });
+    }
+
+    public static void addShortcutMenu(WebViewer webViewer) {
+        final WebPane webPane = webViewer.webPane;
+        final WorkbenchApp app = webViewer.app;
+        //
+        webPane.shortcutMenu.add(selection -> {
+            MenuItem menuItem = new MenuItem("复制文字");
+            menuItem.getProperties().put(WebPane.GRP_MENU, "copy");
+            menuItem.setDisable(!selection.hasText);
+            menuItem.setOnAction(event -> FxHelper.copyText(selection.text));
+            return List.of(menuItem);
+        });
+        webPane.shortcutMenu.add(selection -> {
+            String textTip = selection.hasTrims ? "：" + StringHelper.trimChars(selection.trims, 8) : "";
+            String textForSearch = selection.hasTrims ? selection.trims : null;
+            //
+            MenuItem search = new MenuItem("全文检索" + textTip);
+            search.getProperties().put(WebPane.GRP_MENU, "search");
+            search.setOnAction(event -> app.eventBus.fireEvent(SearcherEvent.ofSearch(textForSearch)));
+            //
+            MenuItem searchExact = new MenuItem("全文检索（精确检索）" + textTip);
+            searchExact.getProperties().put(WebPane.GRP_MENU, "search");
+            searchExact.setOnAction(event -> app.eventBus.fireEvent(
+                    SearcherEvent.ofSearch(null == textForSearch ? "" : "\"" + textForSearch + "\"")));
+            //
+            MenuItem lookup = new MenuItem("快捷检索（经名、作译者等）" + textTip);
+            lookup.getProperties().put(WebPane.GRP_MENU, "search");
+            lookup.setOnAction(event -> app.eventBus.fireEvent(SearcherEvent.ofLookup(textForSearch)));
+            //
+            MenuItem findInPage = new MenuItem("页内查找" + textTip);
+            findInPage.getProperties().put(WebPane.GRP_MENU, "search");
+            findInPage.setOnAction(event -> webViewer.webFinder().find(selection.trims));
+
+            //
+            return List.of(search, searchExact, lookup, findInPage);
+        });
+        webPane.shortcutMenu.add(selection -> {
+            MenuItem menuItem = new MenuItem();
+            menuItem.getProperties().put(WebPane.GRP_MENU, "search2");
+            if (selection.hasTrims) {
+                final String str = StringHelper.trimChars(selection.trims, 10, "");
+                final String strPy = PinyinHelper.pinyin(str, true);
+                menuItem.setText("查拼音：" + strPy);
+                menuItem.setOnAction(event -> {
+                    FxHelper.copyText(str + "\n" + strPy);
+                    app.toast("已复制拼音到剪贴板！");
+                });
+            } else {
+                menuItem.setText("查拼音：<选择1~10字>，右键查看（点此可复制）");
+            }
+            return List.of(menuItem);
+        });
     }
 }

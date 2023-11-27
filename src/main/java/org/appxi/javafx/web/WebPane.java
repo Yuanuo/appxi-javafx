@@ -13,6 +13,9 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollBar;
+import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
@@ -29,12 +32,19 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class WebPane extends BorderPane {
     protected static final Logger logger = LoggerFactory.getLogger(WebPane.class);
+    public static final Object GRP_MENU = new Object();
 
     public static void preloadLibrary() {
         try {
@@ -51,11 +61,28 @@ public class WebPane extends BorderPane {
     private WebPage webPage;
 
     private ContextMenu webViewContextMenu;
-    private BiConsumer<List<MenuItem>, WebSelection> webViewContextMenuBuilder;
+
+    public final List<Function<WebSelection, List<MenuItem>>> shortcutMenu = new ArrayList<>();
+
+    public final Map<KeyCombination, Consumer<KeyEvent>> shortcutKeys = new HashMap<>();
+
+    public final List<BiConsumer<Boolean, WebSelection>> selectionListeners = new ArrayList<>();
 
     public WebPane() {
         super();
         this.getStyleClass().add("web-pane");
+
+        // 绑定快捷键Pressed事件
+        this.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            for (KeyCombination k : shortcutKeys.keySet()) {
+                if (event.isConsumed()) {
+                    break;
+                }
+                if (k.match(event)) {
+                    shortcutKeys.get(k).accept(event);
+                }
+            }
+        });
     }
 
     public final ToolBarEx getTopBar() {
@@ -104,32 +131,53 @@ public class WebPane extends BorderPane {
         });
         // 禁用默认右键菜单
         this.webView.setContextMenuEnabled(false);
-        // 监听鼠标释放事件以显示右键菜单
         this.webView.addEventHandler(MouseEvent.MOUSE_RELEASED, event -> {
-            // only for right click
+            // 监听鼠标释放事件以显示右键菜单
             if (event.getButton() == MouseButton.SECONDARY) {
                 if (null == this.webViewContextMenu) {
                     this.webViewContextMenu = new ContextMenu();
                 }
                 final List<MenuItem> menuItems = new ArrayList<>();
-                if (null != this.webViewContextMenuBuilder) {
-                    this.webViewContextMenuBuilder.accept(menuItems, webSelection());
+                if (!shortcutMenu.isEmpty()) {
+                    final WebSelection webSelection = webSelection();
+                    shortcutMenu.forEach(c -> menuItems.addAll(c.apply(webSelection)));
                 }
+                menuItems.sort(Comparator.comparing(m -> m.getProperties().getOrDefault(GRP_MENU, "_").toString()));
+                String prevGroup = null;
+                for (int i = 0; i < menuItems.size(); i++) {
+                    String currGroup = menuItems.get(i).getProperties().getOrDefault(GRP_MENU, "_").toString();
+                    if (i > 0 && !Objects.equals(prevGroup, currGroup)) {
+                        menuItems.add(i, new SeparatorMenuItem());
+                    }
+                    prevGroup = currGroup;
+                }
+                //
                 this.webViewContextMenu.getItems().setAll(menuItems);
                 this.webViewContextMenu.show(this.webView(), event.getScreenX(), event.getScreenY());
                 event.consume();
+            } else if (event.getButton() == MouseButton.PRIMARY && !selectionListeners.isEmpty()) {
+                if (event.isAltDown() || event.isShiftDown()) {
+                    return;
+                }
+                final WebSelection selection = webSelection();
+                if (selection.hasTrims) {
+                    for (BiConsumer<Boolean, WebSelection> consumer : selectionListeners) {
+                        consumer.accept(event.isShortcutDown(), selection);
+                    }
+                }
+
             }
         });
-        final EventHandler<Event> _hideWebViewContextMenuAction = event -> {
+        final EventHandler<Event> contextMenuHidden = event -> {
             if (null != this.webViewContextMenu && this.webViewContextMenu.isShowing()) {
                 this.webViewContextMenu.hide();
                 event.consume();
             }
         };
         // 监听鼠标按键事件以隐藏右键菜单
-        this.webView.addEventHandler(MouseEvent.MOUSE_PRESSED, _hideWebViewContextMenuAction);
+        this.webView.addEventHandler(MouseEvent.MOUSE_PRESSED, contextMenuHidden);
         // 监听滚轮事件以隐藏右键菜单
-        this.webView.addEventHandler(ScrollEvent.SCROLL, _hideWebViewContextMenuAction);
+        this.webView.addEventHandler(ScrollEvent.SCROLL, contextMenuHidden);
         //
         this.setCenter(this.webView);
         return this.webView;
@@ -177,10 +225,6 @@ public class WebPane extends BorderPane {
             return new WebSelection("");
         }
         return new WebSelection(webPage());
-    }
-
-    public final void setWebViewContextMenuBuilder(BiConsumer<List<MenuItem>, WebSelection> webViewContextMenuBuilder) {
-        this.webViewContextMenuBuilder = webViewContextMenuBuilder;
     }
 
     public final void patch() {
