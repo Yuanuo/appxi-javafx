@@ -22,6 +22,7 @@ import org.appxi.javafx.settings.DefaultOptions;
 import org.appxi.javafx.settings.Option;
 import org.appxi.javafx.settings.OptionEditorBase;
 import org.appxi.util.FileHelper;
+import org.appxi.util.OSVersions;
 import org.appxi.util.ext.RawVal;
 
 import java.math.BigDecimal;
@@ -198,12 +199,11 @@ public final class VisualProvider {
         //
         String fontName = app.config.getString("ui.font.name", null);
         if (fontName == null || fontName.isBlank()) {
-            final String osName = System.getProperty("os.name").toLowerCase(Locale.ROOT);
-            if (osName.contains("windows")) {
+            if (OSVersions.isWindows) {
                 fontName = "Microsoft YaHei";
-            } else if (osName.contains("mac") || osName.contains("osx")) {
+            } else if (OSVersions.isMac) {
                 fontName = "System";
-            } else if (osName.contains("linux") || osName.contains("ubuntu")) {
+            } else if (OSVersions.isLinux) {
                 fontName = "System";
             } else {
                 fontName = "System";
