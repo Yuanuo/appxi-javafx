@@ -204,7 +204,7 @@ public final class VisualProvider {
             if (OSVersions.isWindows) {
                 fontName = "Microsoft YaHei";
             } else if (OSVersions.isMac) {
-                fontName = "System";
+                fontName = "PingFang SC";
             } else if (OSVersions.isLinux) {
                 fontName = "System";
             } else {
