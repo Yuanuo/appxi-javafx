@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -17,6 +18,8 @@ import java.util.Map;
 
 public final class FontFaceHelper {
     private static final Logger logger = LoggerFactory.getLogger(FontFaceHelper.class);
+
+    private static boolean fontFamiliesFixed;
 
     /**
      * @noinspection unchecked
@@ -37,7 +40,8 @@ public final class FontFaceHelper {
             HashMap<String, String> fontToFamilyNameMap = (HashMap<String, String>) fontToFamilyNameMapFld.get(factory);
 
             //
-            for (Object obj : ((Map<?, ?>) fileNameToFontResourceMapFld.get(factory)).values()) {
+            Collection<?> values = ((Map<?, ?>) fileNameToFontResourceMapFld.get(factory)).values();
+            for (Object obj : values) {
                 if (!(obj instanceof FontResource fr)) {
                     continue;
                 }
@@ -59,6 +63,7 @@ public final class FontFaceHelper {
                     }
                 }
             }
+            fontFamiliesFixed = !values.isEmpty();
         } catch (Throwable e) {
             logger.error("unknown", e);
         }
@@ -67,8 +72,12 @@ public final class FontFaceHelper {
     public static List<RawVal<String>> getFontFamilies() {
         final List<RawVal<String>> result = new ArrayList<>(64);
 
-        final HashSet<FontResource> addedFonts = new HashSet<>();
+        if (!fontFamiliesFixed) {
+            Font.getFamilies().forEach(family -> result.add(new RawVal<>(family, family)));
+            return result;
+        }
         try {
+            final HashSet<FontResource> addedFonts = new HashSet<>();
             PrismFontFactory factory = PrismFontFactory.getFontFactory();
             //
             for (String family : Font.getFamilies()) {
