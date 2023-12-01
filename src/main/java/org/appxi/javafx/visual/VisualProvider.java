@@ -80,7 +80,7 @@ public final class VisualProvider {
     }
 
     public String webFontName() {
-        return app.config.getString("web.font.name", "");
+        return app.config.getString("web.font.name", getDefaultFontName());
     }
 
     public String webPageColor() {
@@ -201,15 +201,7 @@ public final class VisualProvider {
         //
         String fontName = app.config.getString("ui.font.name", null);
         if (fontName == null || fontName.isBlank()) {
-            if (OSVersions.isWindows) {
-                fontName = "Microsoft YaHei";
-            } else if (OSVersions.isMac) {
-                fontName = "PingFang SC";
-            } else if (OSVersions.isLinux) {
-                fontName = "System";
-            } else {
-                fontName = "System";
-            }
+            fontName = getDefaultFontName();
             app.config.setProperty("ui.font.name", fontName);
         }
         //
@@ -247,6 +239,18 @@ public final class VisualProvider {
             final ObservableList<String> styleClass = scene.getRoot().getStyleClass();
             styleClass.removeIf(s -> s.startsWith("font-size-"));
             styleClass.add("font-size-" + fontSize);
+        }
+    }
+
+    private static String getDefaultFontName() {
+        if (OSVersions.isWindows) {
+            return "Microsoft YaHei";
+        } else if (OSVersions.isMac) {
+            return "PingFang SC";
+        } else if (OSVersions.isLinux) {
+            return "System";
+        } else {
+            return "System";
         }
     }
 
