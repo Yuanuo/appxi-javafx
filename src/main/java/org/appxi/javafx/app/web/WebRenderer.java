@@ -8,13 +8,11 @@ import javafx.scene.layout.StackPane;
 import netscape.javascript.JSObject;
 import org.appxi.event.EventHandler;
 import org.appxi.javafx.app.AppEvent;
-import org.appxi.javafx.app.DesktopApp;
+import org.appxi.javafx.app.BaseApp;
 import org.appxi.javafx.control.ProgressLayer;
 import org.appxi.javafx.helper.FxHelper;
 import org.appxi.javafx.visual.VisualEvent;
 import org.appxi.javafx.web.WebPane;
-import org.appxi.javafx.workbench.WorkbenchApp;
-import org.appxi.javafx.workbench.WorkbenchPane;
 import org.appxi.prefs.UserPrefs;
 import org.appxi.util.StringHelper;
 import org.appxi.util.ext.RawVal;
@@ -36,16 +34,14 @@ public abstract class WebRenderer {
     private final EventHandler<VisualEvent> _onAppStyleSetting = this::onAppStyleSetting;
     private final EventHandler<VisualEvent> _onWebStyleSetting = this::onWebStyleSetting;
 
-    public final WorkbenchApp app;
-    public final WorkbenchPane workbench;
+    public final BaseApp app;
     public final StackPane viewport;
     public final WebPane webPane;
 
     private Runnable progressLayerRemover;
 
-    public WebRenderer(WorkbenchPane workbench) {
-        this.app = workbench.application;
-        this.workbench = workbench;
+    public WebRenderer(BaseApp app) {
+        this.app = app;
         this.viewport = new StackPane();
         this.webPane = new WebPane();
     }
@@ -61,8 +57,8 @@ public abstract class WebRenderer {
      */
     protected void onAppStyleSetting(VisualEvent event) {
         // APP样式只涉及 明/暗 和 颜色，此时只需直接更改即可
-        webPane.executeScript("typeof(setWebStyleTheme) === 'function' && setWebStyleTheme('" + app.visualProvider + "');"
-                              + "typeof(setWebStyleSheetLocation) === 'function' && setWebStyleSheetLocation('" + app.visualProvider.getWebStyleSheetURI() + "');"
+        webPane.executeScript("typeof(setWebStyleTheme) === 'function' && setWebStyleTheme('" + app.visualProvider() + "');"
+                              + "typeof(setWebStyleSheetLocation) === 'function' && setWebStyleSheetLocation('" + app.visualProvider().getWebStyleSheetURI() + "');"
         );
     }
 
@@ -72,15 +68,15 @@ public abstract class WebRenderer {
     protected void onWebStyleSetting(VisualEvent event) {
         // 以不重载页面的方式动态更新
         webPane.executeScript("window._selector = typeof(getScrollTop1Selector) === 'function' && getScrollTop1Selector() || -1;"
-                              + "typeof(setWebStyleSheetLocation) === 'function' && setWebStyleSheetLocation('" + app.visualProvider.getWebStyleSheetURI() + "');"
+                              + "typeof(setWebStyleSheetLocation) === 'function' && setWebStyleSheetLocation('" + app.visualProvider().getWebStyleSheetURI() + "');"
                               + "_selector && _selector !== -1 && setScrollTop1BySelectors(_selector);"
         );
     }
 
     public void deinitialize() {
         app.eventBus.removeEventHandler(AppEvent.STOPPING, _onAppEventStopping);
-        app.eventBus.removeEventHandler(VisualEvent.SET_STYLE, _onAppStyleSetting);
-        app.eventBus.removeEventHandler(VisualEvent.SET_WEB_STYLE, _onWebStyleSetting);
+        app.visualProvider().eventBus.removeEventHandler(VisualEvent.SET_STYLE, _onAppStyleSetting);
+        app.visualProvider().eventBus.removeEventHandler(VisualEvent.SET_WEB_STYLE, _onWebStyleSetting);
         this.webPane.reset();
     }
 
@@ -90,10 +86,10 @@ public abstract class WebRenderer {
         viewport.getChildren().setAll(this.webPane);
         //
         app.eventBus.addEventHandler(AppEvent.STOPPING, _onAppEventStopping);
-        app.eventBus.addEventHandler(VisualEvent.SET_STYLE, _onAppStyleSetting);
-        app.eventBus.addEventHandler(VisualEvent.SET_WEB_STYLE, _onWebStyleSetting);
+        app.visualProvider().eventBus.addEventHandler(VisualEvent.SET_STYLE, _onAppStyleSetting);
+        app.visualProvider().eventBus.addEventHandler(VisualEvent.SET_WEB_STYLE, _onWebStyleSetting);
         // 对WebView绑定右键菜单请求事件
-        if (!DesktopApp.productionMode) {
+        if (!BaseApp.productionMode) {
             webPane.shortcutMenu.add((webSelection) -> {
                 MenuItem menuItem = new MenuItem("查看源码（复制到剪贴板）");
                 menuItem.getProperties().put(WebPane.GRP_MENU, "!");
@@ -137,7 +133,7 @@ public abstract class WebRenderer {
                 if (state == Worker.State.SUCCEEDED) {
                     // set an interface object named 'javaApp' in the web engine's page
                     final JSObject window = webPane.executeScript("window");
-                    window.setMember("devMode", !DesktopApp.productionMode);
+                    window.setMember("devMode", !BaseApp.productionMode);
                     window.setMember("javaApp", webJavaBridge);
                     // 尝试执行onJavaReady函数以通知网页端javaApp已准备就绪
                     final String args = webJavaBridge.getJavaReadyArguments()
@@ -171,8 +167,8 @@ public abstract class WebRenderer {
             try {
                 String uriStr = uri.toString();
                 uriStr = uriStr + (uriStr.contains("?") ? "&" : "?") + StringHelper.concat(
-                        "devMode=", !DesktopApp.productionMode,
-                        "&theme=" + app.visualProvider.toString().replace(' ', '+')
+                        "devMode=", !BaseApp.productionMode,
+                        "&theme=" + app.visualProvider().toString().replace(' ', '+')
                 );
                 uri = new URI(uriStr);
             } catch (Exception ignore) {
@@ -272,7 +268,7 @@ public abstract class WebRenderer {
          */
         protected List<RawVal<Object>> getJavaReadyArguments() {
             List<RawVal<Object>> args = new ArrayList<>();
-            args.add(RawVal.kv("theme", app.visualProvider.toString()));
+            args.add(RawVal.kv("theme", app.visualProvider().toString()));
             return args;
         }
 
@@ -289,7 +285,7 @@ public abstract class WebRenderer {
          * 用于在Javascript中获得当前应用设置的Web字色等样式的CSS格式
          */
         public String getWebStyleSheetCSS() {
-            return app.visualProvider.getWebStyleSheetCSS();
+            return app.visualProvider().getWebStyleSheetCSS();
         }
 
         /**
@@ -297,7 +293,7 @@ public abstract class WebRenderer {
          * 可直接应用在link的href属性中。
          */
         public String getWebStyleSheetURI() {
-            return app.visualProvider.getWebStyleSheetURI();
+            return app.visualProvider().getWebStyleSheetURI();
         }
     }
 }

@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public final class CardChooser {
     private String title, headerText;
@@ -100,26 +102,12 @@ public final class CardChooser {
         dialogPane.setHeaderText(headerText);
         dialogPane.setGraphic(headerGraphic);
 
-        final List<CardView> cardViews = this.cards.stream().map(CardView::new).toList();
-        cardViews.forEach(cardView -> {
-            if (this.buttonStyle)
-                cardView.getStyleClass().addAll("button", "flat");
-            if (!cardView.hasActions()) {
-                cardView.setOnMouseReleased(evt -> {
-                    if (isPicked(evt.getPickResult().getIntersectedNode(), cardView)) {
-                        dialog.setResult(cardView.card);
-                        dialog.hide();
-                    }
-                });
-            }
+        final Node pane = buildPane(card -> {
+            dialog.setResult(card);
+            dialog.hide();
         });
 
-        final VBox vBox = new VBox(10, cardViews.toArray(new Node[0]));
-        vBox.getStyleClass().add("cards");
-        final ScrollPane scrollPane = new ScrollPane(vBox);
-        scrollPane.setFitToWidth(true);
-
-        dialogPane.setContent(scrollPane);
+        dialogPane.setContent(pane);
         dialogPane.setPrefSize(prefWidth, prefHeight);
         if (this.cancelable) {
             dialogPane.getButtonTypes().add(ButtonType.CANCEL);
@@ -141,6 +129,83 @@ public final class CardChooser {
             if (dialog.getY() < 0) dialog.setY(0);
         });
         return dialog.showAndWait();
+    }
+
+    public Dialog<Card> buildDialog(Predicate<Card> onAction) {
+        final Dialog<Card> dialog = new Dialog<>();
+        dialog.setTitle(title);
+        dialog.setResizable(resizable);
+
+        final DialogPane dialogPane = new DialogPane() {
+            @Override
+            protected Node createButtonBar() {
+                return null;
+            }
+        };
+        dialogPane.getStyleClass().add("card-chooser");
+        dialogPane.setHeaderText(headerText);
+        dialogPane.setGraphic(headerGraphic);
+
+        final Node pane = buildPane(card -> {
+            if (onAction.test(card)) {
+                dialog.setResult(card);
+                dialog.hide();
+            }
+        });
+
+        dialogPane.setContent(pane);
+        dialogPane.setPrefSize(prefWidth, prefHeight);
+        if (this.cancelable) {
+            dialogPane.getButtonTypes().add(ButtonType.CANCEL);
+            dialog.setResultConverter(v -> null);
+        }
+        dialog.setDialogPane(dialogPane);
+
+        Window owner = this.owner;
+        if (owner == null)
+            owner = Window.getWindows().filtered(w -> w.isFocused() && !(w instanceof PopupWindow)).stream().findFirst().orElse(null);
+        if (owner == null)
+            owner = Window.getWindows().filtered(w -> !(w instanceof PopupWindow)).stream().findFirst().orElse(null);
+        if (null != owner && null != owner.getScene()) {
+            dialogPane.getScene().getRoot().setStyle(owner.getScene().getRoot().getStyle());
+        }
+        dialog.initOwner(owner);
+        dialog.setOnShown(event -> {
+            if (dialog.getX() < 0) dialog.setX(0);
+            if (dialog.getY() < 0) dialog.setY(0);
+        });
+        return dialog;
+    }
+
+    public Node buildPane(Consumer<Card> onAction) {
+        final List<CardView> cardViews = this.cards.stream().map(CardView::new).toList();
+        cardViews.forEach(cardView -> {
+            if (this.buttonStyle) {
+                cardView.getStyleClass().addAll("button", "flat");
+            }
+            if (cardView.card.actions.size() > 1) {
+                return;
+            } else if (cardView.card.actions.size() == 1) {
+                cardView.setOnMouseReleased(evt -> {
+                    if (isPicked(evt.getPickResult().getIntersectedNode(), cardView)) {
+                        onAction.accept(cardView.card);
+                        cardView.card.actions.get(0).fire();
+                    }
+                });
+            } else {
+                cardView.setOnMouseReleased(evt -> {
+                    if (isPicked(evt.getPickResult().getIntersectedNode(), cardView)) {
+                        onAction.accept(cardView.card);
+                    }
+                });
+            }
+        });
+
+        final VBox vBox = new VBox(10, cardViews.toArray(new Node[0]));
+        vBox.getStyleClass().add("cards");
+        final ScrollPane scrollPane = new ScrollPane(vBox);
+        scrollPane.setFitToWidth(true);
+        return scrollPane;
     }
 
     private boolean isPicked(Node node, Node shouldBe) {

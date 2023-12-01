@@ -65,6 +65,8 @@ public final class Notifications {
             popup.setAutoFix(false);
             if (null != ownerWindow && null != ownerWindow.getScene()) {
                 popup.getScene().getRoot().setStyle(ownerWindow.getScene().getRoot().getStyle());
+                popup.getScene().getRoot().getStyleClass().setAll(ownerWindow.getScene().getRoot().getStyleClass());
+                popup.getScene().getStylesheets().setAll(ownerWindow.getScene().getStylesheets());
             }
 
             final Notification notificationToShow;

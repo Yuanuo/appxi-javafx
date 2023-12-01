@@ -3,15 +3,19 @@ package org.appxi.javafx.workbench;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import org.appxi.javafx.app.AppEvent;
-import org.appxi.javafx.app.DesktopApp;
+import org.appxi.javafx.app.BaseApp;
 import org.appxi.javafx.helper.FxHelper;
-import org.appxi.prefs.UserPrefs;
 import org.appxi.util.StringHelper;
 
+import java.nio.file.Path;
 import java.util.List;
 
-public abstract class WorkbenchApp extends DesktopApp {
+public abstract class WorkbenchApp extends BaseApp {
     private WorkbenchPane workbench;
+
+    public WorkbenchApp(Path workspace) {
+        super(workspace);
+    }
 
     public WorkbenchPane workbench() {
         return workbench;
@@ -22,8 +26,8 @@ public abstract class WorkbenchApp extends DesktopApp {
         workbench = new WorkbenchPane(this, this::createWorkbenchParts);
         getPrimaryGlass().getChildren().setAll(this.workbench);
         eventBus.addEventHandler(AppEvent.STOPPING, e -> {
-            UserPrefs.prefs.setProperty("workbench.views.divider", workbench.getRootViewsDividerPosition());
-            UserPrefs.prefs.setProperty("workbench.sides.visible", workbench.isSideViewsVisible());
+            config.setProperty("workbench.views.divider", workbench.getRootViewsDividerPosition());
+            config.setProperty("workbench.sides.visible", workbench.isSideViewsVisible());
         });
 
         super.starting(primaryScene);
@@ -31,8 +35,8 @@ public abstract class WorkbenchApp extends DesktopApp {
 
     @Override
     protected void started(Stage primaryStage) {
-        workbench.setRootViewsDividerPosition(UserPrefs.prefs.getDouble("workbench.views.divider", 0.2));
-        if (UserPrefs.prefs.getBoolean("workbench.sides.visible", true))
+        workbench.setRootViewsDividerPosition(config.getDouble("workbench.views.divider", 0.2));
+        if (config.getBoolean("workbench.sides.visible", true))
             FxHelper.runThread(() -> {
                 workbench.selectSideTool(null);
                 logger.info(StringHelper.concat("home-view shown after: ", System.currentTimeMillis() - startTime));

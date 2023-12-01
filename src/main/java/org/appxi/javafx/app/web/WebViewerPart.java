@@ -6,7 +6,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.Node;
 import javafx.scene.layout.StackPane;
-import org.appxi.javafx.workbench.WorkbenchPane;
+import org.appxi.javafx.app.BaseApp;
 import org.appxi.javafx.workbench.WorkbenchPart;
 
 public abstract class WebViewerPart extends WebViewer implements WorkbenchPart {
@@ -17,8 +17,8 @@ public abstract class WebViewerPart extends WebViewer implements WorkbenchPart {
     public final StringProperty tooltip = new SimpleStringProperty();
     public final ObjectProperty<Node> graphic = new SimpleObjectProperty<>();
 
-    public WebViewerPart(WorkbenchPane workbench) {
-        super(workbench);
+    public WebViewerPart(BaseApp app) {
+        super(app);
     }
 
     @Override
@@ -42,8 +42,8 @@ public abstract class WebViewerPart extends WebViewer implements WorkbenchPart {
     }
 
     public static abstract class SideView extends WebViewerPart implements WorkbenchPart.SideView {
-        public SideView(WorkbenchPane workbench) {
-            super(workbench);
+        public SideView(BaseApp app) {
+            super(app);
         }
 
         @Override
@@ -76,8 +76,8 @@ public abstract class WebViewerPart extends WebViewer implements WorkbenchPart {
     public static abstract class MainView extends WebViewerPart implements WorkbenchPart.MainView {
         public final StringProperty appTitle = new SimpleStringProperty();
 
-        public MainView(WorkbenchPane workbench) {
-            super(workbench);
+        public MainView(BaseApp app) {
+            super(app);
         }
 
         @Override

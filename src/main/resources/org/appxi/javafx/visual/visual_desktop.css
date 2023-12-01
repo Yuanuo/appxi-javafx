@@ -320,6 +320,14 @@
 .check-box:disabled > .box > .mark {
 	-fx-background-color: -text-disabled;
 }
+.check-box:indeterminate > .box {
+    -fx-padding: 0;
+}
+.check-box:indeterminate  > .box > .mark {
+	-fx-background-color: -primary-swatch-500;
+    -fx-scale-shape: true;
+    -fx-padding: .9em;
+}
 
 .radio-button {
 	-fx-text-fill: inherit;

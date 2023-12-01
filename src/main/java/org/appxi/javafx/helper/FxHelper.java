@@ -20,6 +20,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Modality;
+import javafx.stage.Stage;
 import javafx.stage.Window;
 import org.appxi.javafx.app.BaseApp;
 import org.appxi.javafx.app.web.WebViewer;
@@ -27,6 +28,7 @@ import org.appxi.javafx.control.ListViewEx;
 import org.appxi.javafx.settings.DefaultOptions;
 import org.appxi.javafx.settings.Option;
 import org.appxi.javafx.workbench.WorkbenchApp;
+import org.appxi.prefs.Preferences;
 import org.appxi.util.ext.HanLang;
 
 import java.util.ArrayList;
@@ -209,7 +211,7 @@ public abstract class FxHelper {
     }
 
     public static void showHtmlViewerWindow(WorkbenchApp app, String windowId, String windowTitle, Object webContent) {
-        showHtmlViewerWindow(app, windowId, windowTitle, dialog -> new WebViewer(app.workbench()) {
+        showHtmlViewerWindow(app, windowId, windowTitle, dialog -> new WebViewer(app) {
             @Override
             protected Object location() {
                 return null;
@@ -266,11 +268,36 @@ public abstract class FxHelper {
         dialog.show();
     }
 
-    public static Option<HanLang> optionForHanLang(String desc) {
-        final ObjectProperty<HanLang> valueProperty = new SimpleObjectProperty<>(HanLang.get());
-        valueProperty.addListener((o, ov, nv) -> HanLang.apply(nv));
+    public static Option<HanLang> optionForHanLang(HanLang.Provider provider, String desc) {
+        final ObjectProperty<HanLang> valueProperty = new SimpleObjectProperty<>(provider.get());
+        valueProperty.addListener((o, ov, nv) -> provider.apply(nv));
         return new DefaultOptions<HanLang>("简繁体", desc, "VIEWER", true)
                 .setValues(HanLang.hans, HanLang.hant, HanLang.hantHK, HanLang.hantTW)
                 .setValueProperty(valueProperty);
+    }
+
+    public static void saveStageInfo(Preferences config, Stage stage) {
+        if (!stage.isMaximized()) {
+            config.setProperty("ui.window.x", stage.getX());
+            config.setProperty("ui.window.y", stage.getY());
+            config.setProperty("ui.window.width", stage.getWidth());
+            config.setProperty("ui.window.height", stage.getHeight());
+
+            config.setProperty("ui.scene.width", stage.getScene().getWidth());
+            config.setProperty("ui.scene.height", stage.getScene().getHeight());
+        }
+
+        config.setProperty("ui.window.maximized", stage.isMaximized());
+    }
+
+    public static void loadStageInfo(Preferences config, Stage stage) {
+        final double x = config.getDouble("ui.window.x", -99999);
+        if (x != -99999) stage.setX(x);
+        final double y = config.getDouble("ui.window.y", -99999);
+        if (y != -99999) stage.setY(y);
+        stage.setWidth(config.getDouble("ui.window.width", 1280));
+        stage.setHeight(config.getDouble("ui.window.height", 720));
+
+        stage.setMaximized(config.getBoolean("ui.window.maximized", false));
     }
 }

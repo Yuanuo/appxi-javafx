@@ -5,14 +5,11 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import org.appxi.javafx.app.AppEvent;
-import org.appxi.javafx.app.DesktopApp;
+import org.appxi.javafx.app.BaseApp;
 import org.appxi.javafx.app.search.SearcherEvent;
 import org.appxi.javafx.helper.FxHelper;
 import org.appxi.javafx.web.WebFindByMarks;
 import org.appxi.javafx.web.WebPane;
-import org.appxi.javafx.workbench.WorkbenchApp;
-import org.appxi.javafx.workbench.WorkbenchPane;
-import org.appxi.prefs.UserPrefs;
 import org.appxi.smartcn.pinyin.PinyinHelper;
 import org.appxi.util.FileHelper;
 import org.appxi.util.OSVersions;
@@ -28,8 +25,8 @@ import java.util.stream.Stream;
 
 public abstract class WebViewer extends WebRenderer {
     public static Path getWebIncludeDir() {
-        if (DesktopApp.productionMode) {
-            return DesktopApp.appDir().resolve("template/web-incl");
+        if (BaseApp.productionMode) {
+            return BaseApp.appDir().resolve("template/web-incl");
         } else {
             for (int i = 0; i < 3; i++) {
                 Path javafxDir = Path.of("../".repeat(i) + "appxi-javafx");
@@ -60,8 +57,8 @@ public abstract class WebViewer extends WebRenderer {
 
     private Attributes position;
 
-    public WebViewer(WorkbenchPane workbench) {
-        super(workbench);
+    public WebViewer(BaseApp app) {
+        super(app);
     }
 
     public final WebFindByMarks webFinder() {
@@ -85,11 +82,11 @@ public abstract class WebViewer extends WebRenderer {
     protected void saveUserData() {
         try {
             final double scrollTopPercentage = this.webPane.getScrollTopPercentage();
-            UserPrefs.recents.setProperty(locationId() + ".percent", scrollTopPercentage);
+            app.recents.setProperty(locationId() + ".percent", scrollTopPercentage);
 
             final String selector = this.webPane.executeScript("getScrollTop1Selector()");
             //            System.out.println(selector + " SET selector for " + path.get());
-            UserPrefs.recents.setProperty(locationId() + ".selector", selector);
+            app.recents.setProperty(locationId() + ".selector", selector);
         } catch (Exception ignore) {
         }
     }
@@ -146,7 +143,7 @@ public abstract class WebViewer extends WebRenderer {
             } else if (null != pos && pos.hasAttr("anchor")) {
                 this.webPane.executeScript("setScrollTop1BySelectors(\"" + pos.removeAttr("anchor") + "\")");
             } else {
-                final String selector = UserPrefs.recents.getString(locationId() + ".selector", null);
+                final String selector = app.recents.getString(locationId() + ".selector", null);
 //                final double percent = UserPrefs.recents.getDouble(selectorKey() + ".percent", 0);
                 if (null != selector) {
 //                    System.out.println(selector + " GET selector for " + path.get());
@@ -177,7 +174,7 @@ public abstract class WebViewer extends WebRenderer {
 
     public static void addShortcutKeys(WebViewer webViewer) {
         final WebPane webPane = webViewer.webPane;
-        final WorkbenchApp app = webViewer.app;
+        final BaseApp app = webViewer.app;
         // Ctrl + F
         webPane.shortcutKeys.put(new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN), (event) -> {
             // 如果有选中文字，则按查找选中文字处理
@@ -204,7 +201,7 @@ public abstract class WebViewer extends WebRenderer {
 
     public static void addShortcutMenu(WebViewer webViewer) {
         final WebPane webPane = webViewer.webPane;
-        final WorkbenchApp app = webViewer.app;
+        final BaseApp app = webViewer.app;
         //
         webPane.shortcutMenu.add(selection -> {
             MenuItem menuItem = new MenuItem("复制文字");

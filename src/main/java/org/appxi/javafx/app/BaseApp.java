@@ -9,28 +9,45 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import org.appxi.event.EventBus;
+import org.appxi.javafx.control.Notifications;
+import org.appxi.javafx.helper.FxHelper;
+import org.appxi.javafx.settings.Option;
 import org.appxi.javafx.visual.VisualProvider;
+import org.appxi.prefs.Preferences;
 import org.appxi.prefs.PreferencesInProperties;
-import org.appxi.prefs.UserPrefs;
+import org.appxi.util.StringHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public abstract class BaseApp extends javafx.application.Application {
     public final Logger logger = LoggerFactory.getLogger(BaseApp.class);
     public final EventBus eventBus = new EventBus();
-    public final VisualProvider visualProvider = new VisualProvider(this.eventBus, this::getPrimaryScene);
+    public final List<Supplier<Option<?>>> settings = new ArrayList<>();
     public final StringProperty title = new SimpleStringProperty();
+    public final StringProperty title2 = new SimpleStringProperty();
+    public final Path workspace;
+    public final Preferences config, recents, favorites;
 
     private Stage primaryStage;
     private Scene primaryScene;
     private StackPane primaryGlass;
 
+    public BaseApp(Path workspace) {
+        this.workspace = workspace;
+        this.config = new PreferencesInProperties(workspace.resolve(".conf"));
+        this.recents = new PreferencesInProperties(workspace.resolve(".recents"));
+        this.favorites = new PreferencesInProperties(workspace.resolve(".favorites"));
+    }
 
     public final Stage getPrimaryStage() {
         return primaryStage;
@@ -44,42 +61,33 @@ public abstract class BaseApp extends javafx.application.Application {
         return primaryGlass;
     }
 
-
     public abstract String getAppName();
 
     protected abstract List<URL> getAppIcons();
 
+    public abstract VisualProvider visualProvider();
 
     public final long startTime = System.currentTimeMillis();
 
-    protected void handleUncaughtException(Thread thread, Throwable throwable) {
-        logger.error("<UNCAUGHT>", throwable);
+    @Override
+    public void init() {
     }
 
     @Override
-    public void init() throws Exception {
-        // 1, init user prefs
-//        UserPrefs.prefs = new PreferencesInProperties(UserPrefs.confDir().resolve(".prefs"));
-        UserPrefs.recents = new PreferencesInProperties(UserPrefs.confDir().resolve(".recents"));
-        UserPrefs.favorites = new PreferencesInProperties(UserPrefs.confDir().resolve(".favorites"));
-        Thread.setDefaultUncaughtExceptionHandler(this::handleUncaughtException);
-    }
-
-    @Override
-    public final void start(Stage primaryStage) throws Exception {
-        this.primaryStage = primaryStage;
+    public void start(Stage primaryStage) throws Exception {
         this.primaryGlass = new StackPane();
         this.primaryScene = new Scene(this.primaryGlass,
-                UserPrefs.prefs.getDouble("ui.scene.width", -1),
-                UserPrefs.prefs.getDouble("ui.scene.height", -1)
+                config.getDouble("ui.scene.width", -1),
+                config.getDouble("ui.scene.height", -1)
         );
-        primaryStage.setScene(this.primaryScene);
+        this.primaryStage = primaryStage;
+        this.primaryStage.setScene(this.primaryScene);
 
         CompletableFuture.runAsync(() -> {
-            this.primaryStage.titleProperty().bind(Bindings.createStringBinding(() -> {
-                final String title = this.title.get();
-                return null == title || title.isBlank() ? getAppName() : title.concat("   -   ").concat(getAppName());
-            }, this.title));
+            this.primaryStage.titleProperty().bind(Bindings.createStringBinding(
+                    () -> Stream.of(title.get(), title2.get(), getAppName())
+                            .filter(s -> null != s && !s.isEmpty()).collect(Collectors.joining("   -   ")),
+                    this.title, this.title2));
 
             final List<Image> icons = new ArrayList<>();
             for (URL iconRes : getAppIcons()) {
@@ -88,13 +96,13 @@ public abstract class BaseApp extends javafx.application.Application {
                 } catch (Exception ignore) {
                 }
             }
-            primaryStage.getIcons().setAll(icons);
+            this.primaryStage.getIcons().setAll(icons);
 
             starting(primaryScene);
 
-            Platform.runLater(() -> showing(primaryStage));
+            Platform.runLater(() -> showing(this.primaryStage));
 
-            started(primaryStage);
+            started(this.primaryStage);
 
             // for debug only
             logger.info("App startup after: %d".formatted(System.currentTimeMillis() - startTime));
@@ -104,6 +112,11 @@ public abstract class BaseApp extends javafx.application.Application {
     }
 
     protected void starting(Scene primaryScene) {
+        FxHelper.loadStageInfo(config, getPrimaryStage());
+        getPrimaryStage().setMinWidth(960);
+        getPrimaryStage().setMinHeight(480);
+        eventBus.addEventHandler(AppEvent.STOPPING, e -> FxHelper.saveStageInfo(config, getPrimaryStage()));
+
         // for debug only
         logger.info("starting after: %d".formatted(System.currentTimeMillis() - startTime));
         eventBus.fireEvent(new AppEvent(AppEvent.STARTING));
@@ -118,7 +131,7 @@ public abstract class BaseApp extends javafx.application.Application {
         // for debug only
         logger.info("primaryStage shown after: %d".formatted(System.currentTimeMillis() - startTime));
         //
-        visualProvider.initialize();
+        visualProvider().apply(primaryStage);
         // for debug only
         logger.info("visual initialize after: %d".formatted(System.currentTimeMillis() - startTime));
     }
@@ -134,14 +147,70 @@ public abstract class BaseApp extends javafx.application.Application {
         } catch (Throwable ignored) {
         }
         try {
-            UserPrefs.recents.save();
-            UserPrefs.favorites.save();
+            recents.save();
+            favorites.save();
         } catch (Throwable ignored) {
         }
         try {
-            UserPrefs.prefs.save();
+            config.save();
         } catch (Throwable ignored) {
         }
-        System.exit(0);
+        stopped();
+    }
+
+    protected void stopped() {
+    }
+
+    public void toast(String msg) {
+        FxHelper.runLater(() -> Notifications.of().description(null == msg ? "<EMPTY>" : StringHelper.trimChars(msg, 512))
+                .owner(getPrimaryStage())
+                .showInformation()
+        );
+    }
+
+    public void toastError(String msg) {
+        FxHelper.runLater(() -> Notifications.of().description(null == msg ? "<EMPTY>" : StringHelper.trimChars(msg, 512))
+                .owner(getPrimaryStage())
+                .showError()
+        );
+    }
+
+    public static final boolean productionMode = null != System.getProperty("jpackage.app-path");
+    private static final Object _appDirInit = new Object();
+    private static Path _appDir = null;
+
+    public static Path appDir() {
+        if (null != _appDir)
+            return _appDir;
+
+        synchronized (_appDirInit) {
+            if (null != _appDir)
+                return _appDir;
+
+            String appDir = System.getenv("app-dir");
+            if (null == appDir)
+                appDir = System.getProperty("app-dir");
+            if (null == appDir)
+                appDir = System.getProperty("jpackage.app-dir");
+
+            if (null == appDir) {
+                appDir = System.getProperty("jpackage.app-path");
+                if (null != appDir) {
+                    String osName = System.getProperty("os.name").toLowerCase();
+                    Path appPath = Path.of(appDir).getParent();
+                    if (osName.contains("win")) {
+                        appDir = appPath.resolve("app").toString();
+                    } else if (osName.contains("mac")) {
+
+                    } else {
+                        appDir = appPath.resolve("lib").toString();
+                    }
+                }
+            }
+            if (null == appDir)
+                appDir = "";
+            _appDir = Path.of(appDir).toAbsolutePath();
+        }
+        return _appDir;
     }
 }

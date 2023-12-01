@@ -154,10 +154,13 @@ public interface TreeHelper {
     }
 
     interface TreeWalker<T> {
-        void start(TreeItem<T> treeItem, T itemValue);
+        default void start(TreeItem<T> treeItem, T itemValue) {
+        }
 
-        void visit(TreeItem<T> treeItem, T itemValue);
+        default void visit(TreeItem<T> treeItem, T itemValue) {
+        }
 
-        void close(TreeItem<T> treeItem, T itemValue);
+        default void close(TreeItem<T> treeItem, T itemValue) {
+        }
     }
 }
