@@ -17,6 +17,8 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import org.appxi.event.EventBus;
 import org.appxi.javafx.app.BaseApp;
+import org.appxi.javafx.control.CardChooser;
+import org.appxi.javafx.helper.FontFaceHelper;
 import org.appxi.javafx.settings.DefaultOption;
 import org.appxi.javafx.settings.DefaultOptions;
 import org.appxi.javafx.settings.Option;
@@ -396,16 +398,16 @@ public final class VisualProvider {
 
     private void chooseFontFamilies(ObjectProperty<RawVal<String>> property) {
         final RawVal<String> usedVal = property.get();
-//        CardChooser.of("选择字体")
-//                .owner(primarySceneSupplier.get().getWindow())
-//                .cards(FontFaceHelper.getFontFamilies().stream()
-//                        .map(v -> CardChooser.ofCard(v.title())
-//                                .focused(v.value().equalsIgnoreCase(usedVal.value()))
-//                                .userData(v)
-//                                .get())
-//                        .toList())
-//                .showAndWait()
-//                .ifPresent(card -> property.set(card.userData()));
+        CardChooser.of("选择字体")
+                .owner(app.getPrimaryStage())
+                .cards(FontFaceHelper.getFontFamilies().stream()
+                        .map(v -> CardChooser.ofCard(v.title())
+                                .focused(v.value().equalsIgnoreCase(usedVal.value()))
+                                .userData(v)
+                                .get())
+                        .toList())
+                .showAndWait()
+                .ifPresent(card -> property.set(card.userData()));
     }
 
     private String _cachedWebStyleSheetLocationURI;
