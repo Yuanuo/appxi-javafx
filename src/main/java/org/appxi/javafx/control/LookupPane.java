@@ -41,21 +41,15 @@ public abstract class LookupPane<T> extends VBox {
         resultList = new ListViewEx<>(this::handleEnterOrDoubleClickActionOnSearchResultList);
         resultList.setFocusTraversable(false);
         resultList.setCellFactory(v -> new ListCell<>() {
-            T updatedItem;
-
             @Override
             protected void updateItem(T item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty) {
-                    updatedItem = null;
                     this.setText(null);
                     this.setGraphic(null);
                     this.setContentDisplay(null);
                     return;
                 }
-                if (item == updatedItem)
-                    return;//
-                updatedItem = item;
                 updateItemLabel(this, item);
             }
         });
