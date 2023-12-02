@@ -72,7 +72,9 @@ public class TabPaneEx extends TabPane {
         this.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
             if (event.getCode() == KeyCode.LEFT || event.getCode() == KeyCode.KP_LEFT
                 || event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.KP_RIGHT) {
-                event.consume();
+                if (event.getTarget() == this) {
+                    event.consume();
+                }
             }
         });
     }
