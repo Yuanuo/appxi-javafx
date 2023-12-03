@@ -185,3 +185,14 @@ function mark_text_and_count(text) {
     $(document.body).mark(text, { acrossElements: true });
     return $('mark').length;
 }
+
+function __openSearched(pieceId, isRefText) {
+    if (window.javaApp){
+        let refText = '';
+        if (isRefText) {
+            refText = $('#'+ pieceId).text();
+            pieceId = pieceId.substring(0, pieceId.length - 2);
+        }
+        javaApp.openSearched(pieceId, refText);
+    }
+}
