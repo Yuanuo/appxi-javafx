@@ -80,8 +80,10 @@ function setScrollTop1BySelectors(selector, percent = 0) {
     let scrollTop = 0;
     let target = selector && $(selector);
     if (selector && !target) target = $('#' + selector);
-    if (target && target.length > 0)
+    if (target && target.length > 0) {
+        target = target.first();
         scrollTop = target.offset().top;
+    }
     else scrollTop = percent * document.body.scrollHeight;
     scrollTop = scrollTop - 3;
     scrollTop = scrollTop < 0 ? 0 : scrollTop;
@@ -177,4 +179,9 @@ function getHeadings() {
 
 function _dict_SeeAlso(dictId, obj) {
     if (window.javaApp) javaApp.seeAlso(dictId, $(obj).text());
+}
+
+function mark_text_and_count(text) {
+    $(document.body).mark(text, { acrossElements: true });
+    return $('mark').length;
 }

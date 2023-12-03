@@ -126,7 +126,16 @@ public abstract class WebViewer extends WebRenderer {
             if (null != pos && pos.hasAttr("position.term")) {
                 String posTerm = pos.removeAttr("position.term");
                 String posText = pos.removeAttr("position.text"), longText = null;
-                if (null != posText) {
+                if (null != posText && !posText.isBlank()) {
+                    if (posText.length() > 50) {
+                        posText = posText.substring(0, 50);
+                    }
+                    int marksLen = webPane.executeScript("mark_text_and_count('" + posText + "')");
+                    if (marksLen > 0) {
+                        this.webPane.executeScript("setScrollTop1BySelectors('mark')");
+                        return;
+                    }
+
                     List<String> posParts = new ArrayList<>(List.of(posText.split("。")));
                     posParts.sort(Comparator.comparingInt(String::length));
                     longText = posParts.get(posParts.size() - 1);
