@@ -4,12 +4,12 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.appxi</groupId>
     <artifactId>javafx</artifactId>
-    <version>23.11.21</version>
+    <version>24.02.16</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>21</maven.compiler.release>
-        <javafx.version>22-ea+16</javafx.version>
+        <javafx.version>22-ea+28</javafx.version>
     </properties>
 
     <dependencies>
