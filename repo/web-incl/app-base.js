@@ -169,10 +169,17 @@ function getFavoriteAnchorInfo() {
 }
 
 function getHeadings() {
+    return getPositions("h1, h2, h3, h4, h5, h6");
+}
+
+function getPositions(_posSelector, _txtSelector) {
     let result = [];
-    $("h1, h2, h3, h4, h5, h6").each(function() {
-        const text = $(this).text();
-        if (text && text.length > 0) result.push($(this).attr('id') + "#" + text);
+    $(_posSelector).each(function() {
+        const _txtEle = _txtSelector ? $(this).next(_txtSelector) : $(this);
+        const text = _txtEle.length > 0 && _txtEle.text();
+        if (text && text.length > 0) {
+            result.push($(this).cssSelector() + "||" + text);
+        }
     });
     return result.join('\n');
 }
