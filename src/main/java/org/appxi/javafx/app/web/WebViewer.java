@@ -81,12 +81,16 @@ public abstract class WebViewer extends WebRenderer {
 
     protected void saveUserData() {
         try {
+            final String locationId = locationId();
+            if (null == locationId) {
+                return;
+            }
             final double scrollTopPercentage = this.webPane.getScrollTopPercentage();
-            app.recents.setProperty(locationId() + ".percent", scrollTopPercentage);
+            app.recents.setProperty(locationId + ".percent", scrollTopPercentage);
 
             final String selector = this.webPane.executeScript("getScrollTop1Selector()");
             //            System.out.println(selector + " SET selector for " + path.get());
-            app.recents.setProperty(locationId() + ".selector", selector);
+            app.recents.setProperty(locationId + ".selector", selector);
         } catch (Exception ignore) {
         }
     }
@@ -185,7 +189,7 @@ public abstract class WebViewer extends WebRenderer {
         final WebPane webPane = webViewer.webPane;
         final BaseApp app = webViewer.app;
         // Ctrl + F
-        webPane.shortcutKeys.put(new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN), (event) -> {
+        webPane.shortcutKeys.put(new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN), (event, selection) -> {
             // 如果有选中文字，则按查找选中文字处理
             String selText = webPane.executeScript("getValidSelectionText()");
             selText = null == selText ? null : selText.strip().replace('\n', ' ');
@@ -193,14 +197,14 @@ public abstract class WebViewer extends WebRenderer {
             event.consume();
         });
         // Ctrl + G
-        webPane.shortcutKeys.put(new KeyCodeCombination(KeyCode.G, KeyCombination.SHORTCUT_DOWN), (event) -> {
+        webPane.shortcutKeys.put(new KeyCodeCombination(KeyCode.G, KeyCombination.SHORTCUT_DOWN), (event, selection) -> {
             // 如果有选中文字，则按查找选中文字处理
             final String selText = webPane.executeScript("getValidSelectionText()");
             app.eventBus.fireEvent(SearcherEvent.ofLookup(selText));// LOOKUP
             event.consume();
         });
         // Ctrl + H (Win) / J (Mac) ,MacOS平台上Cmd+H与系统快捷键冲突
-        webPane.shortcutKeys.put(new KeyCodeCombination(OSVersions.isMac ? KeyCode.J : KeyCode.H, KeyCombination.SHORTCUT_DOWN), (event) -> {
+        webPane.shortcutKeys.put(new KeyCodeCombination(OSVersions.isMac ? KeyCode.J : KeyCode.H, KeyCombination.SHORTCUT_DOWN), (event, selection) -> {
             // 如果有选中文字，则按查找选中文字处理
             final String selText = webPane.executeScript("getValidSelectionText()");
             app.eventBus.fireEvent(SearcherEvent.ofSearch(selText)); // SEARCH

@@ -100,12 +100,12 @@ public abstract class WebRenderer {
         // 对WebPane绑定快捷键Pressed事件
 
         // HOME 到页首
-        webPane.shortcutKeys.put(new KeyCodeCombination(KeyCode.HOME), (keyEvent) -> {
+        webPane.shortcutKeys.put(new KeyCodeCombination(KeyCode.HOME), (keyEvent, selection) -> {
             keyEvent.consume();
             this.webPane.executeScript("typeof(setScrollTop1BySelectors) === 'function' && setScrollTop1BySelectors(null, 0)");
         });
         // END 到页尾
-        webPane.shortcutKeys.put(new KeyCodeCombination(KeyCode.HOME), (keyEvent) -> {
+        webPane.shortcutKeys.put(new KeyCodeCombination(KeyCode.HOME), (keyEvent, selection) -> {
             keyEvent.consume();
             this.webPane.executeScript("typeof(setScrollTop1BySelectors) === 'function' && setScrollTop1BySelectors(null, 1)");
         });

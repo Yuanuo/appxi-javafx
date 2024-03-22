@@ -39,7 +39,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class WebPane extends BorderPane {
@@ -64,9 +63,9 @@ public class WebPane extends BorderPane {
 
     public final List<Function<WebSelection, List<MenuItem>>> shortcutMenu = new ArrayList<>();
 
-    public final Map<KeyCombination, Consumer<KeyEvent>> shortcutKeys = new HashMap<>();
+    public final Map<KeyCombination, BiConsumer<KeyEvent, WebSelection>> shortcutKeys = new HashMap<>();
 
-    public final List<BiConsumer<Boolean, WebSelection>> selectionListeners = new ArrayList<>();
+    public final List<BiConsumer<MouseEvent, WebSelection>> selectionListeners = new ArrayList<>();
 
     public WebPane() {
         super();
@@ -74,12 +73,16 @@ public class WebPane extends BorderPane {
 
         // 绑定快捷键Pressed事件
         this.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            WebSelection webSelection = null;
             for (KeyCombination k : shortcutKeys.keySet()) {
-                if (event.isConsumed()) {
-                    break;
-                }
                 if (k.match(event)) {
-                    shortcutKeys.get(k).accept(event);
+                    if (null == webSelection) {
+                        webSelection = webSelection();
+                    }
+                    shortcutKeys.get(k).accept(event, webSelection);
+                    if (event.isConsumed()) {
+                        break;
+                    }
                 }
             }
         });
@@ -155,14 +158,15 @@ public class WebPane extends BorderPane {
                 this.webViewContextMenu.getItems().setAll(menuItems);
                 this.webViewContextMenu.show(this.webView(), event.getScreenX(), event.getScreenY());
                 event.consume();
-            } else if (event.getButton() == MouseButton.PRIMARY && !selectionListeners.isEmpty()) {
-                if (event.isAltDown() || event.isShiftDown()) {
-                    return;
-                }
+            }
+            if (!event.isConsumed() && !selectionListeners.isEmpty()) {
                 final WebSelection selection = webSelection();
                 if (selection.hasTrims) {
-                    for (BiConsumer<Boolean, WebSelection> consumer : selectionListeners) {
-                        consumer.accept(event.isShortcutDown(), selection);
+                    for (BiConsumer<MouseEvent, WebSelection> consumer : selectionListeners) {
+                        consumer.accept(event, selection);
+                        if (event.isConsumed()) {
+                            break;
+                        }
                     }
                 }
 
