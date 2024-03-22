@@ -1,6 +1,7 @@
 package org.appxi.javafx.control;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -27,7 +28,7 @@ public abstract class LookupPane<T> extends VBox {
     public final ListViewEx<T> resultList;
 
     private String searchedText;
-    private int searchedCount = -1;
+    private final ChangeListener<String> _inputChangeListener = (o, ov, nv) -> doSearch();
 
     public LookupPane() {
         super(3);
@@ -36,7 +37,7 @@ public abstract class LookupPane<T> extends VBox {
         textInput = new TextInput();
         textInput.input.setPromptText("在此输入");
         textInput.input.setAlignment(Pos.CENTER);
-        textInput.input.textProperty().addListener((o, ov, nv) -> doSearch());
+        textInput.input.textProperty().addListener(_inputChangeListener);
 
         resultList = new ListViewEx<>(this::handleEnterOrDoubleClickActionOnSearchResultList);
         resultList.setFocusTraversable(false);
@@ -77,15 +78,9 @@ public abstract class LookupPane<T> extends VBox {
         return searchedText;
     }
 
-    public final int getSearchedCount() {
-        return searchedCount;
-    }
-
     public final void search(String text) {
-        if (null != textInput.input) {
-            textInput.input.setText(text);
-            doSearch();
-        }
+        setInputTextSilently(text);
+        doSearch();
     }
 
     private void doSearch() {
@@ -96,8 +91,6 @@ public abstract class LookupPane<T> extends VBox {
         // 如果相同关键词在上一次获得空列表，此时有必要再次尝试
         if (Objects.equals(this.searchedText, inputText) && !resultList.getItems().isEmpty())
             return;
-
-        searchedCount += searchedCount == -1 ? inputText.isEmpty() ? 1 : 2 : 1;
 
         long searchedTime = System.currentTimeMillis();
         this.searchedText = inputText;
@@ -123,17 +116,24 @@ public abstract class LookupPane<T> extends VBox {
         resultInfo.setText(resultInfo.getText() + " 用时%.2f秒".formatted(searchedTime / 1000f));
     }
 
-    public void refresh() {
+    public LookupPane<T> refresh() {
         if (null != resultList) {
             resultList.refresh();
         }
+        return this;
     }
 
-    public void reset() {
+    public LookupPane<T> reset() {
         this.searchedText = null;
-        if (null != resultList) {
-            resultList.getItems().clear();
-        }
+        resultList.getItems().clear();
+        setInputTextSilently(null);
+        return this;
+    }
+
+    private void setInputTextSilently(String text) {
+        textInput.input.textProperty().removeListener(_inputChangeListener);
+        textInput.input.setText(text);
+        textInput.input.textProperty().addListener(_inputChangeListener);
     }
 
     protected int getResultLimit() {
