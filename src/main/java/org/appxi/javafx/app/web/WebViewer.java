@@ -191,7 +191,7 @@ public abstract class WebViewer extends WebRenderer {
         // Ctrl + F
         webPane.shortcutKeys.put(new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN), (event, selection) -> {
             // 如果有选中文字，则按查找选中文字处理
-            String selText = webPane.executeScript("getValidSelectionText()");
+            String selText = selection.text;
             selText = null == selText ? null : selText.strip().replace('\n', ' ');
             webViewer.webFinder().find(StringHelper.isBlank(selText) ? null : selText);
             event.consume();
@@ -199,14 +199,14 @@ public abstract class WebViewer extends WebRenderer {
         // Ctrl + G
         webPane.shortcutKeys.put(new KeyCodeCombination(KeyCode.G, KeyCombination.SHORTCUT_DOWN), (event, selection) -> {
             // 如果有选中文字，则按查找选中文字处理
-            final String selText = webPane.executeScript("getValidSelectionText()");
+            final String selText = selection.text;
             app.eventBus.fireEvent(SearcherEvent.ofLookup(selText));// LOOKUP
             event.consume();
         });
         // Ctrl + H (Win) / J (Mac) ,MacOS平台上Cmd+H与系统快捷键冲突
         webPane.shortcutKeys.put(new KeyCodeCombination(OSVersions.isMac ? KeyCode.J : KeyCode.H, KeyCombination.SHORTCUT_DOWN), (event, selection) -> {
             // 如果有选中文字，则按查找选中文字处理
-            final String selText = webPane.executeScript("getValidSelectionText()");
+            final String selText = selection.text;
             app.eventBus.fireEvent(SearcherEvent.ofSearch(selText)); // SEARCH
             event.consume();
         });
