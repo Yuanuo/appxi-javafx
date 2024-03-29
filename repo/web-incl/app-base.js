@@ -101,11 +101,61 @@ function getValidSelection() {
     return null;
 }
 
-function getValidSelectionText() {
-    const validSelection = getValidSelection();
-    if (!validSelection) return null;
-    const selected = validSelection.toString().trim();
-    return selected.length < 1 ? null : selected;
+function _findContainerIndex(container, nodeList) {
+    for (let i = 0; i < nodeList.length; i++) {
+        if (container == nodeList[i]) {
+            return i;
+        }
+    }
+    return _findContainerIndex(container.parentNode, nodeList);
+}
+
+function getSelectionInfo() {
+    const selection = window.getSelection();
+    const noRange = selection.rangeCount < 1;
+    
+    const range = noRange ? null : selection.getRangeAt(0);
+    const rangeNode = noRange ? null : range.commonAncestorContainer;
+
+    const startNode = noRange ? null : range.startContainer;
+    const startNodeOfs = noRange ? null : range.startOffset;
+    
+    const endNode = noRange ? null : range.endContainer;
+    const endNodeOfs = noRange ? null : range.endOffset;
+
+    let startNodeIdx, endNodeIdx;
+    if (noRange || startNode === rangeNode) {
+        startNodeIdx = -1;
+        endNodeIdx = -1;
+    } else {
+        startNodeIdx = _findContainerIndex(startNode, rangeNode.childNodes);
+        endNodeIdx = _findContainerIndex(endNode, rangeNode.childNodes);
+    }
+
+    if (startNodeIdx && startNodeIdx > endNodeIdx) {
+        return {
+            'startNode' : endNode,
+            'startNodeIdx' : endNodeIdx,
+            'startNodeOfs' : endNodeOfs,
+            'endNode' : startNode,
+            'endNodeIdx' : startNodeIdx,
+            'endNodeOfs' : startNodeOfs,
+            'range' : range,
+            'rangeNode' : rangeNode,
+            'selection' : selection
+        };
+    }
+    return {
+        'startNode' : startNode,
+        'startNodeIdx' : startNodeIdx,
+        'startNodeOfs' : startNodeOfs,
+        'endNode' : endNode,
+        'endNodeIdx' : endNodeIdx,
+        'endNodeOfs' : endNodeOfs,
+        'range' : range,
+        'rangeNode' : rangeNode,
+        'selection' : selection
+    };
 }
 
 /* ************************************************************************************************************************************* */
