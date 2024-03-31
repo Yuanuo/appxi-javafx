@@ -90,27 +90,7 @@ function setScrollTop1BySelectors(selector, percent = 0) {
     $("html, body").animate({scrollTop: scrollTop}, 150);
 }
 
-
-function getValidSelection() {
-    const selection = window.getSelection();
-    if (!selection.anchorNode || !selection.anchorNode.parentElement)
-        return null;
-    const parentEle = $(selection.anchorNode.parentElement);
-    if (parentEle.is('article') || parentEle.parents('article'))
-        return selection;
-    return null;
-}
-
-function _findContainerIndex(container, nodeList) {
-    for (let i = 0; i < nodeList.length; i++) {
-        if (container == nodeList[i]) {
-            return i;
-        }
-    }
-    return _findContainerIndex(container.parentNode, nodeList);
-}
-
-function getSelectionInfo() {
+function getSelection2() {
     const selection = window.getSelection();
     const noRange = selection.rangeCount < 1;
     
@@ -128,30 +108,26 @@ function getSelectionInfo() {
         startNodeIdx = -1;
         endNodeIdx = -1;
     } else {
+        const _findContainerIndex = function (container, nodeList) {
+            for (let i = 0; i < nodeList.length; i++) {
+                if (container == nodeList[i]) {
+                    return i;
+                }
+            }
+            return _findContainerIndex(container.parentNode, nodeList);
+        };
         startNodeIdx = _findContainerIndex(startNode, rangeNode.childNodes);
         endNodeIdx = _findContainerIndex(endNode, rangeNode.childNodes);
     }
 
-    if (startNodeIdx && startNodeIdx > endNodeIdx) {
-        return {
-            'startNode' : endNode,
-            'startNodeIdx' : endNodeIdx,
-            'startNodeOfs' : endNodeOfs,
-            'endNode' : startNode,
-            'endNodeIdx' : startNodeIdx,
-            'endNodeOfs' : startNodeOfs,
-            'range' : range,
-            'rangeNode' : rangeNode,
-            'selection' : selection
-        };
-    }
+    const backward = startNodeIdx && startNodeIdx > endNodeIdx;
     return {
-        'startNode' : startNode,
-        'startNodeIdx' : startNodeIdx,
-        'startNodeOfs' : startNodeOfs,
-        'endNode' : endNode,
-        'endNodeIdx' : endNodeIdx,
-        'endNodeOfs' : endNodeOfs,
+        'startNode' : backward ? endNode: startNode,
+        'startNodeIdx' : backward ? endNodeIdx: startNodeIdx,
+        'startNodeOfs' : backward ? endNodeOfs: startNodeOfs,
+        'endNode' : backward ? startNode: endNode,
+        'endNodeIdx' : backward ? startNodeIdx: endNodeIdx,
+        'endNodeOfs' : backward ? startNodeOfs: endNodeOfs,
         'range' : range,
         'rangeNode' : rangeNode,
         'selection' : selection
@@ -205,6 +181,16 @@ function handleOnPrettyIndent() {
 
 /* ************************************************************************************************************************************* */
 
+function getSelectionAnchorInfo(outMapOrElseStr = false) {
+    const selection = getSelectionWithAnchor();
+    const resultMap = {};
+    if (selection.anchor) {
+        resultMap.anchor = selection.anchor;
+        resultMap.text = selection.selection.toString();
+    }
+    return outMapOrElseStr ? resultMap : JSON.stringify(resultMap);
+}
+
 function getBookmarkAnchorInfo() {
     const map = getScrollTop1AnchorInfo();
     if (!map) return null;
@@ -212,8 +198,8 @@ function getBookmarkAnchorInfo() {
 }
 
 function getFavoriteAnchorInfo() {
-    let map = getValidSelectionAnchorInfo();
-    if (!map) map = getScrollTop1AnchorInfo();
+    let map = getSelectionAnchorInfo(true);
+    if (!map.anchor) map = getScrollTop1AnchorInfo();
     if (!map) return null;
     return JSON.stringify(map);
 }
