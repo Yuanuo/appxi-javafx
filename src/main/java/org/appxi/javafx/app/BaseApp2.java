@@ -4,17 +4,11 @@ import org.appxi.javafx.visual.VisualProvider;
 
 import java.nio.file.Path;
 
-public abstract class BootstrapApp extends BaseApp {
+public abstract class BaseApp2 extends BaseApp {
     private final VisualProvider visualProvider = new VisualProvider(this);
 
-    public BootstrapApp(Path workspace) {
+    public BaseApp2(Path workspace) {
         super(workspace);
-        Thread.setDefaultUncaughtExceptionHandler(this::handleUncaughtException);
-    }
-
-    protected void handleUncaughtException(Thread thread, Throwable throwable) {
-        logger.error("<UNCAUGHT>", throwable);
-        toastError(throwable.getClass().getName().concat(": ").concat(throwable.getMessage()));
     }
 
     @Override

@@ -1,7 +1,7 @@
 package org.appxi.javafx.app.web;
 
-import org.appxi.javafx.helper.BaseAction;
 import org.appxi.javafx.app.BaseApp;
+import org.appxi.javafx.helper.BaseAction;
 import org.appxi.javafx.web.WebPane;
 
 public abstract class WebAction extends BaseAction {

@@ -31,6 +31,7 @@ import org.appxi.javafx.workbench.WorkbenchApp;
 import org.appxi.prefs.Preferences;
 import org.appxi.util.ext.HanLang;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -299,5 +300,46 @@ public abstract class FxHelper {
         stage.setHeight(config.getDouble("ui.window.height", 720));
 
         stage.setMaximized(config.getBoolean("ui.window.maximized", false));
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public static final boolean isDevMode = null == System.getProperty("jpackage.app-path");
+    private static final Object _appDirInit = new Object();
+    private static Path _appDir = null;
+
+    public static Path appDir() {
+        if (null != _appDir)
+            return _appDir;
+
+        synchronized (_appDirInit) {
+            if (null != _appDir)
+                return _appDir;
+
+            String appDir = System.getenv("app-dir");
+            if (null == appDir)
+                appDir = System.getProperty("app-dir");
+            if (null == appDir)
+                appDir = System.getProperty("jpackage.app-dir");
+
+            if (null == appDir) {
+                appDir = System.getProperty("jpackage.app-path");
+                if (null != appDir) {
+                    String osName = System.getProperty("os.name").toLowerCase();
+                    Path appPath = Path.of(appDir).getParent();
+                    if (osName.contains("win")) {
+                        appDir = appPath.resolve("app").toString();
+                    } else if (osName.contains("mac")) {
+
+                    } else {
+                        appDir = appPath.resolve("lib").toString();
+                    }
+                }
+            }
+            if (null == appDir)
+                appDir = "";
+            _appDir = Path.of(appDir).toAbsolutePath();
+        }
+        return _appDir;
     }
 }

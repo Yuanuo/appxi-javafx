@@ -89,7 +89,7 @@ public abstract class WebRenderer {
         app.visualProvider().eventBus.addEventHandler(VisualEvent.SET_STYLE, _onAppStyleSetting);
         app.visualProvider().eventBus.addEventHandler(VisualEvent.SET_WEB_STYLE, _onWebStyleSetting);
         // 对WebView绑定右键菜单请求事件
-        if (!BaseApp.productionMode) {
+        if (FxHelper.isDevMode) {
             webPane.shortcutMenu.add((webSelection) -> {
                 MenuItem menuItem = new MenuItem("查看源码（复制到剪贴板）");
                 menuItem.getProperties().put(WebPane.GRP_MENU, "!");
@@ -133,7 +133,7 @@ public abstract class WebRenderer {
                 if (state == Worker.State.SUCCEEDED) {
                     // set an interface object named 'javaApp' in the web engine's page
                     final JSObject window = webPane.executeScript("window");
-                    window.setMember("devMode", !BaseApp.productionMode);
+                    window.setMember("devMode", FxHelper.isDevMode);
                     window.setMember("javaApp", webJavaBridge);
                     // 尝试执行onJavaReady函数以通知网页端javaApp已准备就绪
                     final String args = webJavaBridge.getJavaReadyArguments()
@@ -167,7 +167,7 @@ public abstract class WebRenderer {
             try {
                 String uriStr = uri.toString();
                 uriStr = uriStr + (uriStr.contains("?") ? "&" : "?") + StringHelper.concat(
-                        "devMode=", !BaseApp.productionMode,
+                        "devMode=", FxHelper.isDevMode,
                         "&theme=" + app.visualProvider().toString().replace(' ', '+')
                 );
                 uri = new URI(uriStr);

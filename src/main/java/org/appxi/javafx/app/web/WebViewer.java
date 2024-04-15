@@ -25,8 +25,8 @@ import java.util.stream.Stream;
 
 public abstract class WebViewer extends WebRenderer {
     public static Path getWebIncludeDir() {
-        if (BaseApp.productionMode) {
-            return BaseApp.appDir().resolve("template/web-incl");
+        if (!FxHelper.isDevMode) {
+            return FxHelper.appDir().resolve("template/web-incl");
         } else {
             for (int i = 0; i < 3; i++) {
                 Path javafxDir = Path.of("../".repeat(i) + "appxi-javafx");
