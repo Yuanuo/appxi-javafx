@@ -29,6 +29,7 @@ import org.appxi.javafx.settings.DefaultOptions;
 import org.appxi.javafx.settings.Option;
 import org.appxi.javafx.workbench.WorkbenchApp;
 import org.appxi.prefs.Preferences;
+import org.appxi.util.OSVersions;
 import org.appxi.util.ext.HanLang;
 
 import java.nio.file.Path;
@@ -190,6 +191,9 @@ public abstract class FxHelper {
         viewer.setEditable(false);
         viewer.setPrefRowCount(15);
         //
+        if (OSVersions.isLinux) {
+            dialogPane.setPrefSize(540, 720);
+        }
         dialogPane.setContent(viewer);
         dialogPane.getButtonTypes().add(ButtonType.OK);
         //
@@ -247,6 +251,9 @@ public abstract class FxHelper {
 
         final WebViewer viewer = webViewerSupplier.apply(dialog);
         //
+        if (OSVersions.isLinux) {
+            dialogPane.setPrefSize(540, 720);
+        }
         dialogPane.setContent(viewer.viewport);
         dialogPane.getButtonTypes().add(ButtonType.OK);
         //
