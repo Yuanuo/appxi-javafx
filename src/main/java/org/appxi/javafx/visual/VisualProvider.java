@@ -248,7 +248,7 @@ public final class VisualProvider {
         } else if (OSVersions.isMac) {
             return "PingFang SC";
         } else if (OSVersions.isLinux) {
-            return "System";
+            return "Noto Sans CJK SC";
         } else {
             return "System";
         }
