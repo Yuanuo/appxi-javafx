@@ -315,7 +315,7 @@ public final class VisualProvider {
         valueProperty.addListener((o, ov, nv) -> {
             if (null == ov || Objects.equals(ov, nv)) return;
             applyTheme(null, nv);
-            eventBus.fireEvent(new VisualEvent(VisualEvent.SET_THEME, theme));
+            eventBus.fireEvent(VisualEvent.SET_THEME.of(theme));
         });
         return new DefaultOption<Theme>("明暗模式", null, "UI", true)
                 .setValueProperty(valueProperty);
@@ -326,7 +326,7 @@ public final class VisualProvider {
         valueProperty.addListener((o, ov, nv) -> {
             if (null == ov || Objects.equals(ov, nv)) return;
             applySwatch(null, nv);
-            eventBus.fireEvent(new VisualEvent(VisualEvent.SET_SWATCH, swatch));
+            eventBus.fireEvent(VisualEvent.SET_SWATCH.of(swatch));
         });
         return new DefaultOption<Swatch>("颜色", null, "UI", true)
                 .setValueProperty(valueProperty);
@@ -347,7 +347,7 @@ public final class VisualProvider {
                                 if (null == ov || Objects.equals(ov, nv)) return;
                                 setValue(nv);
                                 app.config.setProperty("web.font.name", nv.value());
-                                eventBus.fireEvent(new VisualEvent(VisualEvent.SET_WEB_FONT_NAME, nv.value()));
+                                eventBus.fireEvent(VisualEvent.SET_WEB_FONT_NAME.of(nv.value()));
                             });
                         }
                         return this.valueProperty;
@@ -369,7 +369,7 @@ public final class VisualProvider {
         valueProperty.addListener((o, ov, nv) -> {
             if (null == ov || Objects.equals(ov, nv)) return;
             app.config.setProperty("web.font.size", nv.doubleValue());
-            eventBus.fireEvent(new VisualEvent(VisualEvent.SET_WEB_FONT_SIZE, nv.doubleValue()));
+            eventBus.fireEvent(VisualEvent.SET_WEB_FONT_SIZE.of(nv.doubleValue()));
         });
         return new DefaultOptions<Number>("阅读器字号", null, "VIEWER", true)
                 .setValues(DoubleStream.iterate(WEB_FONT_MIN, v -> v <= WEB_FONT_MAX,
@@ -383,7 +383,7 @@ public final class VisualProvider {
         valueProperty.addListener((o, ov, nv) -> {
             if (null == ov || Objects.equals(ov, nv)) return;
             app.config.setProperty("web.page.color.".concat(theme().name().toLowerCase(Locale.ROOT)), "#".concat(nv.toString().substring(2)));
-            eventBus.fireEvent(new VisualEvent(VisualEvent.SET_WEB_PAGE_COLOR, nv));
+            eventBus.fireEvent(VisualEvent.SET_WEB_PAGE_COLOR.of(nv));
         });
         return new DefaultOption<Color>("阅读器背景颜色", null, "VIEWER", true)
                 .setValueProperty(valueProperty);
@@ -394,7 +394,7 @@ public final class VisualProvider {
         valueProperty.addListener((o, ov, nv) -> {
             if (null == ov || Objects.equals(ov, nv)) return;
             app.config.setProperty("web.text.color.".concat(theme().name().toLowerCase(Locale.ROOT)), "#".concat(nv.toString().substring(2)));
-            eventBus.fireEvent(new VisualEvent(VisualEvent.SET_WEB_TEXT_COLOR, nv));
+            eventBus.fireEvent(VisualEvent.SET_WEB_TEXT_COLOR.of(nv));
         });
         return new DefaultOption<Color>("阅读器文字颜色", null, "VIEWER", true)
                 .setValueProperty(valueProperty);

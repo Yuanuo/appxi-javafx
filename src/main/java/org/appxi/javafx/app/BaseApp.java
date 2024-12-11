@@ -125,7 +125,7 @@ public abstract class BaseApp extends javafx.application.Application {
 
         // for debug only
         logger.info("starting after: %d".formatted(System.currentTimeMillis() - startTime));
-        eventBus.fireEvent(new AppEvent(AppEvent.STARTING));
+        eventBus.fireEvent(AppEvent.STARTING.of());
         // for debug only
         logger.info("post init after: %d".formatted(System.currentTimeMillis() - startTime));
     }
@@ -143,13 +143,13 @@ public abstract class BaseApp extends javafx.application.Application {
     }
 
     protected void started(Stage primaryStage) {
-        eventBus.fireEvent(new AppEvent(AppEvent.STARTED));
+        eventBus.fireEvent(AppEvent.STARTED.of());
     }
 
     @Override
     public final void stop() {
         try {
-            eventBus.fireEvent(new AppEvent(AppEvent.STOPPING));
+            eventBus.fireEvent(AppEvent.STOPPING.of());
         } catch (Throwable ignored) {
         }
         try {

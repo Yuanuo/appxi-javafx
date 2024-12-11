@@ -4,9 +4,9 @@ import org.appxi.event.Event;
 import org.appxi.event.EventType;
 
 public class SearcherEvent extends Event {
-    public static final EventType<SearcherEvent> LOOKUP = new EventType<>(Event.ANY, "LOOKUP");
+    public static final EventType<SearcherEvent> LOOKUP = new EventType<>(Event.ANY);
 
-    public static final EventType<SearcherEvent> SEARCH = new EventType<>(Event.ANY, "SEARCH");
+    public static final EventType<SearcherEvent> SEARCH = new EventType<>(Event.ANY);
 
     public final String text;
 

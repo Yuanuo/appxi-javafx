@@ -4,7 +4,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
-import org.appxi.javafx.app.AppEvent;
+import org.appxi.event.Event;
 import org.appxi.javafx.app.BaseApp;
 import org.appxi.javafx.app.search.SearcherEvent;
 import org.appxi.javafx.helper.FxHelper;
@@ -96,7 +96,7 @@ public abstract class WebViewer extends WebRenderer {
     }
 
     @Override
-    protected void onAppEventStopping(AppEvent event) {
+    protected void onAppEventStopping(Event event) {
         saveUserData();
         super.onAppEventStopping(event);
     }

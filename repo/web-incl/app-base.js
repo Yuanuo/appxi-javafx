@@ -239,3 +239,24 @@ function __openSearched(pieceId, isRefText) {
         javaApp.openSearched(pieceId, refText);
     }
 }
+
+$(document).ready(function() {
+    function wrapSpecialChars($element) {
+        $element.contents().each(function() {
+            if (this.nodeType === Node.TEXT_NODE) {
+                const regex = /[\uD800-\uDBFF][\uDC00-\uDFFF]/g;
+                const text = this.nodeValue;
+                const wrappedText = text.replace(regex, function(match) {
+                    return '<span class="SimSun">' + match + '</span>';
+                });
+
+                if (wrappedText !== text) {
+                    $(this).replaceWith(wrappedText);
+                }
+            } else {
+                wrapSpecialChars($(this));
+            }
+        });
+    }
+    wrapSpecialChars($('body'));
+});

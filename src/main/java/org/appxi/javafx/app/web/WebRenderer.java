@@ -6,9 +6,10 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.layout.StackPane;
 import netscape.javascript.JSObject;
+import org.appxi.event.Event;
 import org.appxi.event.EventHandler;
-import org.appxi.javafx.app.AppEvent;
 import org.appxi.javafx.app.BaseApp;
+import org.appxi.javafx.app.AppEvent;
 import org.appxi.javafx.control.ProgressLayer;
 import org.appxi.javafx.helper.FxHelper;
 import org.appxi.javafx.visual.VisualEvent;
@@ -30,9 +31,9 @@ public abstract class WebRenderer {
 
     private static final Object AK_INITIALIZED = new Object();
 
-    private final EventHandler<AppEvent> _onAppEventStopping = this::onAppEventStopping;
-    private final EventHandler<VisualEvent> _onAppStyleSetting = this::onAppStyleSetting;
-    private final EventHandler<VisualEvent> _onWebStyleSetting = this::onWebStyleSetting;
+    private final EventHandler<Event> _onAppEventStopping = this::onAppEventStopping;
+    private final EventHandler<Event> _onAppStyleSetting = this::onAppStyleSetting;
+    private final EventHandler<Event> _onWebStyleSetting = this::onWebStyleSetting;
 
     public final BaseApp app;
     public final StackPane viewport;
@@ -49,13 +50,13 @@ public abstract class WebRenderer {
     /**
      * 响应App关闭事件，在App关闭过程中可在此处做一些数据保存等操作
      */
-    protected void onAppEventStopping(AppEvent event) {
+    protected void onAppEventStopping(Event event) {
     }
 
     /**
      * 响应App样式修改事件
      */
-    protected void onAppStyleSetting(VisualEvent event) {
+    protected void onAppStyleSetting(Event event) {
         // APP样式只涉及 明/暗 和 颜色，此时只需直接更改即可
         webPane.executeScript("typeof(setWebStyleTheme) === 'function' && setWebStyleTheme('" + app.visualProvider() + "');"
                               + "typeof(setWebStyleSheetLocation) === 'function' && setWebStyleSheetLocation('" + app.visualProvider().getWebStyleSheetURI() + "');"
@@ -65,7 +66,7 @@ public abstract class WebRenderer {
     /**
      * 响应Web样式修改事件，字体、字号、字色、底色等改变时触发
      */
-    protected void onWebStyleSetting(VisualEvent event) {
+    protected void onWebStyleSetting(Event event) {
         // 以不重载页面的方式动态更新
         webPane.executeScript("window._selector = typeof(getScrollTop1Selector) === 'function' && getScrollTop1Selector() || -1;"
                               + "typeof(setWebStyleSheetLocation) === 'function' && setWebStyleSheetLocation('" + app.visualProvider().getWebStyleSheetURI() + "');"
