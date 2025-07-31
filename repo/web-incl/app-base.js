@@ -240,6 +240,19 @@ function __openSearched(pieceId, isRefText) {
     }
 }
 
+function getSelectionInDictionary() {
+    const range = getSelection2();
+    if (range.startNode) {
+        const $dict = $(range.startNode).parents("div[data-dict]");
+        if ($dict.length > 0) {
+            const dictInfo = $dict.attr("data-dict");
+            const text = range.selection.toString();
+            return dictInfo + "|" + text;
+        }
+    }
+    return "";
+}
+
 $(document).ready(function() {
     function wrapSpecialChars($element) {
         $element.contents().each(function() {
