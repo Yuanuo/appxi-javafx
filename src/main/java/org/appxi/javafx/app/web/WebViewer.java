@@ -261,7 +261,7 @@ public abstract class WebViewer extends WebRenderer {
             menuItem.getProperties().put(WebPane.GRP_MENU, "search2");
             if (selection.hasTrims) {
                 final String str = StringHelper.trimChars(selection.trims, 10, "");
-                final String strPy = PinyinHelper.pinyin(str, true);
+                final String strPy = PinyinHelper.pinyin(str, true, false, " ");
                 menuItem.setText("查拼音：" + strPy);
                 menuItem.setOnAction(event -> {
                     FxHelper.copyText(str + "\n" + strPy);
