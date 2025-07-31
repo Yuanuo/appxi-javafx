@@ -22,8 +22,10 @@ import javafx.scene.text.TextFlow;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import org.appxi.holder.RawHolder;
 import org.appxi.javafx.app.BaseApp;
 import org.appxi.javafx.app.web.WebViewer;
+import org.appxi.javafx.control.DialogEx;
 import org.appxi.javafx.control.ListViewEx;
 import org.appxi.javafx.settings.DefaultOptions;
 import org.appxi.javafx.settings.Option;
@@ -38,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -171,48 +174,20 @@ public abstract class FxHelper {
     }
 
     public static void showTextViewerWindow(BaseApp app, String windowId, String windowTitle, String text) {
-        Window window = Window.getWindows().stream().filter(w -> windowId.equals(w.getScene().getUserData())).findFirst().orElse(null);
-        if (null != window) {
-            window.requestFocus();
-            return;
-        }
-        //
-        final Dialog<?> dialog = new Dialog<>();
-        final DialogPane dialogPane = new DialogPane() {
-            @Override
-            protected Node createButtonBar() {
-                return null;
-            }
-        };
-
-        final TextArea viewer = new TextArea();
-        VBox.setVgrow(viewer, Priority.ALWAYS);
-        viewer.setWrapText(true);
-        viewer.setEditable(false);
-        viewer.setPrefRowCount(15);
-        //
-        if (OSVersions.isLinux) {
-            dialogPane.setPrefSize(540, 720);
-        }
-        dialogPane.setContent(viewer);
-        dialogPane.getButtonTypes().add(ButtonType.OK);
-        //
-        dialog.setTitle(windowTitle);
-        dialog.setDialogPane(dialogPane);
-        dialog.getDialogPane().setPrefWidth(800);
-        dialog.setResizable(true);
-        dialog.initModality(Modality.NONE);
-        dialog.initOwner(app.getPrimaryStage());
-        dialog.getDialogPane().getScene().setUserData(windowId);
-        dialog.setOnShown(evt -> FxHelper.runThread(100, () -> {
-            dialog.setHeight(600);
-            dialog.setY(dialog.getOwner().getY() + (dialog.getOwner().getHeight() - dialog.getHeight()) / 2);
-            if (dialog.getX() < 0) dialog.setX(0);
-            if (dialog.getY() < 0) dialog.setY(0);
-            //
-            viewer.setText(text);
-        }));
-        dialog.show();
+        final RawHolder<TextArea> holder = new RawHolder<>();
+        showWindow(app, windowId, windowTitle,
+                dialog -> {
+                    holder.value = new TextArea();
+                    VBox.setVgrow(holder.value, Priority.ALWAYS);
+                    holder.value.setWrapText(true);
+                    holder.value.setEditable(false);
+                    holder.value.setPrefRowCount(15);
+                    return holder.value;
+                },
+                dialog -> holder.value.setText(text),
+                dialog -> {
+                }
+        );
     }
 
     public static void showHtmlViewerWindow(WorkbenchApp app, String windowId, String windowTitle, Object webContent) {
@@ -235,13 +210,27 @@ public abstract class FxHelper {
     }
 
     public static void showHtmlViewerWindow(BaseApp app, String windowId, String windowTitle, Function<Dialog<?>, WebViewer> webViewerSupplier) {
-        Window window = Window.getWindows().stream().filter(w -> windowId.equals(w.getScene().getUserData())).findFirst().orElse(null);
+        final RawHolder<WebViewer> holder = new RawHolder<>();
+        showWindow(app, windowId, windowTitle,
+                dialog -> {
+                    holder.value = webViewerSupplier.apply(dialog);
+                    return holder.value.viewport;
+                },
+                dialog -> holder.value.navigate(null),
+                dialog -> holder.value.deinitialize()
+        );
+    }
+
+    public static void showWindow(BaseApp app, String windowId, String windowTitle, Function<Dialog<?>, Node> contentSupplier,
+                                  Consumer<Dialog<?>> onShownCallback, Consumer<Dialog<?>> onHiddenCallback) {
+        final List<Window> windows = Window.getWindows().stream().filter(w -> w instanceof Stage stage && stage.getModality() == Modality.NONE).toList();
+        Window window = windows.stream().filter(w -> windowId.equals(w.getScene().getUserData())).findFirst().orElse(null);
         if (null != window) {
             window.requestFocus();
             return;
         }
         //
-        final Dialog<?> dialog = new Dialog<>();
+        final DialogEx<?> dialog = new DialogEx<>();
         final DialogPane dialogPane = new DialogPane() {
             @Override
             protected Node createButtonBar() {
@@ -249,12 +238,12 @@ public abstract class FxHelper {
             }
         };
 
-        final WebViewer viewer = webViewerSupplier.apply(dialog);
         //
         if (OSVersions.isLinux) {
             dialogPane.setPrefSize(540, 720);
         }
-        dialogPane.setContent(viewer.viewport);
+
+        dialogPane.setContent(contentSupplier.apply(dialog));
         dialogPane.getButtonTypes().add(ButtonType.OK);
         //
         dialog.setTitle(windowTitle);
@@ -266,13 +255,43 @@ public abstract class FxHelper {
         dialog.getDialogPane().getScene().setUserData(windowId);
         dialog.setOnShown(evt -> FxHelper.runThread(100, () -> {
             dialog.setHeight(600);
-            dialog.setY(dialog.getOwner().getY() + (dialog.getOwner().getHeight() - dialog.getHeight()) / 2);
+            // 获取最后一个显示的窗口位置
+            Window lastWindow = windows.isEmpty() ? null : windows.getLast();
+            double offsetX = 100.0;
+            double offsetY = 100.0;
+
+            if (lastWindow != null) {
+                // 在最后一个窗口基础上偏移
+                dialog.setX(lastWindow.getX() + offsetX);
+                dialog.setY(lastWindow.getY() + offsetY);
+            } else {
+                // 如果没有其他窗口，则相对于主窗口居中并偏移
+                dialog.setX(dialog.getOwner().getX() + (dialog.getOwner().getWidth() - dialog.getWidth()) / 2 + offsetX);
+                dialog.setY(dialog.getOwner().getY() + (dialog.getOwner().getHeight() - dialog.getHeight()) / 2 + offsetY);
+            }
+
+            // 边界检查，确保窗口不会完全移出屏幕
             if (dialog.getX() < 0) dialog.setX(0);
             if (dialog.getY() < 0) dialog.setY(0);
+
+            // 检查窗口是否超出屏幕右边界或下边界
+            javafx.geometry.Rectangle2D screenBounds = javafx.stage.Screen.getPrimary().getVisualBounds();
+            if (dialog.getX() + dialog.getWidth() > screenBounds.getWidth()) {
+                dialog.setX(Math.max(0, screenBounds.getWidth() - dialog.getWidth()));
+            }
+            if (dialog.getY() + dialog.getHeight() > screenBounds.getHeight()) {
+                dialog.setY(Math.max(0, screenBounds.getHeight() - dialog.getHeight()));
+            }
             //
-            viewer.navigate(null);
+            if (onShownCallback != null) {
+                onShownCallback.accept(dialog);
+            }
         }));
-        dialog.setOnHidden(evt -> viewer.deinitialize());
+        dialog.setOnHidden(evt -> {
+            if (onHiddenCallback != null) {
+                onHiddenCallback.accept(dialog);
+            }
+        });
         dialog.show();
     }
 
@@ -309,7 +328,7 @@ public abstract class FxHelper {
         stage.setMaximized(config.getBoolean("ui.window.maximized", false));
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public static final boolean isDevMode = null == System.getProperty("jpackage.app-path");
     private static final Object _appDirInit = new Object();
