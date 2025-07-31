@@ -212,7 +212,7 @@ public abstract class WebViewer extends WebRenderer {
         });
     }
 
-    public static void addShortcutMenu(WebViewer webViewer) {
+    public static void addShortcutMenu(WebRenderer webViewer) {
         final WebPane webPane = webViewer.webPane;
         final BaseApp app = webViewer.app;
         //
@@ -226,26 +226,35 @@ public abstract class WebViewer extends WebRenderer {
         webPane.shortcutMenu.add(selection -> {
             String textTip = selection.hasTrims ? "：" + StringHelper.trimChars(selection.trims, 8) : "";
             String textForSearch = selection.hasTrims ? selection.trims : null;
+
+            final List<MenuItem> menuItems = new ArrayList<>();
             //
             MenuItem search = new MenuItem("全文检索" + textTip);
+            menuItems.add(search);
             search.getProperties().put(WebPane.GRP_MENU, "search");
             search.setOnAction(event -> app.eventBus.fireEvent(SearcherEvent.ofSearch(textForSearch)));
             //
             MenuItem searchExact = new MenuItem("全文检索（精确检索）" + textTip);
+            menuItems.add(searchExact);
             searchExact.getProperties().put(WebPane.GRP_MENU, "search");
             searchExact.setOnAction(event -> app.eventBus.fireEvent(
                     SearcherEvent.ofSearch(null == textForSearch ? "" : "\"" + textForSearch + "\"")));
             //
             MenuItem lookup = new MenuItem("快捷检索（经名、作译者等）" + textTip);
+            menuItems.add(lookup);
             lookup.getProperties().put(WebPane.GRP_MENU, "search");
             lookup.setOnAction(event -> app.eventBus.fireEvent(SearcherEvent.ofLookup(textForSearch)));
             //
-            MenuItem findInPage = new MenuItem("页内查找" + textTip);
-            findInPage.getProperties().put(WebPane.GRP_MENU, "search");
-            findInPage.setOnAction(event -> webViewer.webFinder().find(selection.trims));
+
+            if (webViewer instanceof WebViewer webViewer1) {
+                MenuItem findInPage = new MenuItem("页内查找" + textTip);
+                menuItems.add(findInPage);
+                findInPage.getProperties().put(WebPane.GRP_MENU, "search");
+                findInPage.setOnAction(event -> webViewer1.webFinder().find(selection.trims));
+            }
 
             //
-            return List.of(search, searchExact, lookup, findInPage);
+            return menuItems;
         });
         webPane.shortcutMenu.add(selection -> {
             MenuItem menuItem = new MenuItem();
