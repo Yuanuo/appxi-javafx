@@ -4,12 +4,12 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.appxi</groupId>
     <artifactId>javafx</artifactId>
-    <version>25.07.24</version>
+    <version>26.05.13</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>21</maven.compiler.release>
-        <javafx.version>26-ea</javafx.version>
+        <javafx.version>27-ea+20</javafx.version>
     </properties>
 
     <dependencies>
@@ -36,6 +36,11 @@
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-web</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>jdk-jsobject</artifactId>
             <version>${javafx.version}</version>
         </dependency>
 
