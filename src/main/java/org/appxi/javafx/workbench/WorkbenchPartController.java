@@ -1,6 +1,8 @@
 package org.appxi.javafx.workbench;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -77,6 +79,7 @@ public abstract class WorkbenchPartController implements WorkbenchPart {
 
     public static abstract class MainView extends WorkbenchPartController implements WorkbenchPart.MainView {
         public final StringProperty appTitle = new SimpleStringProperty();
+        public final BooleanProperty closable = new SimpleBooleanProperty(true);
         private StackPane viewport;
 
         public MainView(WorkbenchPane workbench) {
@@ -86,6 +89,11 @@ public abstract class WorkbenchPartController implements WorkbenchPart {
         @Override
         public final StringProperty appTitle() {
             return appTitle;
+        }
+
+        @Override
+        public BooleanProperty closable() {
+            return closable;
         }
 
         @Override

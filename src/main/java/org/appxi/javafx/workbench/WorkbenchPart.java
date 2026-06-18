@@ -1,5 +1,6 @@
 package org.appxi.javafx.workbench;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.Node;
@@ -43,6 +44,8 @@ public interface WorkbenchPart {
 
     interface MainView extends WorkbenchPart {
         StringProperty appTitle();
+
+        BooleanProperty closable();
 
         Pane getViewport();
 

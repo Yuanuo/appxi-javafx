@@ -1,6 +1,8 @@
 package org.appxi.javafx.app.web;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -67,6 +69,7 @@ public abstract class WebRendererPart extends WebRenderer implements WorkbenchPa
 
     public static abstract class MainView extends WebRendererPart implements WorkbenchPart.MainView {
         public final StringProperty appTitle = new SimpleStringProperty();
+        public final BooleanProperty closable = new SimpleBooleanProperty(true);
 
         public MainView(BaseApp app) {
             super(app);
@@ -75,6 +78,11 @@ public abstract class WebRendererPart extends WebRenderer implements WorkbenchPa
         @Override
         public final StringProperty appTitle() {
             return appTitle;
+        }
+
+        @Override
+        public BooleanProperty closable() {
+            return closable;
         }
 
         @Override

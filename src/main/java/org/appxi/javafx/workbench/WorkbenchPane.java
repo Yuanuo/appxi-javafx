@@ -134,6 +134,10 @@ public class WorkbenchPane extends BorderPane {
         this.autoPostConstructWhenWorkbenchPartAdded = true;
     }
 
+    public <T extends WorkbenchApp> T application() {
+        return (T) this.application;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public final boolean isSideViewsVisible() {
@@ -176,6 +180,7 @@ public class WorkbenchPane extends BorderPane {
 
         tool.graphicProperty().bind(part.graphic());
 
+        tool.closableProperty().bind(part.closable());
         tool.setOnCloseRequest(event -> {
             if (event.getTarget() instanceof Tab t
                 && t.getUserData() instanceof WorkbenchPart.MainView c
