@@ -543,16 +543,16 @@
 .tree-cell .tree-disclosure-node {
     -fx-padding: .45em .5em;
 }
+.tree-table-view,
 .tree-view,
 .list-view {
-	-fx-background-insets: 0;
-	-fx-background-color: transparent;
+	/*-fx-background-insets: 0;*/
+	/*-fx-background-color: transparent;*/
+	/*-fx-padding: 0;*/
 	-fx-text-fill: ladder(-fx-base, -text-dark 49%, -text-light 50%);
 	-fx-effect: -elevation-z1;
 	-fx-spacing: 3mm;
-	-fx-padding: 0;
 	-fx-border-width: 0;
-	-fx-effect: null;
 }
 
 .tree-cell, .tree-cell:odd,
@@ -1436,16 +1436,24 @@
 	-fx-background-insets: 0, 0 0 1 0;
 }
 
+*/
+
+.tree-table-cell,
+.table-cell {
+	-fx-border-color: rgb(198, 198, 198);
+	-fx-border-width: .5;
+}
+.tree-table-row-cell:hover,
 .table-row-cell:hover {
 	-fx-background: #EEEEEE;
 	-fx-background-color: "#eaeaea", -fx-background;
 }
-
+.tree-table-row-cell:selected,
 .table-row-cell:selected {
 	-fx-background: #F5F5F5;
-	-fx-background-color: "#eaeaea", -fx-background;
+	-fx-background-color: -primary-swatch-200;
 }
-
+/*
 .table-view .column-header-background, .tree-table-view > .column-header-background {
 	-fx-background-color: white;
 	-fx-background-insets: 0;
