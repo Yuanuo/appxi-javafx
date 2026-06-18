@@ -131,6 +131,22 @@ public interface TreeHelper {
         return result;
     }
 
+    static <T> void walkChildren(TreeItem<T> treeItem, BiConsumer<TreeItem<T>, T> consumer) {
+        for (TreeItem<T> child : treeItem.getChildren()) walk(child, consumer);
+    }
+
+    static <T> void walkChildrenFolders(TreeItem<T> treeItem, BiConsumer<TreeItem<T>, T> consumer) {
+        for (TreeItem<T> child : treeItem.getChildren()) walkFolders(child, consumer);
+    }
+
+    static <T> void walkChildrenLeafs(TreeItem<T> treeItem, BiConsumer<TreeItem<T>, T> consumer) {
+        for (TreeItem<T> child : treeItem.getChildren()) walkLeafs(child, consumer);
+    }
+
+    static <T> void walkChildrenTree(TreeItem<T> treeItem, TreeWalker<T> treeWalker) {
+        for (TreeItem<T> child : treeItem.getChildren()) walkTree(child, treeWalker);
+    }
+
     static <T> void walk(TreeItem<T> treeItem, BiConsumer<TreeItem<T>, T> consumer) {
         consumer.accept(treeItem, treeItem.getValue());
         for (TreeItem<T> child : treeItem.getChildren()) walk(child, consumer);
@@ -139,6 +155,12 @@ public interface TreeHelper {
     static <T> void walkLeafs(TreeItem<T> treeItem, BiConsumer<TreeItem<T>, T> consumer) {
         if (treeItem.isLeaf()) consumer.accept(treeItem, treeItem.getValue());
         else for (TreeItem<T> child : treeItem.getChildren()) walkLeafs(child, consumer);
+    }
+
+    static <T> void walkFolders(TreeItem<T> treeItem, BiConsumer<TreeItem<T>, T> consumer) {
+        if (treeItem.isLeaf()) return;
+        consumer.accept(treeItem, treeItem.getValue());
+        for (TreeItem<T> child : treeItem.getChildren()) walkFolders(child, consumer);
     }
 
     static <T> void walkTree(TreeItem<T> treeItem, TreeWalker<T> treeWalker) {
