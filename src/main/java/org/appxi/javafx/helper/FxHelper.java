@@ -3,6 +3,8 @@ package org.appxi.javafx.helper;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContentDisplay;
@@ -33,7 +35,9 @@ import org.appxi.javafx.workbench.WorkbenchApp;
 import org.appxi.prefs.Preferences;
 import org.appxi.util.OSVersions;
 import org.appxi.util.ext.HanLang;
+import org.appxi.util.ext.RawVal2;
 
+import java.nio.file.FileStore;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -367,5 +371,64 @@ public abstract class FxHelper {
             _appDir = Path.of(appDir).toAbsolutePath();
         }
         return _appDir;
+    }
+
+    /// //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public static List<RawVal2<Path, FileStore>> chooseFileStores(boolean multipleOrSingle) {
+        ObservableList<RawVal2<Path, FileStore>> fileStores = FXCollections.observableArrayList();
+        Path.of("").getFileSystem().getFileStores().forEach(fs -> {
+            Path fsRoot = Path.of(fs.toString().replaceFirst("(.*?)[(]([A-Z]:)[)]","$2"));
+            fileStores.add(new RawVal2<>(fsRoot, fs));
+        });
+
+        if (fileStores.isEmpty()) {
+            return List.of();
+        }
+
+        // 创建对话框
+        Dialog<List<RawVal2<Path, FileStore>>> dialog = new Dialog<>();
+        dialog.setTitle("选择文件根目录");
+
+        // 设置按钮
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        // 创建列表视图
+        javafx.scene.control.ListView<RawVal2<Path, FileStore>> listView = new javafx.scene.control.ListView<>(fileStores);
+        listView.setPrefWidth(300);
+        listView.setPrefHeight(500);
+
+        // 设置单选或多选模式
+        if (multipleOrSingle) {
+            listView.getSelectionModel().setSelectionMode(javafx.scene.control.SelectionMode.MULTIPLE);
+        } else {
+            listView.getSelectionModel().setSelectionMode(javafx.scene.control.SelectionMode.SINGLE);
+        }
+
+        // 设置列表项显示
+        listView.setCellFactory(param -> new javafx.scene.control.ListCell<>() {
+            @Override
+            protected void updateItem(RawVal2<Path, FileStore> item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.key() + "  " + item.value().name());
+                }
+            }
+        });
+
+        dialog.getDialogPane().setContent(listView);
+
+        // 设置结果转换器
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == ButtonType.OK) {
+                return listView.getSelectionModel().getSelectedItems();
+            }
+            return List.of();
+        });
+
+        // 显示对话框并等待用户输入
+        return dialog.showAndWait().orElse(List.of());
     }
 }
