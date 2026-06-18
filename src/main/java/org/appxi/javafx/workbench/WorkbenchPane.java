@@ -3,8 +3,8 @@ package org.appxi.javafx.workbench;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
-import javafx.geometry.HPos;
 import javafx.geometry.Orientation;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.ButtonBase;
 import javafx.scene.control.ContentDisplay;
@@ -251,7 +251,7 @@ public class WorkbenchPane extends BorderPane {
         } else if (part instanceof WorkbenchPart.SideView sideView) {
             alignTop = sideView.sideToolAlignTop();
         }
-        this.sideTools.addAligned(alignTop ? HPos.LEFT : HPos.RIGHT, tool);
+        this.sideTools.addAligned(alignTop ? Pos.CENTER_LEFT : Pos.CENTER_RIGHT, tool);
     }
 
     private boolean isFirstTime(Map<Object, Object> properties) {

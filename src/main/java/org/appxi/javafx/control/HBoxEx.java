@@ -7,9 +7,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 
-import java.util.Arrays;
-
-public class HBoxEx extends HBox {
+public class HBoxEx extends HBox implements AlignedBar {
     protected final Node spaceFill1, spaceFill2;
 
     public HBoxEx() {
@@ -28,31 +26,18 @@ public class HBoxEx extends HBox {
         this.getChildren().setAll(spaceFill1, spaceFill2);
     }
 
-    public HBoxEx addAligned(Pos pos, Node... nodes) {
-        switch (pos) {
-            case TOP_LEFT, CENTER_LEFT, BOTTOM_LEFT -> this.addLeft(nodes);
-            case TOP_CENTER, CENTER, BOTTOM_CENTER -> this.addCenter(nodes);
-            default -> this.addRight(nodes);
-        }
-        return this;
+    @Override
+    public ObservableList<Node> getAlignedItems() {
+        return this.getChildren();
     }
 
-    public HBoxEx addLeft(Node... nodes) {
-        final ObservableList<Node> items = getChildren();
-        final int idx = items.indexOf(this.spaceFill1);
-        items.addAll(idx == -1 ? 0 : idx, Arrays.asList(nodes));
-        return this;
+    @Override
+    public Node spaceFill1() {
+        return this.spaceFill1;
     }
 
-    public HBoxEx addCenter(Node... nodes) {
-        final ObservableList<Node> items = getChildren();
-        final int idx = items.indexOf(this.spaceFill2);
-        items.addAll(idx == -1 ? 0 : idx, Arrays.asList(nodes));
-        return this;
-    }
-
-    public HBoxEx addRight(Node... nodes) {
-        getChildren().addAll(nodes);
-        return this;
+    @Override
+    public Node spaceFill2() {
+        return this.spaceFill2;
     }
 }
